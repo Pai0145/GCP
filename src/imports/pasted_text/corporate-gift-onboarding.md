@@ -47,14 +47,16 @@ Subtitle:
 “Verify your company once and start procuring gift cards for employees, partners, and customers.”
 
 Show 3 benefit cards:
+
 1. “Autofill company details”
-Description: “Enter GSTIN, CIN, or PAN and we’ll fetch available details.”
+   Description: “Enter GSTIN, CIN, or PAN and we’ll fetch available details.”
 2. “Faster verification”
-Description: “Review pre-filled details instead of filling long forms manually.”
+   Description: “Review pre-filled details instead of filling long forms manually.”
 3. “Secure onboarding”
-Description: “Your information is used only for business verification and compliance.”
+   Description: “Your information is used only for business verification and compliance.”
 
 Show documents that may be needed only if verification requires them:
+
 - GST certificate
 - Company PAN
 - Address proof
@@ -71,11 +73,12 @@ Click “Start onboarding” moves to Screen 2.
 
 Sidebar:
 Show steps:
+
 1. Account owner
 2. Company verification
 3. Authorised signatory
 4. Review & submit
-Current step should be highlighted.
+   Current step should be highlighted.
 
 SCREEN 2: Account Owner
 Page title:
@@ -85,12 +88,14 @@ Subtitle:
 “Tell us who will manage this onboarding.”
 
 Fields:
+
 - Full name
 - Work email
 - Mobile number
 - Expected annual gift card spend, optional dropdown
 
 Dropdown values:
+
 - Under ₹10 Lakhs
 - ₹10 Lakhs - ₹50 Lakhs
 - ₹50 Lakhs - ₹1 Crore
@@ -124,6 +129,7 @@ Subtitle:
 “Enter one company identifier. We’ll autofill everything we can.”
 
 Create a large input section with tabs or segmented control:
+
 - GSTIN
 - CIN / LLPIN
 - PAN
@@ -167,6 +173,7 @@ Create editable form sections:
 
 Section 1: Business identity
 Fields:
+
 - Legal business name, prefilled: Pine Labs Private Limited
 - Entity type, prefilled dropdown: Private Limited Company
 - PAN, prefilled: AABCP1234F
@@ -179,6 +186,7 @@ Show source labels under fields:
 
 Section 2: Registered address
 Fields:
+
 - Address line 1, prefilled
 - Address line 2, optional
 - PIN code, prefilled
@@ -191,6 +199,7 @@ Use checkbox:
 
 When checked, hide billing address fields.
 When unchecked, expand:
+
 - Billing address line 1
 - Address line 2
 - PIN code
@@ -214,20 +223,23 @@ Subtitle:
 “This person will accept terms and complete business verification.”
 
 At top, show checkbox:
-“Same as account owner”
+“Same as basic details”
 
 If checked, auto-fill:
+
 - Full name
 - Work email
 - Mobile number
 
 Fields:
+
 - Full name
 - Work email
 - Mobile number
 - Designation dropdown
 
 Designation dropdown values:
+
 - Founder / Director
 - Partner
 - Finance Head
@@ -266,11 +278,13 @@ Description:
 “We have enough information to begin verification. If anything else is needed, we’ll notify you.”
 
 Show optional upload cards:
+
 - Authorisation letter
 - Address proof, only if billing address is different
 - Company PAN, only if PAN could not be verified
 
 Each document card should show:
+
 - Document name
 - Why it may be needed
 - Upload button
@@ -295,27 +309,31 @@ Subtitle:
 Show summary cards:
 
 Card 1: Account owner
+
 - Name
 - Work email
 - Mobile number
-Edit link
+  Edit link
 
 Card 2: Company details
+
 - Legal name
 - Entity type
 - PAN
 - GSTIN
 - Registered address
-Edit link
+  Edit link
 
 Card 3: Authorised signatory
+
 - Name
 - Email
 - Mobile number
 - Designation
-Edit link
+  Edit link
 
 Card 4: Documents
+
 - No documents required / Uploaded documents list
 
 Add declaration checkbox:
@@ -332,6 +350,7 @@ Click Submit shows confirmation modal:
 Title: “Submit application?”
 Description: “You can still update details if verification asks for more information.”
 Buttons:
+
 - Cancel
 - Submit
 
@@ -350,6 +369,7 @@ Subtext:
 “We’ll notify you at john@company.com when verification is complete. Most applications are reviewed within 24 hours.”
 
 Show status tracker:
+
 1. Application submitted, completed
 2. Business verification, in progress
 3. Portal activation, pending
@@ -397,6 +417,7 @@ Subtitle:
 Section 1:
 “Do you want maker-checker approval?”
 Use segmented control:
+
 - Yes
 - No
 
@@ -407,12 +428,14 @@ Section 2:
 “Add users”
 
 Fields:
+
 - Full name
 - Work email
 - Mobile number
 - Role dropdown
 
 Role values:
+
 - Admin
 - Maker
 - Checker
@@ -423,6 +446,7 @@ Button:
 
 Show user table:
 Columns:
+
 - Name
 - Email
 - Role
@@ -452,14 +476,15 @@ Show success banner:
 “Your portal is ready”
 
 Show cards:
+
 1. “Buy gift cards”
-CTA: “Create order”
+   CTA: “Create order”
 2. “Manage users”
-CTA: “View users”
+   CTA: “View users”
 3. “Approval settings”
-CTA: “Configure”
+   CTA: “Configure”
 4. “Invoices & billing”
-CTA: “View billing”
+   CTA: “View billing”
 
 Show empty state:
 “No orders yet”
@@ -467,6 +492,7 @@ CTA:
 “Create your first gift card order”
 
 Prototype interactions:
+
 - Sidebar steps should update based on current screen.
 - Completed steps should show green check icons.
 - Active step should have pale green background and green border.
@@ -490,6 +516,7 @@ Use copy like:
 “You can finish portal setup after business verification.”
 
 Components to create:
+
 - Sidebar stepper
 - Header/top nav
 - Form card

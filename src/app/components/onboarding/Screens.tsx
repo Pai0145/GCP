@@ -2,8 +2,13 @@ import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence, useMotionValue, useTransform, animate as animateMV } from "motion/react";
 import Lottie from "lottie-react";
 import { TopNav } from "./Layout";
-import PineLabsLogo from "../../../imports/Frame2-1/Frame2-27-25";
 import successTickRaw from "./successTick.json";
+import diplomaVerifiedIcon from "../../../imports/Diploma Verified.svg";
+import mapPointWaveIcon from "../../../imports/Map Point Wave.svg";
+import plateIcon from "../../../imports/Plate.svg";
+import uploadMinimalisticIcon from "../../../imports/Upload Minimalistic.svg";
+import pineLabsLogoImg from "../../../../pinelabs logo.png";
+import signatureImg from "../../../imports/Screenshot 2026-04-17 at 12.33.38 PM 1.png";
 
 function AnimatedPercent({ value, duration = 1.1, delay = 0.4 }: { value: number; duration?: number; delay?: number }) {
   const mv = useMotionValue(0);
@@ -24,16 +29,17 @@ import {
   ShieldCheck,
   Zap,
   FileText,
+  Check,
   CheckCircle2,
   Building2,
   Loader2,
   Info,
   Upload,
+  ChevronDown,
   ChevronRight,
   Lock,
   Users,
   ShoppingBag,
-  Receipt,
   Settings as SettingsIcon,
   Download,
   Mail,
@@ -42,8 +48,7 @@ import {
   Pencil,
   X,
   Trash2,
-  UploadCloud,
-  FileCheck2,
+  RefreshCw,
 } from "lucide-react";
 
 type Nav = (n: number) => void;
@@ -255,10 +260,10 @@ function GhostLink({ children, onClick }: any) {
 
 function FieldLabel({ children, optional, required }: any) {
   return (
-    <label className="block mb-2" style={{ color: TEXT_2, fontWeight: 600, fontSize: 12, lineHeight: "18px" }}>
+    <label className="block mb-2" style={{ color: TEXT_2, fontWeight: 600, fontSize: 14, lineHeight: "20px" }}>
       {children}
       {required && <span className="ml-1" style={{ color: REQUIRED }}>*</span>}
-      {optional && <span className="ml-1.5 text-xs" style={{ color: MUTED, fontWeight: 400 }}>(optional)</span>}
+      {optional && <span className="ml-1.5 text-sm" style={{ color: MUTED, fontWeight: 400 }}>(optional)</span>}
     </label>
   );
 }
@@ -301,17 +306,23 @@ function TextInput({ valid, ...props }: any) {
 
 function Select({ value, onChange, options, placeholder }: any) {
   return (
-    <select
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      className="w-full px-4 py-2.5 rounded-[8px] outline-none bg-white"
-      style={{ border: `1px solid ${BORDER_INPUT}`, color: value ? TEXT : MUTED_2, fontSize: 14, lineHeight: "21px" }}
-    >
-      <option value="">{placeholder}</option>
-      {options.map((opt: string) => (
-        <option key={opt} value={opt}>{opt}</option>
-      ))}
-    </select>
+    <div className="relative">
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full appearance-none pl-4 pr-10 py-2.5 rounded-[8px] outline-none bg-white"
+        style={{ border: `1px solid ${BORDER_INPUT}`, color: value ? TEXT : MUTED_2, fontSize: 14, lineHeight: "21px" }}
+      >
+        <option value="">{placeholder}</option>
+        {options.map((opt: string) => (
+          <option key={opt} value={opt}>{opt}</option>
+        ))}
+      </select>
+      <ChevronDown
+        className="pointer-events-none absolute right-4 top-1/2 size-4 -translate-y-1/2"
+        style={{ color: MUTED }}
+      />
+    </div>
   );
 }
 
@@ -343,14 +354,50 @@ function Card({ children, className = "", style: extraStyle = {} }: any) {
   );
 }
 
+function HeadingBullet() {
+  return (
+    <motion.span
+      className="relative inline-flex size-3.5 shrink-0 overflow-hidden rounded-full"
+      style={{
+        background: PRIMARY,
+        boxShadow: "0px 0px 12px rgba(0, 86, 86, 0.50)",
+        outline: "2px solid rgba(255, 255, 255, 0.20)",
+        outlineOffset: "-2px",
+        transform: "translateZ(0)",
+      }}
+      initial={{ scale: 0.85, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+    >
+      <motion.span
+        className="absolute inset-y-0 w-7"
+        style={{
+          background:
+            "linear-gradient(90deg, rgba(0, 0, 0, 0) 0%, rgba(255, 255, 255, 0.60) 50%, rgba(0, 0, 0, 0) 100%)",
+          willChange: "transform",
+        }}
+        initial={{ x: -30 }}
+        animate={{ x: 18 }}
+        transition={{
+          duration: 2.4,
+          ease: [0.45, 0, 0.2, 1],
+          repeat: Infinity,
+          repeatDelay: 2.8,
+        }}
+      />
+    </motion.span>
+  );
+}
+
 function SectionHeading({ children }: any) {
   return (
     <motion.div
-      className="mb-6"
+      className="mb-6 flex items-center gap-2.5"
       initial={{ opacity: 0, x: -6 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.35, ease: "easeOut" }}
     >
+      <HeadingBullet />
       <h2
         style={{
           color: TEXT,
@@ -371,12 +418,14 @@ function FormCard({
   subtitle,
   progress,
   children,
+  maxWidth = 820,
+  animateIn = true,
 }: any) {
   return (
     <motion.div
       className="mx-auto rounded-[16px] sm:rounded-[24px] overflow-hidden"
       style={{
-        maxWidth: 820,
+        maxWidth,
         background: "rgba(255,255,255,0.85)",
         boxShadow: "0px 25px 50px -12px rgba(16,24,40,0.10)",
         backdropFilter: "blur(8px)",
@@ -676,7 +725,7 @@ function ActionBar({ left, children }: any) {
               className="min-w-0 text-[11px]"
               style={{ color: "#717680", fontWeight: 400, lineHeight: "16.5px", letterSpacing: "0.06px" }}
             >
-              All information is encrypted and stored securely as per industry standards.
+              All information is encrypted
             </p>
           </div>
         </div>
@@ -751,15 +800,14 @@ export function ScreenAccountOwner({ go, state, setState }: any) {
     });
 
   const emailValid = state.email.includes("@") && state.email.includes(".");
-  const mobileValid = state.mobile.replace(/\D/g, "").length >= 10;
-  const valid = firstName && lastName && emailValid && mobileValid;
+  const valid = firstName && lastName && emailValid;
 
   return (
     <div className="pb-2 px-2 sm:px-0">
       <FormCard title="Basic Details" subtitle="Please provide your information to get started" progress={25}>
         <div className="space-y-6 sm:space-y-7">
           <section>
-            <SectionHeading>Personal Information</SectionHeading>
+            <SectionHeading>Personal information</SectionHeading>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
@@ -878,7 +926,7 @@ export function ScreenAccountOwner({ go, state, setState }: any) {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.08 * 3, duration: 0.4, ease: "easeOut" }}
               >
-                <FieldLabel required>Mobile Number</FieldLabel>
+                <FieldLabel optional>Mobile Number</FieldLabel>
                 <TextInput
                   value={state.mobile}
                   placeholder="+91 9876543210"
@@ -897,7 +945,7 @@ export function ScreenAccountOwner({ go, state, setState }: any) {
           
 
           <section>
-            <SectionHeading>Business Information</SectionHeading>
+            <SectionHeading>Business information</SectionHeading>
             <FieldLabel>Expected Annual Gift Card Spend</FieldLabel>
             <Select
               value={state.spend}
@@ -931,10 +979,10 @@ const DOC_DEFS: { key: DocKey; title: string; hint: string; sample: UploadedDoc 
   { key: "address", title: "Address proof (optional)", hint: "Only needed if GST certificate is not available", sample: { name: "Electricity Bill.pdf", ext: "PDF", size: "512 KB" } },
 ];
 
-const DOC_ICONS: Record<DocKey, any> = {
-  gst: Receipt,
-  cin: FileText,
-  address: Mail,
+const DOC_ICONS: Record<DocKey, string> = {
+  gst: diplomaVerifiedIcon,
+  cin: plateIcon,
+  address: mapPointWaveIcon,
 };
 
 export function ScreenBeforeYouBegin({ go, state, setState }: any) {
@@ -967,44 +1015,41 @@ export function ScreenBeforeYouBegin({ go, state, setState }: any) {
         >
           <div className="space-y-6">
             <section>
-              <div className="px-1 pb-2">
-                <h2 style={{ color: TEXT, fontSize: 20, fontWeight: 700, lineHeight: "21px" }}>
-                  Required Documents
-                </h2>
-              </div>
+              <SectionHeading>Required Documents</SectionHeading>
               <div className="space-y-3">
                 {DOC_DEFS.map(({ key, title, hint, sample }) => {
                   const file = docs[key];
-                  const Icon = DOC_ICONS[key];
+                  const iconSrc = DOC_ICONS[key];
                   return (
                     <motion.div
                       key={key}
                       onClick={() => !file && setDocs({ ...docs, [key]: sample })}
-                      className="rounded-2xl px-4 py-4 flex items-center gap-4 transition"
+                      className="min-h-[72px] rounded-2xl px-4 py-4 flex items-center gap-4 transition"
                       style={{
                         border: `1px solid ${file ? SUCCESS_BORDER : BORDER_INPUT}`,
-                        background: "#fff",
+                        background: file ? SUCCESS_BG : "#fff",
+                        boxShadow: file ? "0 0 0 3px rgba(0,130,54,0.05)" : "none",
                         cursor: file ? "default" : "pointer",
                       }}
-                      whileHover={!file ? { scale: 1.01, borderColor: PRIMARY } : {}}
+                      whileHover={!file ? { scale: 1.01, borderColor: PRIMARY } : { borderColor: SUCCESS }}
                       whileTap={!file ? { scale: 0.99 } : {}}
                     >
                       <div
                         className="size-9 rounded-[10px] flex items-center justify-center shrink-0"
-                        style={{ background: BG_SOFT }}
+                        style={{ background: file ? "#fff" : BG_SOFT }}
                       >
                         {file ? (
                           <CheckCircle2 className="size-5" style={{ color: SUCCESS }} />
                         ) : (
-                          <Icon className="size-5" style={{ color: "#252B37" }} />
+                          <img src={iconSrc} alt="" className="size-6" draggable={false} />
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="text-sm truncate" style={{ color: TEXT, fontWeight: 600, lineHeight: "20px" }}>
-                          {title}
+                          {file ? file.name : title}
                         </div>
                         <div className="text-xs mt-0.5" style={{ color: MUTED, lineHeight: "16px" }}>
-                          {file ? `${file.size} | Uploaded` : hint}
+                          {file ? `${file.ext} · ${file.size} · Uploaded` : hint}
                         </div>
                       </div>
                       <button
@@ -1016,7 +1061,7 @@ export function ScreenBeforeYouBegin({ go, state, setState }: any) {
                         className="shrink-0 inline-flex items-center gap-2"
                         style={{ color: PRIMARY, fontWeight: 600, fontSize: 14, lineHeight: "20px" }}
                       >
-                        <Upload className="size-5" />
+                        {file ? <RefreshCw className="size-5" /> : <img src={uploadMinimalisticIcon} alt="" className="size-6" draggable={false} />}
                         {file ? "Replace" : "Upload"}
                       </button>
                     </motion.div>
@@ -1185,6 +1230,7 @@ export function ScreenCompanyIdentifier({ go, state, setState }: any) {
                                 border: `1px solid ${formatValid ? SUCCESS : tooShort ? "#FDA29B" : BORDER}`,
                                 background: "#fff",
                                 color: TEXT,
+                                fontSize: 14,
                                 fontFeatureSettings: "'tnum'",
                               }}
                             />
@@ -1275,13 +1321,13 @@ export function ScreenBusinessIdentity({ go, state, setState }: any) {
       >
         <div className="space-y-6 sm:space-y-7">
           <section>
-            <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-              <h2 className="text-xl leading-7" style={{ color: TEXT, fontWeight: 700 }}>
-                Business identity
-              </h2>
-              <div className="sm:text-right">
-                <div className="mb-3 text-xs" style={{ color: TEXT_2, fontWeight: 600 }}>
-                  Is GST Present?
+            <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="[&>div]:mb-0">
+                <SectionHeading>Business identity</SectionHeading>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="text-sm" style={{ color: TEXT_2, fontWeight: 600 }}>
+                  GST present
                 </div>
                 <motion.button
                   type="button"
@@ -1314,10 +1360,10 @@ export function ScreenBusinessIdentity({ go, state, setState }: any) {
                     GST details
                   </h3>
                   <div className="space-y-4">
-                    <PrefilledWithCheck index={0} label="GSTIN Number" value="27AAAAA0000A1Z5" />
+                    <PrefilledWithCheck index={0} label="GSTIN Number" value="27AAAAA0000A1Z5" source="Fetched from documents" />
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-                      <Prefilled index={1} label="GSTIN Name" value="PINE LABS LIMITED" />
-                      <Prefilled index={2} label="GSTIN State" value="KARNATAKA" />
+                      <Prefilled index={1} label="GSTIN Name" value="PINE LABS LIMITED" source="Fetched from documents" />
+                      <Prefilled index={2} label="GSTIN State" value="KARNATAKA" source="Fetched from documents" />
                     </div>
                   </div>
                 </motion.div>
@@ -1333,14 +1379,15 @@ export function ScreenBusinessIdentity({ go, state, setState }: any) {
                 index={3}
                 label="PAN Number"
                 value={state.panNumber}
+                legalName={state.panName}
                 onChange={(e: any) => setState({ ...state, panNumber: e.target.value.toUpperCase() })}
                 verified={state.panVerified}
                 onVerify={() => {
                   setState({
-                    ...state,
-                    panVerified: true,
-                    panName: "PINE LABS LIMITED"
-                  });
+	                    ...state,
+	                    panVerified: true,
+	                    panName: "John Doe"
+	                  });
                 }}
                 required
               />
@@ -1355,8 +1402,8 @@ export function ScreenBusinessIdentity({ go, state, setState }: any) {
                 CIN details
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-                <PrefilledWithCheck index={4} label="CIN/LLP No" value="U31900DL1991PLC043974" />
-                <Prefilled index={5} label="CIN/LLP Name" value="PINE LABS LIMITED" />
+                <PrefilledWithCheck index={4} label="CIN/LLP No" value="U31900DL1991PLC043974" source="Fetched from documents" />
+                <Prefilled index={5} label="CIN/LLP Name" value="PINE LABS LIMITED" source="Fetched from documents" />
               </div>
             </div>
 
@@ -1555,7 +1602,7 @@ export function ScreenCompanyAddress({ go, state, setState }: any) {
   );
 }
 
-function PANInputWithVerify({ label, value, onVerify, verified, onChange, required, index = 0 }: any) {
+function PANInputWithVerify({ label, value, legalName, onVerify, verified, onChange, required, index = 0 }: any) {
   const [isVerifying, setIsVerifying] = useState(false);
   const canVerify = Boolean(value && value.length >= 10);
 
@@ -1574,26 +1621,51 @@ function PANInputWithVerify({ label, value, onVerify, verified, onChange, requir
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.08 * index, duration: 0.4, ease: "easeOut" }}
     >
-      <FieldLabel required={required}>{label}</FieldLabel>
-      <div className="relative">
-        <input
-          value={value}
-          onChange={onChange}
-          placeholder="Enter PAN number"
-          className="w-full px-4 py-2.5 rounded-[8px] outline-none transition pr-24"
-          style={{
-            border: `1px solid ${verified ? SUCCESS_BORDER : BORDER_INPUT}`,
-            color: verified ? TEXT : value ? TEXT : MUTED_2,
-            background: "#fff",
-            fontSize: 14,
-            lineHeight: "21px",
-          }}
-          onFocus={(e) => !verified && (e.currentTarget.style.borderColor = PRIMARY)}
-          onBlur={(e) => !verified && (e.currentTarget.style.borderColor = BORDER_INPUT)}
-          disabled={verified}
-        />
-        <AnimatePresence mode="wait">
-          {!verified && (
+      {verified ? (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
+          <div>
+            <FieldLabel required={required}>{label}</FieldLabel>
+            <div
+              className="flex w-full items-center gap-2 rounded-[8px] px-4 py-2.5"
+              style={{ background: "#FAFAFA", border: `1px solid ${BORDER_INPUT}` }}
+            >
+              <div className="min-w-0 flex-1" style={{ color: TEXT, fontSize: 16, fontWeight: 400, lineHeight: "24px" }}>
+                {value}
+              </div>
+              <CheckCircle2 className="size-5 shrink-0" style={{ color: SUCCESS }} />
+            </div>
+          </div>
+          <div>
+            <FieldLabel>Legal name</FieldLabel>
+            <div
+              className="flex w-full items-center rounded-[8px] px-4 py-2.5"
+              style={{ background: "#FAFAFA", border: `1px solid ${BORDER_INPUT}` }}
+            >
+              <div className="min-w-0 flex-1" style={{ color: TEXT_2, fontSize: 14, fontWeight: 400, lineHeight: "21px" }}>
+                {legalName || "John Doe"}
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <>
+          <FieldLabel required={required}>{label}</FieldLabel>
+          <div className="relative">
+            <input
+              value={value}
+              onChange={onChange}
+              placeholder="Enter PAN number"
+              className="w-full px-4 py-2.5 rounded-[8px] outline-none transition pr-24"
+              style={{
+                border: `1px solid ${BORDER_INPUT}`,
+                color: value ? TEXT : MUTED_2,
+                background: "#fff",
+                fontSize: 14,
+                lineHeight: "21px",
+              }}
+              onFocus={(e) => (e.currentTarget.style.borderColor = PRIMARY)}
+              onBlur={(e) => (e.currentTarget.style.borderColor = BORDER_INPUT)}
+            />
             <motion.button
               key="verify-btn"
               initial={{ opacity: 0 }}
@@ -1618,23 +1690,9 @@ function PANInputWithVerify({ label, value, onVerify, verified, onChange, requir
                 "Verify"
               )}
             </motion.button>
-          )}
-          {verified && (
-            <motion.span
-              key="verified-badge"
-              initial={{ opacity: 0, scale: 0.6, x: 8 }}
-              animate={{ opacity: 1, scale: 1, x: 0 }}
-              exit={{ opacity: 0, scale: 0.6 }}
-              transition={{ type: "spring", stiffness: 500, damping: 22 }}
-              className="absolute right-3 top-1/2 -translate-y-1/2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[10px]"
-              style={{ background: SUCCESS_BG, border: `1px solid ${SUCCESS_BORDER}` }}
-            >
-              <CheckCircle2 className="size-4" style={{ color: SUCCESS }} />
-              <span style={{ color: SUCCESS, fontWeight: 700, fontSize: 11 }}>Verified</span>
-            </motion.span>
-          )}
-        </AnimatePresence>
-      </div>
+          </div>
+        </>
+      )}
     </motion.div>
   );
 }
@@ -1701,7 +1759,7 @@ function Prefilled({ label, value, source, index = 0, editable = false }: any) {
   );
 }
 
-function PrefilledWithCheck({ label, value, index = 0, required }: any) {
+function PrefilledWithCheck({ label, value, index = 0, required, source }: any) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -1748,6 +1806,17 @@ function PrefilledWithCheck({ label, value, index = 0, required }: any) {
           }}
         />
       </motion.div>
+      {source && (
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.08 * index + 0.4 }}
+          className="text-xs mt-1.5 flex items-center gap-1"
+          style={{ color: SUCCESS }}
+        >
+          <CheckCircle2 className="size-3" /> {source}
+        </motion.p>
+      )}
     </motion.div>
   );
 }
@@ -1755,7 +1824,7 @@ function PrefilledWithCheck({ label, value, index = 0, required }: any) {
 // ============== SCREEN 5 ==============
 export function ScreenSignatory({ go, state, setState }: any) {
   const needsLetter = ["Procurement Manager", "Admin Manager", "Other"].includes(state.designation);
-  const valid = state.sigName && state.sigEmail && state.sigMobile && state.designation && state.sigConfirm;
+  const valid = state.sigName && state.sigEmail && state.designation && state.sigConfirm;
 
   return (
     <div className="pb-2 px-2 sm:px-0">
@@ -1804,7 +1873,7 @@ export function ScreenSignatory({ go, state, setState }: any) {
                   />
                 </div>
                 <div>
-                  <FieldLabel required>Mobile number</FieldLabel>
+                  <FieldLabel optional>Mobile number</FieldLabel>
                   <TextInput
                     value={state.sigMobile}
                     placeholder="+91 9876543210"
@@ -2051,250 +2120,418 @@ function SummaryCard({ title, rows, onEdit }: any) {
 
 
 // ============== TERMS & CONDITIONS (Screens 7-10) ==============
-export function ScreenTermsPage1({ go, state, setState }: any) {
+function TermsParagraph({ title, children }: any) {
+  return (
+    <div>
+      <p className="mb-1" style={{ color: TEXT, fontSize: 16, fontWeight: 700, lineHeight: "24px" }}>
+        {title}
+      </p>
+      <p style={{ color: TEXT, fontSize: 16, fontWeight: 500, lineHeight: "24px" }}>
+        {children}
+      </p>
+    </div>
+  );
+}
+
+function SignatureStamp() {
+  return (
+    <div
+      className="mt-8 flex justify-end"
+    >
+      <div className="inline-flex flex-col items-center gap-2">
+        <img
+          src={signatureImg}
+          alt="Authorised digital signature"
+          className="h-16 sm:h-20 w-auto object-contain"
+          draggable={false}
+        />
+        <span className="text-xs" style={{ color: MUTED, fontWeight: 600 }}>
+          Digitally signed
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function TermsDocument({ page, title = "Terms and Conditions for Gift Voucher Procurement", left, right, children, notice, framed = false, signed = false }: any) {
+  return (
+    <div
+      className={framed ? "mx-auto w-full max-w-[1040px] rounded-[16px] bg-white px-5 py-6 sm:px-8 sm:py-8 lg:px-10" : "mx-auto w-full max-w-[1040px]"}
+      style={framed ? {
+        border: `1px solid ${BORDER}`,
+        boxShadow: "0px 25px 50px -12px rgba(16,24,40,0.10)",
+      } : undefined}
+    >
+      <div className="flex flex-col items-center gap-8">
+        <div className="text-center" style={{ color: TEXT, fontSize: 16, lineHeight: "24px", fontWeight: 400 }}>
+          Page: {page}/4
+        </div>
+
+        <div className="w-full space-y-8">
+          <div className="space-y-3 text-center">
+            {page === 1 && (
+              <div className="flex justify-center p-4 sm:p-6">
+                <img src={pineLabsLogoImg} alt="Pine Labs" className="h-[50px] w-auto object-contain" draggable={false} />
+              </div>
+            )}
+            <h1
+              className="uppercase"
+              style={{
+                color: TEXT,
+                fontSize: 16,
+                fontWeight: 700,
+                lineHeight: "23px",
+                letterSpacing: 0.23,
+              }}
+            >
+              {title}
+            </h1>
+          </div>
+
+          {notice}
+
+          {children || (
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:gap-8">
+              <div className="space-y-5">{left}</div>
+              <div className="space-y-5">{right}</div>
+            </div>
+          )}
+
+          {signed && <SignatureStamp />}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TermsFormPage({ page, children }: any) {
+  return (
+    <FormCard
+      eyebrow={`Page ${page} of 4`}
+      title="Terms & Conditions"
+      subtitle={page === 4 ? "Final page - please read and accept to proceed to digital signature" : "Please review the terms before proceeding"}
+      progress={page === 1 ? 80 : page === 2 ? 85 : page === 3 ? 90 : 95}
+      maxWidth={1040}
+      animateIn={false}
+    >
+      {children}
+    </FormCard>
+  );
+}
+
+function TermsCheckbox({ label, selected = false }: { label: string; selected?: boolean }) {
+  return (
+    <div className="flex items-center gap-3">
+      <span
+        className="relative inline-flex size-6 shrink-0 items-center justify-center overflow-hidden rounded-lg"
+        style={{
+          background: selected ? "#003323" : "#fff",
+          border: selected ? "none" : `1px solid ${BORDER_INPUT}`,
+        }}
+      >
+        {selected && (
+          <Check className="size-5" style={{ color: "#50D387", strokeWidth: 2 }} />
+        )}
+      </span>
+      <span style={{ color: TEXT, fontSize: 14, fontWeight: 500, lineHeight: "20px" }}>
+        {label}
+      </span>
+    </div>
+  );
+}
+
+function TermsCell({
+  children,
+  label = false,
+  className = "",
+  center = false,
+}: {
+  children: React.ReactNode;
+  label?: boolean;
+  className?: string;
+  center?: boolean;
+}) {
+  return (
+    <div
+      className={`min-h-11 border-l border-t border-[#181D27] p-3 ${className}`}
+      style={{
+        color: label ? TEXT_2 : TEXT,
+        fontSize: 14,
+        fontWeight: label ? 500 : 700,
+        lineHeight: "20px",
+        textTransform: label ? "none" : "uppercase",
+        display: "flex",
+        alignItems: center ? "center" : "flex-start",
+        justifyContent: center ? "center" : "flex-start",
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+function TermsRow({ label, value, tall = false }: { label: string; value: React.ReactNode; tall?: boolean }) {
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-[180px_1fr]">
+      <TermsCell label className={tall ? "sm:min-h-[64px]" : ""}>{label}</TermsCell>
+      <TermsCell className={`border-r ${tall ? "sm:min-h-[64px]" : ""}`}>{value}</TermsCell>
+    </div>
+  );
+}
+
+function TermsSplitRow({ leftLabel, leftValue, rightLabel, rightValue }: any) {
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-[180px_1fr_1fr_1fr]">
+      <TermsCell label>{leftLabel}</TermsCell>
+      <TermsCell>{leftValue}</TermsCell>
+      <TermsCell label>{rightLabel}</TermsCell>
+      <TermsCell className="border-r">{rightValue}</TermsCell>
+    </div>
+  );
+}
+
+function TermsProcurementFormContent({ signed = false }: { signed?: boolean }) {
+  const orgTypes = ["Sole Proprietorship", "Partnership", "Trust", "Pvt Ltd", "Public Ltd", "LLP"];
+
+  return (
+    <div className="w-full overflow-hidden rounded-sm border-b border-[#181D27]">
+            <TermsRow label="Execution Date:" value="23-12-2025" />
+            <TermsRow label="Name of the Entity" value="PINE LABS LIMITED" />
+            <div className="grid grid-cols-1 sm:grid-cols-[180px_1fr]">
+              <TermsCell label>Type of Organisation</TermsCell>
+              <TermsCell className="border-r">
+                <div className="flex flex-wrap gap-x-4 gap-y-3">
+                  {orgTypes.map((type) => (
+                    <TermsCheckbox key={type} label={type} selected={type === "LLP"} />
+                  ))}
+                </div>
+              </TermsCell>
+            </div>
+            <TermsRow label="Registered Address" value="123, MG ROAD, INDIRANAGAR" tall />
+            <TermsSplitRow leftLabel="City" leftValue="BENGALURU" rightLabel="State" rightValue="KARNATAKA" />
+            <TermsSplitRow leftLabel="Pin Code" leftValue="560102" rightLabel="Telephone" rightValue="8807962325" />
+            <TermsRow label="First Name and Last Name" value="ANIMESH MANDAL" tall />
+            <TermsRow label="Billing Address" value="123, MG ROAD, INDIRANAGAR" tall />
+            <TermsSplitRow leftLabel="City" leftValue="BENGALURU" rightLabel="State" rightValue="KARNATAKA" />
+            <TermsSplitRow leftLabel="Pin Code" leftValue="560102" rightLabel="Telephone" rightValue="8807962325" />
+            <TermsCell center className="border-r">
+              Gift Voucher Solutions Offered by Pine Labs & Procured by the Entity
+            </TermsCell>
+            <div className="grid grid-cols-1 sm:grid-cols-[auto_1fr]">
+              <TermsCell label>Solution:</TermsCell>
+              <TermsCell className="border-r">
+                <div className="flex flex-wrap gap-x-4 gap-y-3">
+                  <TermsCheckbox label="Self-Serve" selected />
+                  <TermsCheckbox label="API" />
+                  <TermsCheckbox label="Offline Mode" />
+                </div>
+              </TermsCell>
+            </div>
+            <TermsCell label className="border-r">
+              Based on your selection of the solution above, only such clauses of the terms & conditions which are relevant to your arrangement with Pine Labs shall be applicable & binding on you.
+            </TermsCell>
+            <TermsRow label="GST Registration No" value="6CRQJQ8155V7Z9" />
+            <TermsRow label="Permanent Account Number (PAN)" value={<span style={{ fontSize: 16, lineHeight: "24px" }}>ASDFG1234I</span>} />
+            <TermsSplitRow leftLabel="CIN/LLP Number (If Applicable):" leftValue="U31900DL1991PLC043974" rightLabel="TAN Number (If applicable):" rightValue="" />
+            <TermsCell center className="border-r">Signature of authorized person of the Company:</TermsCell>
+            <TermsRow label="Company Name" value="PINE LABS LIMITED" tall />
+            <TermsRow label="Designation" value="MANAGER" tall />
+            <div className="grid grid-cols-1 sm:grid-cols-[180px_1fr]">
+              <TermsCell label className="min-h-[160px] sm:min-h-[200px]">Signature & Seal</TermsCell>
+              <TermsCell className="min-h-[160px] border-r sm:min-h-[200px]">
+                {signed && (
+                  <div className="flex h-full w-full items-end justify-end">
+                    <img
+                      src={signatureImg}
+                      alt="Authorised digital signature"
+                      className="h-16 sm:h-20 w-auto object-contain"
+                      draggable={false}
+                    />
+                  </div>
+                )}
+              </TermsCell>
+            </div>
+    </div>
+  );
+}
+
+export function ScreenTermsPage1({ go, state }: any) {
   return (
     <div className="pb-2 px-2 sm:px-0">
-      <FormCard
-        eyebrow="Page 1 of 4"
-        title="Terms & Conditions"
-        subtitle="Please review the terms before proceeding"
-        progress={80}
-      >
-        <div className="space-y-6">
-          <div className="prose prose-sm max-w-none" style={{ color: TEXT_2 }}>
-            <h3 style={{ fontSize: 16, fontWeight: 600, color: TEXT, marginBottom: 16 }}>1. Introduction and Acceptance</h3>
-            <p className="mb-4" style={{ lineHeight: 1.7 }}>
-              These Terms and Conditions ("Agreement") govern your use of Pine Labs' Corporate Gift Card Portal ("Portal").
-              By registering and using the Portal, you ("Customer" or "you") agree to be bound by these terms. If you do not
-              agree with any part of these terms, you must not proceed with registration or use of the Portal.
-            </p>
-
-            <h3 style={{ fontSize: 16, fontWeight: 600, color: TEXT, marginBottom: 16, marginTop: 24 }}>2. Definitions</h3>
-            <p className="mb-4" style={{ lineHeight: 1.7 }}>
-              <strong>"Gift Cards"</strong> means prepaid instruments issued through the Portal for corporate gifting purposes.<br />
-              <strong>"Merchant"</strong> means Pine Labs Private Limited and its authorized partners.<br />
-              <strong>"Authorized User"</strong> means any person designated by the Customer to access and use the Portal.<br />
-              <strong>"Order"</strong> means a request placed through the Portal for the purchase of Gift Cards.
-            </p>
-
-            <h3 style={{ fontSize: 16, fontWeight: 600, color: TEXT, marginBottom: 16, marginTop: 24 }}>3. Eligibility and Registration</h3>
-            <p className="mb-4" style={{ lineHeight: 1.7 }}>
-              3.1. Only businesses registered in India with valid GST registration, CIN, or PAN are eligible to use the Portal.<br />
-              3.2. You warrant that all information provided during registration is accurate, complete, and current.<br />
-              3.3. You must maintain the confidentiality of your account credentials and are responsible for all activities
-              under your account.<br />
-              3.4. You agree to notify Pine Labs immediately of any unauthorized use of your account.
-            </p>
-
-            <h3 style={{ fontSize: 16, fontWeight: 600, color: TEXT, marginBottom: 16, marginTop: 24 }}>4. Account Verification</h3>
-            <p className="mb-4" style={{ lineHeight: 1.7 }}>
-              4.1. Pine Labs reserves the right to verify all information provided and may request additional documentation.<br />
-              4.2. The verification process is automated where possible, but Pine Labs reserves the right to conduct manual reviews.<br />
-              4.3. Pine Labs may suspend or terminate accounts that fail verification or provide false information.
-            </p>
-          </div>
-        </div>
-      </FormCard>
+      <TermsFormPage page={1}>
+        <TermsDocument page={1} title="Gift Voucher Procurement (Corporate) Form">
+          <TermsProcurementFormContent signed={state.esignVerified} />
+        </TermsDocument>
+      </TermsFormPage>
 
       <ActionBar left={<GhostLink onClick={() => go(6)}>Back to review</GhostLink>}>
-        <PrimaryButton onClick={() => go(8)}>
-          Next page (2 of 4)
-        </PrimaryButton>
+        <PrimaryButton onClick={() => go(8)}>Next page (2 of 4)</PrimaryButton>
       </ActionBar>
     </div>
   );
 }
 
-export function ScreenTermsPage2({ go, state, setState }: any) {
+export function ScreenTermsPage2({ go, state }: any) {
   return (
     <div className="pb-2 px-2 sm:px-0">
-      <FormCard
-        eyebrow="Page 2 of 4"
-        title="Terms & Conditions"
-        subtitle="Please review the terms before proceeding"
-        progress={85}
-      >
-        <div className="space-y-6">
-          <div className="prose prose-sm max-w-none" style={{ color: TEXT_2 }}>
-            <h3 style={{ fontSize: 16, fontWeight: 600, color: TEXT, marginBottom: 16 }}>5. Ordering and Payment Terms</h3>
-            <p className="mb-4" style={{ lineHeight: 1.7 }}>
-              5.1. All Orders are subject to acceptance by Pine Labs and availability of Gift Cards.<br />
-              5.2. Prices are exclusive of applicable taxes unless stated otherwise.<br />
-              5.3. Payment must be made within the credit period agreed upon during onboarding.<br />
-              5.4. Pine Labs reserves the right to modify prices with 7 days' notice to the Customer.<br />
-              5.5. Minimum order values may apply and will be communicated during the ordering process.
-            </p>
-
-            <h3 style={{ fontSize: 16, fontWeight: 600, color: TEXT, marginBottom: 16, marginTop: 24 }}>6. Delivery and Fulfillment</h3>
-            <p className="mb-4" style={{ lineHeight: 1.7 }}>
-              6.1. Gift Cards will be delivered electronically to the email addresses provided by the Customer.<br />
-              6.2. Delivery timelines are estimates and Pine Labs is not liable for delays beyond its reasonable control.<br />
-              6.3. The Customer is responsible for ensuring accurate recipient information.<br />
-              6.4. Pine Labs will not be liable for non-delivery resulting from incorrect information provided by the Customer.
-            </p>
-
-            <h3 style={{ fontSize: 16, fontWeight: 600, color: TEXT, marginBottom: 16, marginTop: 24 }}>7. Returns and Refunds</h3>
-            <p className="mb-4" style={{ lineHeight: 1.7 }}>
-              7.1. Gift Cards are non-refundable once delivered unless there is a defect or error attributable to Pine Labs.<br />
-              7.2. Refund requests must be made within 48 hours of delivery with valid supporting documentation.<br />
-              7.3. Approved refunds will be processed within 15 business days to the original payment method.<br />
-              7.4. Partial refunds may be issued at Pine Labs' discretion based on usage of the Gift Cards.
-            </p>
-
-            <h3 style={{ fontSize: 16, fontWeight: 600, color: TEXT, marginBottom: 16, marginTop: 24 }}>8. Customer Responsibilities</h3>
-            <p className="mb-4" style={{ lineHeight: 1.7 }}>
-              8.1. The Customer must use the Portal only for legitimate business purposes.<br />
-              8.2. The Customer must not resell Gift Cards for profit or use them for money laundering.<br />
-              8.3. The Customer must comply with all applicable laws, including tax and anti-money laundering regulations.<br />
-              8.4. The Customer is responsible for proper distribution and tracking of Gift Cards to end recipients.
-            </p>
-          </div>
-        </div>
-      </FormCard>
+      <TermsFormPage page={2}>
+        <TermsDocument
+          page={2}
+          framed={false}
+          signed={state.esignVerified}
+          left={
+            <>
+              <TermsParagraph title="Ordering and Payment Terms">
+                5.1 All Orders are subject to acceptance by Pine Labs and availability of Gift Cards.
+                <br /><br />
+                5.2 Prices are exclusive of applicable taxes unless stated otherwise.
+                <br /><br />
+                5.3 Payment must be made within the credit period agreed during onboarding.
+              </TermsParagraph>
+              <TermsParagraph title="Delivery and Fulfillment">
+                6.1 Gift Cards will be delivered electronically to the email addresses provided by the Company.
+                <br /><br />
+                6.2 Delivery timelines are estimates, and Pine Labs is not liable for delays beyond its reasonable control.
+              </TermsParagraph>
+            </>
+          }
+          right={
+            <>
+              <TermsParagraph title="Returns and Refunds">
+                7.1 Gift Cards are non-refundable once delivered unless there is a defect or error attributable to Pine Labs.
+                <br /><br />
+                7.2 Approved refunds will be processed within 15 business days to the original payment method.
+              </TermsParagraph>
+              <TermsParagraph title="Customer Responsibilities">
+                8.1 The Company must use the Portal only for legitimate business purposes.
+                <br /><br />
+                8.2 The Company must not resell Gift Cards for profit or use them for money laundering.
+                <br /><br />
+                8.3 The Company is responsible for proper distribution and tracking of Gift Cards to end recipients.
+              </TermsParagraph>
+            </>
+          }
+        />
+      </TermsFormPage>
 
       <ActionBar left={<GhostLink onClick={() => go(7)}>Previous page</GhostLink>}>
-        <PrimaryButton onClick={() => go(9)}>
-          Next page (3 of 4)
-        </PrimaryButton>
+        <PrimaryButton onClick={() => go(9)}>Next page (3 of 4)</PrimaryButton>
       </ActionBar>
     </div>
   );
 }
 
-export function ScreenTermsPage3({ go, state, setState }: any) {
+export function ScreenTermsPage3({ go, state }: any) {
   return (
     <div className="pb-2 px-2 sm:px-0">
-      <FormCard
-        eyebrow="Page 3 of 4"
-        title="Terms & Conditions"
-        subtitle="Please review the terms before proceeding"
-        progress={90}
-      >
-        <div className="space-y-6">
-          <div className="prose prose-sm max-w-none" style={{ color: TEXT_2 }}>
-            <h3 style={{ fontSize: 16, fontWeight: 600, color: TEXT, marginBottom: 16 }}>9. Data Privacy and Security</h3>
-            <p className="mb-4" style={{ lineHeight: 1.7 }}>
-              9.1. Pine Labs collects and processes Customer data in accordance with its Privacy Policy and applicable data protection laws.<br />
-              9.2. The Customer consents to the collection, use, and storage of personal and business information as necessary for Portal operations.<br />
-              9.3. Pine Labs implements industry-standard security measures but cannot guarantee absolute security.<br />
-              9.4. The Customer must immediately report any suspected data breaches or security incidents.
-            </p>
-
-            <h3 style={{ fontSize: 16, fontWeight: 600, color: TEXT, marginBottom: 16, marginTop: 24 }}>10. Intellectual Property</h3>
-            <p className="mb-4" style={{ lineHeight: 1.7 }}>
-              10.1. All content on the Portal, including logos, trademarks, and software, is the property of Pine Labs or its licensors.<br />
-              10.2. The Customer is granted a limited, non-exclusive, non-transferable license to use the Portal.<br />
-              10.3. The Customer must not copy, modify, or reverse-engineer any part of the Portal.<br />
-              10.4. Unauthorized use of Pine Labs' intellectual property may result in legal action.
-            </p>
-
-            <h3 style={{ fontSize: 16, fontWeight: 600, color: TEXT, marginBottom: 16, marginTop: 24 }}>11. Limitation of Liability</h3>
-            <p className="mb-4" style={{ lineHeight: 1.7 }}>
-              11.1. Pine Labs' total liability under this Agreement shall not exceed the amount paid by the Customer in the
-              preceding 12 months.<br />
-              11.2. Pine Labs is not liable for indirect, incidental, or consequential damages.<br />
-              11.3. Pine Labs does not guarantee uninterrupted or error-free Portal operation.<br />
-              11.4. The Customer acknowledges that Gift Card redemption is subject to terms set by individual brands and merchants.
-            </p>
-
-            <h3 style={{ fontSize: 16, fontWeight: 600, color: TEXT, marginBottom: 16, marginTop: 24 }}>12. Force Majeure</h3>
-            <p className="mb-4" style={{ lineHeight: 1.7 }}>
-              12.1. Neither party shall be liable for failure to perform obligations due to circumstances beyond reasonable control,
-              including natural disasters, wars, pandemics, government actions, or technical failures.<br />
-              12.2. The affected party must notify the other party promptly and make reasonable efforts to resume performance.
-            </p>
-          </div>
-        </div>
-      </FormCard>
+      <TermsFormPage page={3}>
+        <TermsDocument
+          page={3}
+          framed={false}
+          signed={state.esignVerified}
+          left={
+            <>
+              <TermsParagraph title="Data Privacy and Security">
+                9.1 Pine Labs collects and processes Company data in accordance with its Privacy Policy and applicable data protection laws.
+                <br /><br />
+                9.2 The Company consents to the collection, use, and storage of information necessary for Portal operations.
+              </TermsParagraph>
+              <TermsParagraph title="Intellectual Property">
+                10.1 All content on the Portal, including logos, trademarks, and software, is the property of Pine Labs or its licensors.
+                <br /><br />
+                10.2 The Company is granted a limited, non-exclusive, non-transferable license to use the Portal.
+              </TermsParagraph>
+            </>
+          }
+          right={
+            <>
+              <TermsParagraph title="Limitation of Liability">
+                11.1 Pine Labs' total liability under this Agreement shall not exceed the amount paid by the Company in the preceding 12 months.
+                <br /><br />
+                11.2 Pine Labs is not liable for indirect, incidental, or consequential damages.
+              </TermsParagraph>
+              <TermsParagraph title="Force Majeure">
+                12.1 Neither party shall be liable for failure to perform obligations due to circumstances beyond reasonable control.
+                <br /><br />
+                12.2 The affected party must notify the other party promptly and make reasonable efforts to resume performance.
+              </TermsParagraph>
+            </>
+          }
+        />
+      </TermsFormPage>
 
       <ActionBar left={<GhostLink onClick={() => go(8)}>Previous page</GhostLink>}>
-        <PrimaryButton onClick={() => go(10)}>
-          Next page (4 of 4)
-        </PrimaryButton>
+        <PrimaryButton onClick={() => go(10)}>Next page (4 of 4)</PrimaryButton>
       </ActionBar>
     </div>
   );
 }
 
-export function ScreenTermsPage4({ go, state, setState }: any) {
+export function ScreenTermsPage4({ go, state }: any) {
   return (
     <div className="pb-2 px-2 sm:px-0">
-      <FormCard
-        eyebrow="Page 4 of 4"
-        title="Terms & Conditions"
-        subtitle="Final page - please read and accept to proceed to digital signature"
-        progress={95}
-      >
-        <div className="space-y-6">
-          <div className="prose prose-sm max-w-none" style={{ color: TEXT_2 }}>
-          <h3 style={{ fontSize: 16, fontWeight: 600, color: TEXT, marginBottom: 16 }}>13. Termination</h3>
-          <p className="mb-4" style={{ lineHeight: 1.7 }}>
-            13.1. Either party may terminate this Agreement with 30 days' written notice.<br />
-            13.2. Pine Labs may terminate immediately if the Customer breaches any material term of this Agreement.<br />
-            13.3. Upon termination, the Customer must settle all outstanding payments and cease using the Portal.<br />
-            13.4. Provisions regarding liability, indemnity, and confidentiality survive termination.
-          </p>
-
-          <h3 style={{ fontSize: 16, fontWeight: 600, color: TEXT, marginBottom: 16, marginTop: 24 }}>14. Indemnification</h3>
-          <p className="mb-4" style={{ lineHeight: 1.7 }}>
-            14.1. The Customer agrees to indemnify Pine Labs against claims arising from:<br />
-            &nbsp;&nbsp;&nbsp;• Breach of these Terms<br />
-            &nbsp;&nbsp;&nbsp;• Violation of laws or third-party rights<br />
-            &nbsp;&nbsp;&nbsp;• Misuse of Gift Cards or the Portal<br />
-            &nbsp;&nbsp;&nbsp;• Unauthorized access by the Customer's users
-          </p>
-
-          <h3 style={{ fontSize: 16, fontWeight: 600, color: TEXT, marginBottom: 16, marginTop: 24 }}>15. Dispute Resolution</h3>
-          <p className="mb-4" style={{ lineHeight: 1.7 }}>
-            15.1. Any disputes shall first be attempted to be resolved through good-faith negotiation.<br />
-            15.2. If negotiation fails, disputes shall be resolved through arbitration in accordance with the Arbitration
-            and Conciliation Act, 1996.<br />
-            15.3. The seat of arbitration shall be Gurugram, Haryana, India.<br />
-            15.4. The language of arbitration shall be English.
-          </p>
-
-          <h3 style={{ fontSize: 16, fontWeight: 600, color: TEXT, marginBottom: 16, marginTop: 24 }}>16. Governing Law</h3>
-          <p className="mb-4" style={{ lineHeight: 1.7 }}>
-            16.1. This Agreement shall be governed by the laws of India.<br />
-            16.2. The courts of Gurugram, Haryana shall have exclusive jurisdiction over any matters not subject to arbitration.
-          </p>
-
-          <h3 style={{ fontSize: 16, fontWeight: 600, color: TEXT, marginBottom: 16, marginTop: 24 }}>17. Amendments</h3>
-          <p className="mb-4" style={{ lineHeight: 1.7 }}>
-            17.1. Pine Labs may amend these Terms with 15 days' notice to Customers.<br />
-            17.2. Continued use of the Portal after amendments constitutes acceptance of the revised Terms.<br />
-            17.3. Material amendments will be highlighted during the next Portal login.
-          </p>
-
-          <h3 style={{ fontSize: 16, fontWeight: 600, color: TEXT, marginBottom: 16, marginTop: 24 }}>18. Miscellaneous</h3>
-          <p className="mb-4" style={{ lineHeight: 1.7 }}>
-            18.1. This Agreement constitutes the entire agreement between the parties.<br />
-            18.2. If any provision is found invalid, the remaining provisions remain in effect.<br />
-            18.3. No waiver of any term shall be deemed a continuing waiver.<br />
-            18.4. This Agreement may not be assigned by the Customer without Pine Labs' prior written consent.
-          </p>
-        </div>
-
-          <Card className="p-5" style={{ background: "#FFFAEB", borderColor: "#FEDF89" } as any}>
-            <div className="flex items-start gap-3">
-              <Info className="size-5 shrink-0 mt-0.5" style={{ color: "#F79009" }} />
-              <div>
-                <div className="text-sm mb-1" style={{ color: TEXT, fontWeight: 600 }}>
-                  Final acceptance required
+      <TermsFormPage page={4}>
+        <TermsDocument
+          page={4}
+          framed={false}
+          signed={state.esignVerified}
+          left={
+            <>
+              <TermsParagraph title="Termination">
+                13.1 Either party may terminate this Agreement with 30 days' written notice.
+                <br /><br />
+                13.2 Pine Labs may terminate immediately if the Company breaches any material term of this Agreement.
+              </TermsParagraph>
+              <TermsParagraph title="Indemnification">
+                14.1 The Company agrees to indemnify Pine Labs against claims arising from breach of these Terms, violation of laws, misuse of Gift Cards, or unauthorised access by users.
+              </TermsParagraph>
+              <TermsParagraph title="Dispute Resolution">
+                15.1 Any disputes shall first be attempted to be resolved through good-faith negotiation.
+                <br /><br />
+                15.2 If negotiation fails, disputes shall be resolved through arbitration in accordance with applicable Indian law.
+              </TermsParagraph>
+            </>
+          }
+          right={
+            <>
+              <TermsParagraph title="Governing Law">
+                16.1 This Agreement shall be governed by the laws of India.
+                <br /><br />
+                16.2 The courts of Gurugram, Haryana shall have exclusive jurisdiction over matters not subject to arbitration.
+              </TermsParagraph>
+              <TermsParagraph title="Amendments">
+                17.1 Pine Labs may amend these Terms with 15 days' notice to Customers.
+                <br /><br />
+                17.2 Continued use of the Portal after amendments constitutes acceptance of the revised Terms.
+              </TermsParagraph>
+              <TermsParagraph title="Miscellaneous">
+                18.1 This Agreement constitutes the entire agreement between the parties.
+                <br /><br />
+                18.2 If any provision is found invalid, the remaining provisions remain in effect.
+              </TermsParagraph>
+            </>
+          }
+          notice={
+            <Card className="p-5" style={{ background: "#FFFAEB", borderColor: "#FEDF89" } as any}>
+              <div className="flex items-start gap-3">
+                <Info className="size-5 shrink-0 mt-0.5" style={{ color: "#F79009" }} />
+                <div>
+                  <div className="text-sm mb-1" style={{ color: TEXT, fontWeight: 600 }}>
+                    Final acceptance required
+                  </div>
+                  <p className="text-sm" style={{ color: MUTED }}>
+                    By proceeding to the next step, you confirm that you have read, understood, and accept all 4 pages of these Terms & Conditions on behalf of your organization.
+                  </p>
                 </div>
-                <p className="text-sm" style={{ color: MUTED }}>
-                  By proceeding to the next step, you confirm that you have read, understood, and accept all 4 pages
-                  of these Terms & Conditions on behalf of your organization.
-                </p>
               </div>
-            </div>
-          </Card>
-        </div>
-      </FormCard>
+            </Card>
+          }
+        />
+      </TermsFormPage>
 
       <ActionBar left={<GhostLink onClick={() => go(9)}>Previous page</GhostLink>}>
-        <PrimaryButton onClick={() => go(11)}>
-          Accept & proceed to eSign
+        <PrimaryButton onClick={() => state.esignVerified ? go(12) : go(11)}>
+          {state.esignVerified ? "Sign" : "Accept & proceed to eSign"}
         </PrimaryButton>
       </ActionBar>
     </div>
@@ -2314,7 +2551,8 @@ export function ScreenAadhaarOTP({ go, state, setState }: any) {
     setVerifying(true);
     setTimeout(() => {
       setVerifying(false);
-      go(12);
+      setState({ ...state, esignVerified: true });
+      go(7);
     }, 2000);
   };
 
@@ -2325,32 +2563,25 @@ export function ScreenAadhaarOTP({ go, state, setState }: any) {
     <div className="py-2 px-2 sm:px-0">
       <FormCard
         eyebrow="Final step"
-        title="Aadhaar eSign verification"
-        subtitle="Complete your digital signature using Aadhaar OTP"
-        progress={100}
+        title={otpSent ? "Verify Your Aadhaar" : "Aadhaar eSign verification"}
+        subtitle={otpSent ? "We've sent a 6-digit code to your registered mobile number" : "Complete your digital signature using Aadhaar OTP"}
       >
-        <div className="space-y-6 sm:space-y-7">
-          <section>
-            <SectionHeading>Digital signature</SectionHeading>
-            <div className="flex items-start gap-3 rounded-[12px] p-4" style={{ background: BG_SOFT, border: `1px solid ${BORDER}` }}>
-              <div className="size-10 rounded-[10px] flex items-center justify-center shrink-0" style={{ background: "#fff", border: `1px solid ${BORDER}` }}>
-                <ShieldCheck className="size-5" style={{ color: PRIMARY }} />
-              </div>
-              <div>
-                <div className="text-sm mb-1" style={{ color: TEXT, fontWeight: 700 }}>
-                  Secure digital signature
-                </div>
-                <p className="text-sm" style={{ color: MUTED, lineHeight: 1.6 }}>
-                  Your Aadhaar details are used only for identity verification and creating a legally binding digital signature.
-                  We don't store your Aadhaar number.
-                </p>
-              </div>
-            </div>
-          </section>
-
-          <section>
+        <div className="mx-auto w-full max-w-[500px] space-y-6">
             {!otpSent ? (
-              <div>
+              <div className="space-y-5">
+                <div className="flex items-start gap-3 rounded-[12px] p-4" style={{ background: BG_SOFT, border: `1px solid ${BORDER}` }}>
+                  <div className="size-10 rounded-[10px] flex items-center justify-center shrink-0" style={{ background: "#fff", border: `1px solid ${BORDER}` }}>
+                    <ShieldCheck className="size-5" style={{ color: PRIMARY }} />
+                  </div>
+                  <div>
+                    <div className="text-sm mb-1" style={{ color: TEXT, fontWeight: 700 }}>
+                      Secure digital signature
+                    </div>
+                    <p className="text-sm" style={{ color: MUTED, lineHeight: 1.6 }}>
+                      Your Aadhaar details are used only for identity verification and creating a legally binding digital signature. We don't store your Aadhaar number.
+                    </p>
+                  </div>
+                </div>
                 <FieldLabel required>Aadhaar Number</FieldLabel>
                 <TextInput
                   placeholder="Enter 12-digit Aadhaar number"
@@ -2366,67 +2597,58 @@ export function ScreenAadhaarOTP({ go, state, setState }: any) {
                 </p>
               </div>
             ) : (
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <FieldLabel required>Enter OTP</FieldLabel>
-                  <button className="text-xs hover:underline" style={{ color: PRIMARY, fontWeight: 600 }}>
-                    Resend OTP
-                  </button>
-                </div>
+              <div className="space-y-6">
+                <div>
+                  <label className="block text-[14px] font-semibold text-[#414651] mb-3">
+                    Enter verification code
+                  </label>
 
-                <div className="grid grid-cols-6 gap-2 sm:gap-3">
-                  {[0, 1, 2, 3, 4, 5].map((i) => (
-                    <input
-                      key={i}
-                      type="text"
-                      inputMode="numeric"
-                      maxLength={1}
-                      className="aspect-square w-full min-w-0 text-center text-base sm:text-xl rounded-[8px] outline-none"
-                      style={{
-                        border: `1px solid ${BORDER_INPUT}`,
-                        background: "#fff",
-                        color: TEXT,
-                        fontWeight: 700,
-                      }}
-                      onFocus={(e) => (e.currentTarget.style.borderColor = PRIMARY)}
-                      onBlur={(e) => (e.currentTarget.style.borderColor = BORDER_INPUT)}
-                      onChange={(e) => {
-                        const val = e.target.value.replace(/\D/g, "");
-                        const current = state.aadhaarOTP || "";
-                        const newOTP = current.substring(0, i) + val + current.substring(i + 1);
-                        setState({ ...state, aadhaarOTP: newOTP });
-                        if (val && i < 5) {
-                          const next = e.target.nextElementSibling as HTMLInputElement;
-                          next?.focus();
-                        }
-                      }}
-                      value={state.aadhaarOTP[i] || ""}
-                    />
-                  ))}
-                </div>
-
-                <p className="text-xs mt-4 text-center sm:text-left" style={{ color: MUTED }}>
-                  OTP sent to mobile number ending in ****7890
-                </p>
-              </div>
-            )}
-          </section>
-
-          {otpSent && (
-            <section>
-              <div className="rounded-[12px] p-4" style={{ background: SUCCESS_BG, border: `1px solid ${SUCCESS_BORDER}` }}>
-                <div className="flex items-start gap-3">
-                  <CheckCircle2 className="size-5 shrink-0 mt-0.5" style={{ color: SUCCESS }} />
-                  <div className="text-sm" style={{ color: "#067647" }}>
-                    <div className="font-semibold mb-1">What happens after verification?</div>
-                    Your digital signature will be applied to the terms & conditions, and your merchant account
-                    will be activated immediately.
+                  <div className="flex gap-3 justify-between">
+                    {[0, 1, 2, 3, 4, 5].map((i) => (
+                      <input
+                        key={i}
+                        type="text"
+                        inputMode="numeric"
+                        maxLength={1}
+                        className="w-full aspect-square text-center text-[24px] font-semibold bg-[#fafafa] border-2 border-[#d5d7da] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#005656] focus:border-transparent transition-all"
+                        style={{
+                          borderColor: state.aadhaarOTP?.[i] ? PRIMARY : BORDER_INPUT,
+                          color: TEXT,
+                        }}
+                        onChange={(e) => {
+                          const val = e.target.value.replace(/\D/g, "");
+                          const current = state.aadhaarOTP || "";
+                          const newOTP = current.substring(0, i) + val + current.substring(i + 1);
+                          setState({ ...state, aadhaarOTP: newOTP });
+                          if (val && i < 5) {
+                            const next = e.target.nextElementSibling as HTMLInputElement;
+                            next?.focus();
+                          }
+                        }}
+                        value={state.aadhaarOTP?.[i] || ""}
+                      />
+                    ))}
                   </div>
                 </div>
-              </div>
-            </section>
-          )}
 
+                <div className="text-center">
+                  <button className="text-[14px] text-[#005656] font-semibold hover:underline">
+                    Resend verification code
+                  </button>
+                </div>
+                <div className="flex items-start gap-4">
+                  <span
+                    className="relative inline-flex size-6 shrink-0 items-center justify-center overflow-hidden rounded-lg"
+                    style={{ background: "#003323" }}
+                  >
+                    <Check className="size-5" style={{ color: "#50D387", strokeWidth: 2 }} />
+                  </span>
+                  <p style={{ color: TEXT_2, fontSize: 16, fontWeight: 400, lineHeight: "28px" }}>
+                    I am the holder of the above Aadhaar Number. I hereby authenticate myself as the legal signee for this document.
+                  </p>
+                </div>
+              </div>
+            )}
         </div>
       </FormCard>
 

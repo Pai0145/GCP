@@ -4,9 +4,19 @@ import { Loader2 } from "lucide-react";
 
 interface AnalyzingTransitionProps {
   onComplete: () => void;
+  stepOneText?: string;
+  stepTwoText?: string;
+  successTitle?: string;
+  successText?: string;
 }
 
-export function AnalyzingTransition({ onComplete }: AnalyzingTransitionProps) {
+export function AnalyzingTransition({
+  onComplete,
+  stepOneText = "Verifying your GST details...",
+  stepTwoText = "Verifying your CIN details...",
+  successTitle = "Congratulations",
+  successText = "All your details have been verified...",
+}: AnalyzingTransitionProps) {
   const [currentStep, setCurrentStep] = useState(0);
 
   useEffect(() => {
@@ -33,7 +43,8 @@ export function AnalyzingTransition({ onComplete }: AnalyzingTransitionProps) {
       <div
         className="absolute inset-0"
         style={{
-          background: "linear-gradient(140.342deg, rgb(6, 18, 18) 8.4861%, rgb(10, 31, 31) 50%, rgb(13, 32, 32) 91.514%)"
+          background:
+            "linear-gradient(140.342deg, rgb(6, 18, 18) 8.4861%, rgb(10, 31, 31) 50%, rgb(13, 32, 32) 91.514%)",
         }}
       />
 
@@ -41,7 +52,7 @@ export function AnalyzingTransition({ onComplete }: AnalyzingTransitionProps) {
       <div
         className="absolute inset-0 backdrop-blur-[2px]"
         style={{
-          background: "rgba(6, 18, 18, 0.15)"
+          background: "rgba(6, 18, 18, 0.15)",
         }}
       />
 
@@ -50,10 +61,17 @@ export function AnalyzingTransition({ onComplete }: AnalyzingTransitionProps) {
         aria-hidden
         className="pointer-events-none absolute inset-0"
         style={{
-          background: "linear-gradient(135deg, rgba(13, 32, 32, 0.25) 0%, rgba(10, 31, 31, 0.2) 50%, rgba(6, 18, 18, 0.18) 100%)",
+          background:
+            "linear-gradient(135deg, rgba(13, 32, 32, 0.25) 0%, rgba(10, 31, 31, 0.2) 50%, rgba(6, 18, 18, 0.18) 100%)",
           filter: "blur(100px)",
         }}
-        animate={{ clipPath: ["circle(0% at 20% 80%)", "circle(150% at 20% 80%)", "circle(0% at 20% 80%)"] }}
+        animate={{
+          clipPath: [
+            "circle(0% at 20% 80%)",
+            "circle(150% at 20% 80%)",
+            "circle(0% at 20% 80%)",
+          ],
+        }}
         transition={{ duration: 12, ease: "easeInOut", repeat: Infinity }}
       />
 
@@ -61,22 +79,46 @@ export function AnalyzingTransition({ onComplete }: AnalyzingTransitionProps) {
         aria-hidden
         className="pointer-events-none absolute inset-0"
         style={{
-          background: "radial-gradient(ellipse at 30% 70%, rgba(0, 86, 86, 0.12) 0%, rgba(0, 120, 110, 0.06) 40%, transparent 70%)",
+          background:
+            "radial-gradient(ellipse at 30% 70%, rgba(0, 86, 86, 0.12) 0%, rgba(0, 120, 110, 0.06) 40%, transparent 70%)",
           filter: "blur(100px)",
         }}
-        animate={{ clipPath: ["circle(0% at 15% 85%)", "circle(140% at 15% 85%)", "circle(0% at 15% 85%)"] }}
-        transition={{ duration: 14, delay: 0.3, ease: "easeInOut", repeat: Infinity }}
+        animate={{
+          clipPath: [
+            "circle(0% at 15% 85%)",
+            "circle(140% at 15% 85%)",
+            "circle(0% at 15% 85%)",
+          ],
+        }}
+        transition={{
+          duration: 14,
+          delay: 0.3,
+          ease: "easeInOut",
+          repeat: Infinity,
+        }}
       />
 
       <motion.div
         aria-hidden
         className="pointer-events-none absolute inset-0"
         style={{
-          background: "radial-gradient(ellipse at 50% 50%, rgba(209, 242, 86, 0.04) 0%, rgba(180, 255, 160, 0.02) 30%, transparent 60%)",
+          background:
+            "radial-gradient(ellipse at 50% 50%, rgba(209, 242, 86, 0.04) 0%, rgba(180, 255, 160, 0.02) 30%, transparent 60%)",
           filter: "blur(100px)",
         }}
-        animate={{ clipPath: ["circle(0% at 25% 75%)", "circle(160% at 25% 75%)", "circle(0% at 25% 75%)"] }}
-        transition={{ duration: 15, delay: 0.6, ease: "easeInOut", repeat: Infinity }}
+        animate={{
+          clipPath: [
+            "circle(0% at 25% 75%)",
+            "circle(160% at 25% 75%)",
+            "circle(0% at 25% 75%)",
+          ],
+        }}
+        transition={{
+          duration: 15,
+          delay: 0.6,
+          ease: "easeInOut",
+          repeat: Infinity,
+        }}
       />
 
       {/* Content */}
@@ -94,7 +136,7 @@ export function AnalyzingTransition({ onComplete }: AnalyzingTransitionProps) {
                 ease: [0.34, 1.56, 0.64, 1],
                 type: "spring",
                 stiffness: 200,
-                damping: 15
+                damping: 15,
               }}
               className="mb-8"
             >
@@ -103,8 +145,10 @@ export function AnalyzingTransition({ onComplete }: AnalyzingTransitionProps) {
                 <motion.div
                   className="absolute inset-0 rounded-full"
                   style={{
-                    background: "linear-gradient(135deg, #00a896 0%, #005f73 100%)",
-                    boxShadow: "0 0 40px rgba(0, 168, 150, 0.6), 0 0 80px rgba(0, 168, 150, 0.3)",
+                    background:
+                      "linear-gradient(135deg, #00a896 0%, #005f73 100%)",
+                    boxShadow:
+                      "0 0 40px rgba(0, 168, 150, 0.6), 0 0 80px rgba(0, 168, 150, 0.3)",
                   }}
                   animate={{
                     scale: [1, 1.05, 1],
@@ -117,7 +161,10 @@ export function AnalyzingTransition({ onComplete }: AnalyzingTransitionProps) {
                 />
 
                 {/* Animated checkmark */}
-                <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100">
+                <svg
+                  className="absolute inset-0 w-full h-full"
+                  viewBox="0 0 100 100"
+                >
                   <motion.path
                     d="M 25 50 L 40 65 L 75 30"
                     fill="none"
@@ -135,7 +182,8 @@ export function AnalyzingTransition({ onComplete }: AnalyzingTransitionProps) {
                 <motion.div
                   className="absolute inset-0 rounded-full"
                   style={{
-                    background: "radial-gradient(circle, rgba(208, 242, 85, 0.4) 0%, transparent 70%)",
+                    background:
+                      "radial-gradient(circle, rgba(208, 242, 85, 0.4) 0%, transparent 70%)",
                     filter: "blur(20px)",
                   }}
                   animate={{
@@ -178,121 +226,123 @@ export function AnalyzingTransition({ onComplete }: AnalyzingTransitionProps) {
           )}
         </AnimatePresence>
 
-
         {/* 4 Bouncing Dots Loader - More Dramatic - only show on steps 1 and 2 */}
         {currentStep < 3 && (
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.7, delay: 0.4, ease: [0.34, 1.56, 0.64, 1] }}
+            transition={{
+              duration: 0.7,
+              delay: 0.4,
+              ease: [0.34, 1.56, 0.64, 1],
+            }}
             className="mb-12 relative h-24 w-64 flex items-center justify-center"
           >
-          {[0, 1, 2, 3].map((i) => (
-            <motion.div
-              key={i}
-              className="absolute w-5 h-5 rounded-full"
-              style={{
-                background: i % 2 === 0 ? "linear-gradient(135deg, #d0f255 0%, #a8d93f 100%)" : "linear-gradient(135deg, #00a896 0%, #005f73 100%)",
-                boxShadow: `0 0 30px ${i % 2 === 0 ? "rgba(208, 242, 85, 0.8)" : "rgba(0, 168, 150, 0.8)"}, 0 0 60px ${i % 2 === 0 ? "rgba(208, 242, 85, 0.4)" : "rgba(0, 168, 150, 0.4)"}`,
-              }}
-              animate={{
-                x: ["-96px", "96px"],
-                y: [
-                  0,
-                  -40,
-                  0,
-                  -35,
-                  0,
-                  -30,
-                  0,
-                  -25,
-                  0,
-                  -20,
-                  0,
-                  -15,
-                  0,
-                  -10,
-                  0,
-                  -5,
-                  0,
-                ],
-                scale: [1, 1.3, 1, 1.25, 1, 1.2, 1, 1.15, 1, 1.1, 1, 1.05, 1, 1.02, 1, 1.01, 1],
-              }}
-              transition={{
-                duration: 3,
-                repeat: Infinity,
-                delay: i * 0.2,
-                ease: [0.45, 0.05, 0.55, 0.95],
-              }}
-            >
-              {/* Enhanced Glow effect */}
+            {[0, 1, 2, 3].map((i) => (
               <motion.div
-                className="absolute inset-0 rounded-full"
+                key={i}
+                className="absolute w-5 h-5 rounded-full"
                 style={{
-                  background: i % 2 === 0 ? "rgba(208, 242, 85, 0.5)" : "rgba(0, 168, 150, 0.5)",
-                  filter: "blur(12px)",
+                  background:
+                    i % 2 === 0
+                      ? "linear-gradient(135deg, #d0f255 0%, #a8d93f 100%)"
+                      : "linear-gradient(135deg, #00a896 0%, #005f73 100%)",
+                  boxShadow: `0 0 30px ${i % 2 === 0 ? "rgba(208, 242, 85, 0.8)" : "rgba(0, 168, 150, 0.8)"}, 0 0 60px ${i % 2 === 0 ? "rgba(208, 242, 85, 0.4)" : "rgba(0, 168, 150, 0.4)"}`,
                 }}
                 animate={{
-                  scale: [1, 2, 1],
-                  opacity: [0.6, 1, 0.6],
+                  x: ["-96px", "96px"],
+                  y: [
+                    0, -40, 0, -35, 0, -30, 0, -25, 0, -20, 0, -15, 0, -10, 0,
+                    -5, 0,
+                  ],
+                  scale: [
+                    1, 1.3, 1, 1.25, 1, 1.2, 1, 1.15, 1, 1.1, 1, 1.05, 1, 1.02,
+                    1, 1.01, 1,
+                  ],
                 }}
                 transition={{
                   duration: 3,
                   repeat: Infinity,
                   delay: i * 0.2,
+                  ease: [0.45, 0.05, 0.55, 0.95],
+                }}
+              >
+                {/* Enhanced Glow effect */}
+                <motion.div
+                  className="absolute inset-0 rounded-full"
+                  style={{
+                    background:
+                      i % 2 === 0
+                        ? "rgba(208, 242, 85, 0.5)"
+                        : "rgba(0, 168, 150, 0.5)",
+                    filter: "blur(12px)",
+                  }}
+                  animate={{
+                    scale: [1, 2, 1],
+                    opacity: [0.6, 1, 0.6],
+                  }}
+                  transition={{
+                    duration: 3,
+                    repeat: Infinity,
+                    delay: i * 0.2,
+                    ease: "easeInOut",
+                  }}
+                />
+
+                {/* Inner shine */}
+                <div
+                  className="absolute inset-0 rounded-full"
+                  style={{
+                    background:
+                      "radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.8), transparent 60%)",
+                  }}
+                />
+              </motion.div>
+            ))}
+
+            {/* Enhanced Trail effect */}
+            {[0, 1, 2, 3].map((i) => (
+              <motion.div
+                key={`trail-${i}`}
+                className="absolute w-3 h-3 rounded-full"
+                style={{
+                  background:
+                    i % 2 === 0
+                      ? "rgba(208, 242, 85, 0.4)"
+                      : "rgba(0, 168, 150, 0.4)",
+                  filter: "blur(4px)",
+                }}
+                animate={{
+                  x: ["-96px", "96px"],
+                  opacity: [0, 0.8, 0],
+                  scale: [0.3, 1.2, 0.3],
+                }}
+                transition={{
+                  duration: 3,
+                  repeat: Infinity,
+                  delay: i * 0.2 + 0.15,
                   ease: "easeInOut",
                 }}
               />
+            ))}
 
-              {/* Inner shine */}
-              <div
-                className="absolute inset-0 rounded-full"
-                style={{
-                  background: "radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.8), transparent 60%)",
-                }}
-              />
-            </motion.div>
-          ))}
-
-          {/* Enhanced Trail effect */}
-          {[0, 1, 2, 3].map((i) => (
+            {/* Ground line indicator */}
             <motion.div
-              key={`trail-${i}`}
-              className="absolute w-3 h-3 rounded-full"
+              className="absolute bottom-0 left-0 right-0 h-0.5"
               style={{
-                background: i % 2 === 0 ? "rgba(208, 242, 85, 0.4)" : "rgba(0, 168, 150, 0.4)",
-                filter: "blur(4px)",
+                background:
+                  "linear-gradient(90deg, transparent 0%, rgba(208, 242, 85, 0.3) 50%, transparent 100%)",
               }}
               animate={{
-                x: ["-96px", "96px"],
-                opacity: [0, 0.8, 0],
-                scale: [0.3, 1.2, 0.3],
+                opacity: [0.3, 0.6, 0.3],
               }}
               transition={{
-                duration: 3,
+                duration: 2,
                 repeat: Infinity,
-                delay: i * 0.2 + 0.15,
                 ease: "easeInOut",
               }}
             />
-          ))}
-
-          {/* Ground line indicator */}
-          <motion.div
-            className="absolute bottom-0 left-0 right-0 h-0.5"
-            style={{
-              background: "linear-gradient(90deg, transparent 0%, rgba(208, 242, 85, 0.3) 50%, transparent 100%)",
-            }}
-            animate={{
-              opacity: [0.3, 0.6, 0.3],
-            }}
-            transition={{
-              duration: 2,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
-          />
-        </motion.div>
+          </motion.div>
         )}
 
         {/* Subtexts container - wider for single line */}
@@ -306,9 +356,12 @@ export function AnalyzingTransition({ onComplete }: AnalyzingTransitionProps) {
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.5 }}
                 className="text-center text-base sm:text-lg whitespace-nowrap"
-                style={{ color: "rgba(255, 255, 255, 0.8)", fontFamily: "Lato, sans-serif" }}
+                style={{
+                  color: "rgba(255, 255, 255, 0.8)",
+                  fontFamily: "Lato, sans-serif",
+                }}
               >
-                Verifying your GST details...
+                {stepOneText}
               </motion.p>
             )}
             {currentStep === 2 && (
@@ -319,9 +372,12 @@ export function AnalyzingTransition({ onComplete }: AnalyzingTransitionProps) {
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.5 }}
                 className="text-center text-base sm:text-lg whitespace-nowrap"
-                style={{ color: "rgba(255, 255, 255, 0.8)", fontFamily: "Lato, sans-serif" }}
+                style={{
+                  color: "rgba(255, 255, 255, 0.8)",
+                  fontFamily: "Lato, sans-serif",
+                }}
               >
-                Verifying your CIN details...
+                {stepTwoText}
               </motion.p>
             )}
             {currentStep === 3 && (
@@ -339,13 +395,17 @@ export function AnalyzingTransition({ onComplete }: AnalyzingTransitionProps) {
                   ease: [0.34, 1.56, 0.64, 1],
                   type: "spring",
                   stiffness: 150,
-                  damping: 12
+                  damping: 12,
                 }}
                 className="text-center"
               >
                 <motion.h2
                   className="text-4xl sm:text-5xl font-bold mb-4"
-                  style={{ color: "#d0f255", fontFamily: "Lato, sans-serif", textShadow: "0 0 30px rgba(208, 242, 85, 0.5)" }}
+                  style={{
+                    color: "#d0f255",
+                    fontFamily: "Lato, sans-serif",
+                    textShadow: "0 0 30px rgba(208, 242, 85, 0.5)",
+                  }}
                   initial={{ opacity: 0, y: 30, scale: 0.8 }}
                   animate={{
                     opacity: 1,
@@ -357,19 +417,22 @@ export function AnalyzingTransition({ onComplete }: AnalyzingTransitionProps) {
                     delay: 0.3,
                     type: "spring",
                     stiffness: 200,
-                    damping: 15
+                    damping: 15,
                   }}
                 >
-                  Congratulations...
+                  {successTitle}
                 </motion.h2>
                 <motion.p
                   className="text-lg sm:text-xl whitespace-nowrap"
-                  style={{ color: "rgba(255, 255, 255, 0.9)", fontFamily: "Lato, sans-serif" }}
+                  style={{
+                    color: "rgba(255, 255, 255, 0.9)",
+                    fontFamily: "Lato, sans-serif",
+                  }}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.6, delay: 0.6 }}
                 >
-                  All your details have been verified...
+                  {successText}
                 </motion.p>
               </motion.div>
             )}
@@ -381,9 +444,10 @@ export function AnalyzingTransition({ onComplete }: AnalyzingTransitionProps) {
       <div
         className="absolute bottom-0 left-0 right-0 h-1"
         style={{
-          background: "linear-gradient(90deg, rgba(0, 0, 0, 0) 0%, rgba(209, 242, 86, 0.35) 50%, rgba(0, 0, 0, 0) 100%)",
+          background:
+            "linear-gradient(90deg, rgba(0, 0, 0, 0) 0%, rgba(209, 242, 86, 0.35) 50%, rgba(0, 0, 0, 0) 100%)",
           animation: "pulseGlow 4s ease-in-out infinite",
-          opacity: 0.3
+          opacity: 0.3,
         }}
       >
         <style>{`

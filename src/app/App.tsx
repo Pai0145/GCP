@@ -110,10 +110,11 @@ export default function App() {
   const [isSignup, setIsSignup] = useState(false);
   const [transitioning, setTransitioning] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
+  const [transitionContext, setTransitionContext] = useState<"documents" | "signing">("documents");
   const [state, setState] = useState({
     fullName: "John Doe",
     email: "john@company.com",
-    mobile: "+91 9876543210",
+    mobile: "",
     spend: "",
     idType: "GSTIN",
     idValue: "29AABCP1234F1Z5",
@@ -121,7 +122,7 @@ export default function App() {
     sameAsOwner: true,
     sigName: "John Doe",
     sigEmail: "john@company.com",
-    sigMobile: "+91 9876543210",
+    sigMobile: "",
     designation: "",
     sigConfirm: false,
     declaration: false,
@@ -130,6 +131,7 @@ export default function App() {
     termsPage3Accepted: false,
     termsPage4Accepted: false,
     aadhaarOTP: "",
+    esignVerified: false,
     panNumber: "",
     panName: "",
     panVerified: false,
@@ -155,13 +157,19 @@ export default function App() {
 
   const handleBeforeYouBeginContinue = (nextScreen: number) => {
     // Show analyzing screen
+    setTransitionContext("documents");
     setAnalyzing(true);
   };
 
   const handleAnalyzingComplete = () => {
     setAnalyzing(false);
     // Smooth transition to next screen
-    window.setTimeout(() => setScreen(2), 300);
+    window.setTimeout(() => setScreen(transitionContext === "signing" ? 12 : 2), 300);
+  };
+
+  const handleSignComplete = () => {
+    setTransitionContext("signing");
+    setAnalyzing(true);
   };
 
   const handleStepClick = (stepId: number, subId?: string) => {
@@ -183,7 +191,7 @@ export default function App() {
   }, [screen]);
 
   // Auth screens (-1, 0) don't use the onboarding shell; screen 1 uses the shell without the sidebar.
-  const showSidebar = screen >= 2 && screen <= 11;
+  const showSidebar = screen >= 2 && screen <= 10;
   const sidebarStep = SIDEBAR_STEP_FOR_SCREEN[screen] ?? 4;
   const progressScreen = screen >= 1 && screen <= 11 ? Math.max(screen, furthestFormScreen) : furthestFormScreen;
   const completed = COMPLETED_FOR_SCREEN[progressScreen] || [1, 2, 3, 4];
@@ -201,7 +209,13 @@ export default function App() {
         exit={{ opacity: 0 }}
         transition={{ duration: 0.4, ease: "easeInOut" }}
       >
-        <AnalyzingTransition onComplete={handleAnalyzingComplete} />
+        <AnalyzingTransition
+          onComplete={handleAnalyzingComplete}
+          stepOneText={transitionContext === "signing" ? "Applying your Aadhaar eSign to all documents..." : undefined}
+          stepTwoText={transitionContext === "signing" ? "Finalizing signed terms and conditions..." : undefined}
+          successTitle={transitionContext === "signing" ? "Signed successfully..." : undefined}
+          successText={transitionContext === "signing" ? "Your terms and conditions have been digitally signed." : undefined}
+        />
       </motion.div>
     );
   } else if (screen === -1) {
@@ -261,7 +275,7 @@ export default function App() {
   } else {
     content = (
       <motion.div
-        key={`screen-${screen}`}
+        key={screen >= 7 && screen <= 10 ? "terms-pages" : `screen-${screen}`}
         initial={FORM_PAGE_MOTION.initial}
         animate={FORM_PAGE_MOTION.animate}
         exit={FORM_PAGE_MOTION.exit}
@@ -284,7 +298,7 @@ export default function App() {
         {screen === 7 && <ScreenTermsPage1 go={setScreen} state={state} setState={setState} />}
         {screen === 8 && <ScreenTermsPage2 go={setScreen} state={state} setState={setState} />}
         {screen === 9 && <ScreenTermsPage3 go={setScreen} state={state} setState={setState} />}
-        {screen === 10 && <ScreenTermsPage4 go={setScreen} state={state} setState={setState} />}
+        {screen === 10 && <ScreenTermsPage4 go={(next: number) => next === 12 ? handleSignComplete() : setScreen(next)} state={state} setState={setState} />}
         {screen === 11 && <ScreenAadhaarOTP go={setScreen} state={state} setState={setState} />}
         {screen === 12 && <ScreenSuccess state={state} />}
 

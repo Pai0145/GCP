@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import { motion } from "motion/react";
-import pineLabsLogoImg from "../../../imports/image.png";
+import pineLabsLogoImg from "../../../../pinelabs logo.png";
 import ColorBends from "./ColorBends";
 
 const authBgColors = ["#4A6512", "#64841A", "#84A928", "#A8CA3B", "#D0F255"];
@@ -17,7 +17,8 @@ export function AuthShell({
       <div
         className="absolute inset-0"
         style={{
-          background: "linear-gradient(140deg, #011919 8%, #022929 48%, #033f3f 100%)",
+          background:
+            "linear-gradient(140deg, #011919 8%, #022929 48%, #033f3f 100%)",
         }}
       />
       <div className="absolute inset-0 opacity-80">
@@ -61,7 +62,10 @@ export function AuthShell({
           opacity: 0.18,
           borderRadius: "50%",
         }}
-        animate={{ backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"], x: [0, 30, 0] }}
+        animate={{
+          backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
+          x: [0, 30, 0],
+        }}
         transition={{ duration: 22, repeat: Infinity, ease: "easeInOut" }}
       />
 
@@ -94,8 +98,10 @@ export function AuthShell({
           backgroundImage:
             "linear-gradient(rgba(209,242,86,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(209,242,86,0.03) 1px, transparent 1px)",
           backgroundSize: "60px 60px",
-          maskImage: "radial-gradient(ellipse at center, rgba(0,0,0,0.5) 0%, transparent 70%)",
-          WebkitMaskImage: "radial-gradient(ellipse at center, rgba(0,0,0,0.5) 0%, transparent 70%)",
+          maskImage:
+            "radial-gradient(ellipse at center, rgba(0,0,0,0.5) 0%, transparent 70%)",
+          WebkitMaskImage:
+            "radial-gradient(ellipse at center, rgba(0,0,0,0.5) 0%, transparent 70%)",
           filter: "blur(0.5px)",
           opacity: 0.3,
         }}
@@ -138,7 +144,7 @@ export function AuthShell({
                 className="truncate hidden sm:block"
                 style={{
                   color: "#A4A7AE",
-                  fontSize: 12,
+                  fontSize: 14,
                   fontWeight: 600,
                   lineHeight: "18px",
                 }}
@@ -153,7 +159,8 @@ export function AuthShell({
       <div
         className="absolute bottom-0 left-0 right-0 h-1"
         style={{
-          background: "linear-gradient(90deg, rgba(0, 0, 0, 0) 0%, rgba(209, 242, 86, 0.35) 50%, rgba(0, 0, 0, 0) 100%)",
+          background:
+            "linear-gradient(90deg, rgba(0, 0, 0, 0) 0%, rgba(209, 242, 86, 0.35) 50%, rgba(0, 0, 0, 0) 100%)",
           animation: "pulseGlow 4s ease-in-out infinite",
           opacity: 0.3,
         }}
@@ -168,9 +175,7 @@ export function AuthShell({
 
       <div
         className={`relative z-10 w-full min-h-screen px-6 pt-20 sm:pt-24 pb-8 flex items-center justify-center ${
-          layout === "split"
-            ? "max-w-[1200px] gap-20"
-            : "max-w-[500px]"
+          layout === "split" ? "max-w-[1200px] gap-20" : "max-w-[500px]"
         }`}
       >
         {children}

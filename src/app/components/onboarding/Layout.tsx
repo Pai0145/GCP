@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Check, Lock, ChevronDown, ChevronUp } from "lucide-react";
-import PineLabsLogo from "../../../imports/Frame2-1/Frame2-27-25";
+import pineLabsLogoImg from "../../../../pinelabs logo.png";
 import LiquidEther from "./LiquidEther";
 
 export const PRIMARY = "#005656";
@@ -56,7 +56,7 @@ export function TopNav({ onSaveExit }: { onSaveExit?: () => void }) {
         <div className="flex items-center gap-3 sm:gap-6 min-w-0 flex-1">
           <div className="h-6 sm:h-7 shrink-0" style={{ width: "auto" }}>
             <img
-              src="/src/imports/Frame_2.png"
+              src={pineLabsLogoImg}
               alt="Pine Labs"
               className="h-full w-auto object-contain"
             />
@@ -123,7 +123,7 @@ export function Sidebar({
   onStepClick?: (step: number, subId?: string) => void;
 }) {
   return (
-    <aside className="hidden lg:block w-[300px] xl:w-[348px] shrink-0 self-start sticky top-[94px] pr-4 xl:pr-6 pt-6">
+    <aside className="hidden lg:block w-[316px] xl:w-[364px] shrink-0 self-start sticky top-[94px] pr-8 xl:pr-10 pt-6">
       <motion.div
         className="rounded-[24px] p-6"
         style={{
@@ -436,15 +436,6 @@ export function MobileStepsAccordion({
               <ChevronDown className="size-4 text-gray-400" />
             )}
           </div>
-        </div>
-        <div
-          className="w-full h-1.5 rounded-full overflow-hidden"
-          style={{ background: "#E5E7EB" }}
-        >
-          <div
-            className="h-full rounded-full transition-all duration-300"
-            style={{ width: `${progressPercent}%`, background: PRIMARY }}
-          />
         </div>
       </button>
 
@@ -798,7 +789,7 @@ export function StickyActionBar({
                 letterSpacing: "0.06px",
               }}
             >
-              All information is encrypted and stored securely as per industry standards.
+              All information is encrypted
             </p>
           </div>
         </div>
