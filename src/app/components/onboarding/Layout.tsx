@@ -1,6 +1,7 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Check, Lock, ChevronDown, ChevronUp } from "lucide-react";
+import { useNavigate } from "react-router";
 import pineLabsLogoImg from "../../../../pinelabs logo.png";
 import LiquidEther from "./LiquidEther";
 
@@ -41,6 +42,8 @@ export const STEPS: {
 ];
 
 export function TopNav({ onSaveExit }: { onSaveExit?: () => void }) {
+  const navigate = useNavigate();
+
   return (
     <header
       className="h-[60px] sm:h-[70px] flex items-center justify-center backdrop-blur sticky top-0 z-50"
@@ -54,13 +57,19 @@ export function TopNav({ onSaveExit }: { onSaveExit?: () => void }) {
         style={{ maxWidth: 1440 }}
       >
         <div className="flex items-center gap-3 sm:gap-6 min-w-0 flex-1">
-          <div className="h-6 sm:h-7 shrink-0" style={{ width: "auto" }}>
+          <button
+            type="button"
+            onClick={() => navigate("/")}
+            className="h-6 sm:h-7 shrink-0"
+            style={{ width: "auto" }}
+            aria-label="Pine Labs home"
+          >
             <img
               src={pineLabsLogoImg}
               alt="Pine Labs"
               className="h-full w-auto object-contain"
             />
-          </div>
+          </button>
           <div
             className="h-5 sm:h-6 w-px hidden sm:block"
             style={{ background: "#d1d5dc" }}
@@ -109,7 +118,7 @@ export function TopNav({ onSaveExit }: { onSaveExit?: () => void }) {
   );
 }
 
-export function Sidebar({
+function SidebarComponent({
   currentStep,
   completed,
   currentSub,
@@ -123,7 +132,7 @@ export function Sidebar({
   onStepClick?: (step: number, subId?: string) => void;
 }) {
   return (
-    <aside className="hidden lg:block w-[316px] xl:w-[364px] shrink-0 self-start sticky top-[94px] pr-8 xl:pr-10 pt-6">
+    <aside className="hidden lg:block w-[360px] xl:w-[408px] shrink-0 self-start sticky top-[94px] pr-8 xl:pr-10 pt-6">
       <motion.div
         className="rounded-[24px] p-6"
         style={{
@@ -353,6 +362,9 @@ export function Sidebar({
     </aside>
   );
 }
+
+// Memoize the Sidebar to prevent re-renders when props haven't changed
+export const Sidebar = React.memo(SidebarComponent);
 
 export function Footer() {
   return (
@@ -631,8 +643,11 @@ export function PageShell({
         )}
 
         <div className="flex-1 flex justify-center pb-24 sm:pb-28 md:pb-32">
-          <div className="w-full flex" style={{ maxWidth: 1440 }}>
-            <div className="w-full flex items-start px-0 sm:px-6 md:px-8 xl:px-[120px]">
+          <div
+            className="flex justify-center w-full"
+            style={{ maxWidth: 1440 }}
+          >
+            <div className="flex items-start w-full px-0 sm:px-6 md:px-8 xl:px-[120px]">
               {showSidebar && (
                 <Sidebar
                   currentStep={currentStep}
@@ -642,8 +657,12 @@ export function PageShell({
                   onStepClick={onStepClick}
                 />
               )}
-              <main className="flex-1 overflow-visible pt-4 sm:pt-6 lg:pt-12">
-                {children}
+              <main
+                className={`flex-1 min-w-0 flex overflow-visible pt-4 sm:pt-6 lg:pt-12 ${
+                  showSidebar ? "lg:ml-24 justify-start" : "justify-center"
+                }`}
+              >
+                <div className="w-full">{children}</div>
               </main>
             </div>
           </div>
@@ -671,7 +690,7 @@ export function FormCard({
     <motion.div
       className="mx-auto rounded-[16px] sm:rounded-[20px] md:rounded-[24px] overflow-hidden w-full"
       style={{
-        maxWidth: 820,
+        maxWidth: 960,
         background: "rgba(255,255,255,0.85)",
         boxShadow: "0 25px 50px -12px rgba(16,24,40,0.1)",
         backdropFilter: "blur(8px)",
@@ -781,7 +800,7 @@ export function StickyActionBar({
           <div className="flex items-center gap-2 min-w-0">
             <Lock className="size-3.5 shrink-0" style={{ color: PRIMARY }} />
             <p
-              className="min-w-0 text-[11px]"
+              className="min-w-0 text-[12px]"
               style={{
                 color: "#717680",
                 fontWeight: 400,

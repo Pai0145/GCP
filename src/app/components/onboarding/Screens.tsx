@@ -418,12 +418,12 @@ function FormCard({
   subtitle,
   progress,
   children,
-  maxWidth = 820,
+  maxWidth = 960,
   animateIn = true,
 }: any) {
   return (
     <motion.div
-      className="mx-auto rounded-[16px] sm:rounded-[24px] overflow-hidden"
+      className="mx-auto w-full rounded-[16px] sm:rounded-[24px] overflow-hidden"
       style={{
         maxWidth,
         background: "rgba(255,255,255,0.85)",
@@ -2713,6 +2713,10 @@ export function ScreenSuccess({ state }: any) {
   const tempPassword = "Qs@" + Math.random().toString(36).slice(2, 8).toUpperCase();
   const firstName = state.fullName?.split(" ")[0] || "there";
   const successTickAnimation = useMemo(() => getRethemedSuccessTick(), []);
+  const [showQwikServe, setShowQwikServe] = useState(false);
+  const qwikServePrototypeUrl =
+    "https://www.figma.com/proto/5INxfo3oiLHKltD4Jc0Jqu/GC-Procurement_Corporate-Portal?node-id=671-67129&viewport=-6018%2C-1301%2C0.07&t=wRlZ2PtAWqnyJlMm-1&scaling=min-zoom&content-scaling=fixed&starting-point-node-id=671%3A67129&show-proto-sidebar=1&page-id=653%3A20540";
+  const qwikServeEmbedUrl = `https://www.figma.com/embed?embed_host=share&url=${encodeURIComponent(qwikServePrototypeUrl)}`;
 
   return (
     <div className="relative max-w-3xl mx-auto py-6 sm:py-8 md:py-12 px-4">
@@ -2908,11 +2912,13 @@ export function ScreenSuccess({ state }: any) {
             </div>
           </div>
 
-          <div className="flex justify-center mb-4 sm:mb-5">
-            <button
-              className="inline-flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-3 rounded-[8px] sm:rounded-[10px] text-xs sm:text-sm"
-              style={{ background: PRIMARY, color: "#fff", fontWeight: 600 }}
-            >
+	          <div className="flex justify-center mb-4 sm:mb-5">
+	            <button
+	              type="button"
+	              onClick={() => setShowQwikServe(true)}
+	              className="inline-flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-3 rounded-[8px] sm:rounded-[10px] text-xs sm:text-sm"
+	              style={{ background: PRIMARY, color: "#fff", fontWeight: 600 }}
+	            >
               Log in to QwikServe <ArrowRight className="size-3.5 sm:size-4" />
             </button>
           </div>
@@ -2940,6 +2946,53 @@ export function ScreenSuccess({ state }: any) {
       >
         You can safely close this window. We'll see you on QwikServe!
       </motion.p>
+
+      <AnimatePresence>
+        {showQwikServe && (
+          <motion.div
+            className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6"
+            style={{ background: "rgba(10,13,18,0.62)", backdropFilter: "blur(8px)" }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className="flex h-[86vh] w-full max-w-6xl flex-col overflow-hidden rounded-[16px] bg-white"
+              style={{ boxShadow: "0 24px 70px rgba(10,13,18,0.35)" }}
+              initial={{ opacity: 0, y: 20, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 12, scale: 0.98 }}
+              transition={{ duration: 0.24, ease: "easeOut" }}
+            >
+              <div className="flex items-center justify-between gap-3 border-b px-4 py-3 sm:px-5" style={{ borderColor: BORDER }}>
+                <div className="min-w-0">
+                  <div className="truncate text-sm sm:text-base" style={{ color: TEXT, fontWeight: 700 }}>
+                    QwikServe portal
+                  </div>
+                  <div className="truncate text-xs" style={{ color: MUTED }}>
+                    Embedded Figma prototype
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowQwikServe(false)}
+                  className="inline-flex size-9 shrink-0 items-center justify-center rounded-lg"
+                  style={{ color: TEXT, background: BG_SOFT }}
+                  aria-label="Close QwikServe prototype"
+                >
+                  <X className="size-5" />
+                </button>
+              </div>
+              <iframe
+                title="QwikServe portal prototype"
+                src={qwikServeEmbedUrl}
+                className="min-h-0 flex-1 border-0"
+                allowFullScreen
+              />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

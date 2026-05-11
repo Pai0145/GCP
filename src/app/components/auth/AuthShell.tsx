@@ -1,6 +1,8 @@
-import { ReactNode } from "react";
-import { motion } from "motion/react";
-import pineLabsLogoImg from "../../../../pinelabs logo.png";
+import { ReactNode, useEffect, useState } from "react";
+import { AnimatePresence, motion } from "motion/react";
+import { useNavigate } from "react-router";
+import pineLabsLogoImg from "../../../imports/Pine_Labs_White.png";
+import vectorLogo from "../../../imports/Vector.svg";
 import ColorBends from "./ColorBends";
 
 const authBgColors = ["#4A6512", "#64841A", "#84A928", "#A8CA3B", "#D0F255"];
@@ -8,10 +10,26 @@ const authBgColors = ["#4A6512", "#64841A", "#84A928", "#A8CA3B", "#D0F255"];
 export function AuthShell({
   children,
   layout = "split",
+  intro = false,
 }: {
   children: ReactNode;
   layout?: "split" | "centered";
+  intro?: boolean;
 }) {
+  const navigate = useNavigate();
+  const [showIntro, setShowIntro] = useState(intro);
+
+  useEffect(() => {
+    if (!intro) {
+      setShowIntro(false);
+      return;
+    }
+
+    setShowIntro(true);
+    const timer = window.setTimeout(() => setShowIntro(false), 1500);
+    return () => window.clearTimeout(timer);
+  }, [intro]);
+
   return (
     <div className="min-h-screen flex items-center justify-center relative overflow-hidden">
       <div
@@ -115,14 +133,20 @@ export function AuthShell({
           style={{ maxWidth: 1440 }}
         >
           <div className="flex items-center gap-3 sm:gap-6 min-w-0 flex-1">
-            <div className="h-6 sm:h-7 shrink-0" style={{ width: "auto" }}>
+            <button
+              type="button"
+              onClick={() => navigate("/")}
+              className="h-6 sm:h-7 shrink-0"
+              style={{ width: "auto" }}
+              aria-label="Pine Labs home"
+            >
               <img
                 src={pineLabsLogoImg}
                 alt="Pine Labs"
                 className="h-full w-auto object-contain select-none"
                 draggable={false}
               />
-            </div>
+            </button>
             <div
               className="h-5 sm:h-6 w-px hidden sm:block shrink-0"
               style={{ background: "#D1D5DC" }}
@@ -173,13 +197,70 @@ export function AuthShell({
         `}</style>
       </div>
 
-      <div
-        className={`relative z-10 w-full min-h-screen px-6 pt-20 sm:pt-24 pb-8 flex items-center justify-center ${
-          layout === "split" ? "max-w-[1200px] gap-20" : "max-w-[500px]"
-        }`}
-      >
-        {children}
-      </div>
+      <AnimatePresence mode="wait">
+        {showIntro ? (
+          <motion.div
+            key="auth-intro"
+            className="relative z-10 flex min-h-screen w-full items-center justify-center px-6"
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <motion.div
+              className="relative flex h-36 w-36 items-center justify-center rounded-[30px] bg-white/[0.08] backdrop-blur-md"
+              initial={{ opacity: 0, scale: 0.86 }}
+              animate={{
+                opacity: 1,
+                scale: [0.86, 1.08, 0.96, 1.04, 1],
+                rotate: [0, 90, 180, 270, 360],
+              }}
+              transition={{
+                opacity: { duration: 0.18 },
+                scale: { duration: 1.5, ease: [0.45, 0, 0.2, 1] },
+                rotate: { duration: 1.5, ease: [0.45, 0, 0.2, 1] },
+              }}
+            >
+              <motion.div
+                aria-hidden="true"
+                className="absolute inset-[-28px] rounded-[44px]"
+                style={{
+                  background:
+                    "radial-gradient(circle, rgba(208,242,85,0.22) 0%, rgba(208,242,85,0.08) 42%, rgba(208,242,85,0) 72%)",
+                  filter: "blur(8px)",
+                }}
+                animate={{
+                  scale: [0.82, 1.18, 0.96, 1.12, 0.98],
+                  opacity: [0.25, 0.72, 0.35, 0.6, 0.3],
+                }}
+                transition={{ duration: 1.5, ease: [0.45, 0, 0.2, 1] }}
+              />
+              <motion.img
+                src={vectorLogo}
+                alt="Pine Labs transition mark"
+                className="relative h-24 w-24 brightness-0 invert"
+                draggable={false}
+                animate={{
+                  scale: [0.92, 1.06, 0.96, 1.04, 1],
+                  opacity: [0.82, 1, 0.88, 1, 0.96],
+                }}
+                transition={{ duration: 1.5, ease: [0.45, 0, 0.2, 1] }}
+              />
+            </motion.div>
+          </motion.div>
+        ) : (
+          <motion.div
+            key="auth-content"
+            className={`relative z-10 w-full min-h-screen px-6 pt-20 sm:pt-24 pb-8 flex items-center justify-center ${
+              layout === "split" ? "max-w-[1200px] gap-20" : "max-w-[500px]"
+            }`}
+            initial={intro ? { opacity: 0, y: 10 } : false}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+          >
+            {children}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

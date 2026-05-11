@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Eye,
   EyeOff,
@@ -15,6 +15,8 @@ import { AuthShell } from "./AuthShell";
 interface LoginSignupProps {
   onContinue: (email: string, password: string, isSignup: boolean) => void;
   embedded?: boolean;
+  initialMode?: "signup" | "login";
+  onModeChange?: (mode: "signup" | "login") => void;
 }
 
 const easeOut = [0.22, 1, 0.36, 1] as const;
@@ -22,8 +24,10 @@ const easeOut = [0.22, 1, 0.36, 1] as const;
 export function LoginSignup({
   onContinue,
   embedded = false,
+  initialMode = "signup",
+  onModeChange,
 }: LoginSignupProps) {
-  const [mode, setMode] = useState<"signup" | "login">("signup");
+  const [mode, setMode] = useState<"signup" | "login">(initialMode);
   const [email, setEmail] = useState("john.doe@company.com");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -32,6 +36,15 @@ export function LoginSignup({
     { id: number; x: number; y: number; size: number }[]
   >([]);
   const [shineKey, setShineKey] = useState(0);
+
+  useEffect(() => {
+    setMode(initialMode);
+  }, [initialMode]);
+
+  const handleModeChange = (nextMode: "signup" | "login") => {
+    setMode(nextMode);
+    onModeChange?.(nextMode);
+  };
 
   const hasMinLength = password.length >= 8;
   const hasLetters = /[a-zA-Z]/.test(password);
@@ -303,7 +316,7 @@ export function LoginSignup({
             {(["signup", "login"] as const).map((m) => (
               <button
                 key={m}
-                onClick={() => setMode(m)}
+                onClick={() => handleModeChange(m)}
                 className={`relative flex-1 py-2 px-6 rounded-[10px] text-[15px] font-semibold transition-colors ${
                   mode === m ? "text-[#181d27]" : "text-[#717680]"
                 }`}
