@@ -509,17 +509,17 @@ function LandingPage({ onStartAuth }: { onStartAuth: () => void }) {
               <button
                 type="button"
                 onClick={onStartAuth}
-                className="inline-flex min-w-[190px] items-center justify-center gap-3 rounded-full bg-[#d0f255] px-8 py-3.5 text-[15px] font-black text-[#011919] transition hover:bg-[#c4ee39] hover:shadow-[0_18px_34px_rgba(208,242,85,0.36)]"
+                className="inline-flex min-w-[200px] items-center justify-center gap-3 rounded-full bg-[#d0f255] px-12 py-4 text-[16px] font-black text-[#011919] transition hover:bg-[#c4ee39] hover:shadow-[0_18px_34px_rgba(208,242,85,0.36)]"
               >
                 Get started
                 <ArrowRight size={22} strokeWidth={2.4} />
               </button>
-              <a
+              {/* <a
                 href="#solutions"
                 className="inline-flex items-center justify-center gap-2 rounded-md border border-[#b7cbc3] bg-white px-6 py-3.5 font-bold text-[#08263c] transition hover:border-[#008d7d] hover:text-[#008d7d]"
               >
                 Explore solutions
-              </a>
+              </a> */}
             </div>
             <div className="mt-10 hidden max-w-2xl gap-4 lg:grid lg:grid-cols-3">
               {stats.map((item) => (
