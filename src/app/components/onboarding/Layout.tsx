@@ -130,7 +130,7 @@ export function TopNav({
             style={{
               color: isSaving ? PRIMARY : SUCCESS,
               background: isSaving ? "#f7fee7" : SUCCESS_BG,
-              border: `1px solid ${isSaving ? "#d9f99d" : SUCCESS_BORDER}`,
+              // border: `1px solid ${isSaving ? "#d9f99d" : SUCCESS_BORDER}`,
             }}
           >
             {isSaving ? (
@@ -142,7 +142,7 @@ export function TopNav({
           </div>
           <button
             type="button"
-            className="flex size-10 items-center justify-center rounded-full transition hover:bg-[#f9fafb]"
+            className="flex size-9 items-center justify-center rounded-full transition hover:bg-[#f9fafb] sm:size-10"
             style={{
               color: PRIMARY,
               border: `1px solid ${BORDER_INPUT}`,
@@ -153,7 +153,7 @@ export function TopNav({
             <UserRound size={18} />
           </button>
           <div
-            className="h-8 w-px"
+            className="hidden h-8 w-px sm:block"
             style={{ background: BORDER_INPUT }}
             aria-hidden="true"
           />
@@ -470,7 +470,7 @@ export function MobileStepsAccordion({
 
   return (
     <div
-      className="lg:hidden bg-white/95 backdrop-blur border-b relative z-40"
+      className="sticky top-[60px] z-40 border-b bg-white/95 backdrop-blur sm:top-[70px] lg:hidden"
       style={{ borderColor: BORDER }}
     >
       <button
@@ -665,14 +665,14 @@ export function PageShell({
         <div className="absolute inset-0 min-h-full opacity-90">
           <LiquidEther
             colors={["#FFFFF0", "#FAFFD6", "#F0F9AE", "#DBEF78", "#D0F255"]}
-            mouseForce={14}
+            mouseForce={8}
             cursorSize={220}
             resolution={0.5}
             isViscous={false}
             iterationsPoisson={24}
             autoDemo
             autoSpeed={0.62}
-            autoIntensity={2}
+            autoIntensity={1.5}
             autoResumeDelay={1200}
             autoRampDuration={0.45}
           />
@@ -702,12 +702,12 @@ export function PageShell({
           />
         )}
 
-        <div className="flex-1 flex justify-center pb-24 sm:pb-28 md:pb-32">
+        <div className="flex-1 flex justify-center pb-36 sm:pb-28 md:pb-32">
           <div
             className="flex justify-center w-full"
             style={{ maxWidth: 1440 }}
           >
-            <div className="flex items-start w-full px-0 pt-6 sm:px-6 sm:pt-8 md:px-8 lg:pt-16 xl:px-[80px]">
+            <div className="flex items-start w-full px-3 pt-4 sm:px-6 sm:pt-8 md:px-8 lg:pt-16 xl:px-[80px]">
               {showSidebar && (
                 <Sidebar
                   currentStep={currentStep}
@@ -719,7 +719,9 @@ export function PageShell({
               )}
               <main
                 className={`flex-1 min-w-0 flex overflow-visible ${
-                  showSidebar ? "lg:ml-12 xl:ml-16 justify-start" : "justify-center"
+                  showSidebar
+                    ? "lg:ml-12 xl:ml-16 justify-start"
+                    : "justify-center"
                 }`}
               >
                 <div className="w-full">{children}</div>
@@ -772,7 +774,7 @@ export function FormCard({
           <div className="flex-1 min-w-0">
             {eyebrow && (
               <div
-                className="inline-flex items-center justify-center px-2.5 sm:px-3 py-1 rounded-full uppercase"
+                className="inline-flex items-center justify-center rounded-full px-2.5 py-1 uppercase sm:px-3"
                 style={{
                   background: "rgba(255,255,255,0.15)",
                   color: "rgba(255,255,255,0.9)",
@@ -855,7 +857,7 @@ export function StickyActionBar({
       }}
     >
       <div
-        className="w-full flex items-center justify-between gap-3 px-4 sm:px-6 md:px-8 xl:px-[80px]"
+        className="w-full flex flex-col items-stretch gap-3 px-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 md:px-8 xl:px-[80px]"
         style={{ maxWidth: 1440 }}
       >
         <div className="min-w-0 flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
@@ -873,8 +875,9 @@ export function StickyActionBar({
               All information is encrypted
             </p>
           </div>
+          {left && <div className="min-w-0">{left}</div>}
         </div>
-        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+        <div className="flex w-full items-center gap-2 sm:w-auto sm:gap-3 sm:shrink-0">
           {children}
         </div>
       </div>

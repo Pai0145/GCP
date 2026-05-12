@@ -119,13 +119,14 @@ void main() {
 
   float bands = fbm(warped * 3.2 + vec2(t * 1.2, -t));
   bands += 0.46 * sin((warped.x * 3.0 + warped.y * 1.7 + t * 2.2) * 3.14159);
-  bands = smoothstep(0.02, 1.18, bands + pointerGlow + autoGlow * 0.78);
+  bands = smoothstep(0.02, 1.12, bands + pointerGlow + autoGlow * 0.78);
 
   vec3 color = palette(bands);
-  float verticalFade = 0.34 + 0.66 * smoothstep(1.08, 0.08, uv.y);
-  float alpha = (0.12 + bands * 0.34 + pointerGlow * 0.14 + autoGlow * 0.1) * verticalFade;
+  float verticalFade = 0.38 + 0.62 * smoothstep(1.08, 0.08, uv.y);
+  float alpha = (0.1 + bands * 0.34 + pointerGlow * 0.12 + autoGlow * 0.1) * verticalFade;
 
-  gl_FragColor = vec4(color * alpha, alpha);
+  vec3 finalColor = mix(vec3(1.0), color, alpha);
+  gl_FragColor = vec4(finalColor, 1.0);
 }
 `;
 
@@ -177,8 +178,8 @@ export default function LiquidEther({
     const mount = mountRef.current;
     if (!mount) return;
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setClearColor(0x000000, 0);
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+    renderer.setClearColor(0xffffff, 1);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     mount.prepend(renderer.domElement);
 
@@ -203,7 +204,7 @@ export default function LiquidEther({
     const material = new THREE.ShaderMaterial({
       vertexShader: VERTEX_SHADER,
       fragmentShader: FRAGMENT_SHADER,
-      transparent: true,
+      transparent: false,
       depthWrite: false,
       uniforms,
     });

@@ -514,24 +514,24 @@ function LandingPage({ onStartAuth }: { onStartAuth: () => void }) {
             backgroundPosition: "center",
           }}
         />
-        <div className="relative mx-auto grid max-w-7xl gap-12 px-5 pb-16 pt-14 lg:grid-cols-[1.02fr_0.98fr] lg:px-8 lg:pb-24 lg:pt-20">
+        <div className="relative mx-auto grid max-w-7xl gap-8 px-4 pb-14 pt-10 sm:px-5 sm:pt-14 lg:grid-cols-[1.02fr_0.98fr] lg:gap-12 lg:px-8 lg:pb-24 lg:pt-20">
           <div className="flex flex-col justify-center">
-            <div className="mb-6 inline-flex w-fit items-center gap-2 rounded-md border border-[#bde7d5] bg-[#effbf5] px-3 py-2 text-sm font-bold text-[#007265]">
+            {/* <div className="mb-6 inline-flex w-fit items-center gap-2 rounded-md border border-[#bde7d5] bg-[#effbf5] px-3 py-2 text-sm font-bold text-[#007265]">
               <Sparkles size={16} />
               Pine Labs inspired gift card platform
-            </div>
-            <h1 className="max-w-3xl text-[44px] font-semibold leading-[1.04] tracking-normal text-[#08263c] sm:text-[58px] lg:text-[70px]">
-              Corporate Gifting, Finally Simple.
+            </div> */}
+            <h1 className="max-w-3xl text-[36px] font-semibold leading-[1.06] tracking-normal text-[#08263c] sm:text-[58px] lg:text-[70px]">
+              Corporate Gifting, Finally Simplied.
             </h1>
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-[#4b6476]">
+            <p className="mt-4 max-w-2xl text-base leading-7 text-[#4b6476] sm:mt-6 sm:text-lg sm:leading-8">
               Bulk procurement, branded delivery, and full spend control, all in
               one platform.
             </p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <div className="mt-7 flex flex-col gap-3 sm:mt-8 sm:flex-row">
               <button
                 type="button"
                 onClick={onStartAuth}
-                className="inline-flex min-w-[200px] items-center justify-center gap-3 rounded-full bg-[#d0f255] px-12 py-4 text-[16px] font-black text-[#011919] transition hover:bg-[#c4ee39] hover:shadow-[0_18px_34px_rgba(208,242,85,0.36)]"
+                className="inline-flex w-full min-w-[200px] items-center justify-center gap-3 rounded-full bg-[#d0f255] px-8 py-4 text-[16px] font-black text-[#011919] transition hover:bg-[#c4ee39] hover:shadow-[0_18px_34px_rgba(208,242,85,0.36)] sm:w-auto sm:px-12"
               >
                 Get started
                 <ArrowRight size={22} strokeWidth={2.4} />
@@ -560,9 +560,9 @@ function LandingPage({ onStartAuth }: { onStartAuth: () => void }) {
             </div>
           </div>
 
-          <div className="relative flex min-h-[320px] items-center lg:min-h-[520px]">
+          <div className="relative flex min-h-[260px] items-center sm:min-h-[320px] lg:min-h-[520px]">
             <motion.div
-              className="relative mx-auto flex h-[280px] w-full max-w-[560px] items-center justify-center overflow-hidden bg-white sm:h-[360px] lg:ml-auto lg:h-[520px] lg:max-w-[640px]"
+              className="relative mx-auto flex h-[240px] w-full max-w-[560px] items-center justify-center overflow-hidden bg-white sm:h-[360px] lg:ml-auto lg:h-[520px] lg:max-w-[640px]"
               style={{
                 borderRadius: 12,
                 clipPath: "inset(0 round 12px)",

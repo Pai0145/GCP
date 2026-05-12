@@ -145,8 +145,8 @@ export function LoginSignup({
       <div
         className={
           embedded
-            ? "w-full flex gap-20 items-center justify-center"
-            : "relative z-10 w-full max-w-[1200px] px-6 pt-20 sm:pt-24 flex gap-20 items-center justify-center"
+            ? "flex w-full items-center justify-center gap-20"
+            : "relative z-10 flex w-full max-w-[1200px] items-center justify-center gap-20 px-3 pt-20 sm:px-6 sm:pt-24"
         }
       >
         {/* Left side - Marketing content */}
@@ -247,7 +247,10 @@ export function LoginSignup({
                       "radial-gradient(circle at 50% 50%, rgba(209,242,86,0.12) 0%, rgba(209,242,86,0) 65%)",
                     filter: "blur(16px)",
                   }}
-                  animate={{ opacity: [0.16, 0.36, 0.16], scale: [0.98, 1.02, 0.98] }}
+                  animate={{
+                    opacity: [0.16, 0.36, 0.16],
+                    scale: [0.98, 1.02, 0.98],
+                  }}
                   transition={{
                     duration: 4.8,
                     repeat: Infinity,
@@ -287,7 +290,7 @@ export function LoginSignup({
           initial={{ opacity: 0, y: 16, scale: 0.96 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ delay: 0.35, duration: 0.65, ease: easeOut }}
-          className="w-full lg:w-[500px] bg-white rounded-[20px] shadow-2xl p-10"
+          className="w-full rounded-[20px] bg-white p-5 shadow-2xl sm:p-8 lg:w-[500px] lg:p-10"
         >
           {/* Header */}
           <motion.div
@@ -352,7 +355,7 @@ export function LoginSignup({
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="john.doe@company.com"
-                className="auth-input w-full px-4 py-2.5 bg-[#fafafa] border border-[#d5d7da] rounded-lg text-[16px] text-[#181d27] focus:outline-none focus:ring-2 focus:ring-[#005656] focus:border-transparent"
+                className="auth-input w-full px-4 py-2.5 bg-[#fafafa] border border-[#d5d7da] rounded-lg text-[16px] text-[#111111] focus:outline-none focus:ring-2 focus:ring-[#005656] focus:border-transparent"
                 required
               />
             </motion.div>

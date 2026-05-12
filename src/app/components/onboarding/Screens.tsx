@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   motion,
   AnimatePresence,
@@ -6,7 +6,6 @@ import {
   useTransform,
   animate as animateMV,
 } from "motion/react";
-import Lottie from "lottie-react";
 import { TopNav } from "./Layout";
 import successTickRaw from "./successTick.json";
 import diplomaVerifiedIcon from "../../../imports/Diploma Verified.svg";
@@ -14,6 +13,7 @@ import mapPointWaveIcon from "../../../imports/Map Point Wave.svg";
 import plateIcon from "../../../imports/Plate.svg";
 import uploadMinimalisticIcon from "../../../imports/Upload Minimalistic.svg";
 import pineLabsLogoImg from "../../../../pinelabs logo.png";
+import congratulationVideo from "../../../imports/congratulation video.mp4";
 import signatureImg from "../../../imports/Screenshot 2026-04-17 at 12.33.38 PM 1.png";
 
 function AnimatedPercent({
@@ -191,7 +191,7 @@ function PrimaryButton({
             }
       }
       transition={{ duration: 0.18, ease: [0.4, 0, 0.2, 1] }}
-      className={`relative overflow-hidden min-w-[100px] sm:min-w-[120px] px-4 sm:px-6 py-2.5 sm:py-3 rounded-[10px] sm:rounded-[12px] text-sm inline-flex items-center justify-center gap-2 ${className}`}
+      className={`relative inline-flex w-full min-w-[100px] items-center justify-center gap-2 overflow-hidden rounded-[10px] px-4 py-2.5 text-sm sm:w-auto sm:min-w-[120px] sm:rounded-[12px] sm:px-6 sm:py-3 ${className}`}
       style={{
         background: disabled ? "#D0D5DD" : PRIMARY,
         color: "#fff",
@@ -274,7 +274,7 @@ function SecondaryButton({ children, onClick, className = "" }: any) {
       whileHover={{ scale: 1.02, backgroundColor: BG_SOFT }}
       whileTap={{ scale: 0.97 }}
       transition={{ type: "spring", stiffness: 400, damping: 22 }}
-      className={`min-w-[100px] sm:min-w-[120px] px-3 sm:px-4 py-2 sm:py-2.5 rounded-[8px] sm:rounded-[10px] text-xs sm:text-sm ${className}`}
+      className={`w-full min-w-[100px] rounded-[8px] px-3 py-2 text-xs sm:w-auto sm:min-w-[120px] sm:rounded-[10px] sm:px-4 sm:py-2.5 sm:text-sm ${className}`}
       style={{
         background: "#fff",
         color: "#252b37",
@@ -291,7 +291,7 @@ function GhostLink({ children, onClick }: any) {
   return (
     <button
       onClick={onClick}
-      className="text-xs sm:text-sm hover:underline transition truncate"
+      className="max-w-full truncate text-xs transition hover:underline sm:text-sm"
       style={{ color: PRIMARY, fontWeight: 600 }}
     >
       {children}
@@ -415,7 +415,7 @@ function SpendChipGroup({
             key={option}
             type="button"
             onClick={() => onChange(option)}
-            className="rounded-[8px] px-4 py-2 text-sm sm:text-[15px] transition"
+            className="w-full rounded-[8px] px-4 py-2 text-sm transition sm:w-auto sm:text-[15px]"
             style={{
               background: selected ? "#f0fdf4" : "#fff",
               border: `1px solid ${selected ? SUCCESS_BORDER : BORDER_INPUT}`,
@@ -896,7 +896,7 @@ function ActionBar({ left, children }: any) {
       }}
     >
       <div
-        className="w-full flex items-center justify-between gap-3 px-4 sm:px-6 md:px-8 xl:px-[80px]"
+        className="w-full flex flex-col items-stretch gap-3 px-4 sm:flex-row sm:items-center sm:justify-between sm:px-6 md:px-8 xl:px-[80px]"
         style={{ maxWidth: 1440 }}
       >
         <div className="min-w-0 flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
@@ -914,11 +914,13 @@ function ActionBar({ left, children }: any) {
               All information is encrypted
             </p>
           </div>
+          {left && <div className="min-w-0">{left}</div>}
         </div>
-        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+        <div className="flex w-full items-center gap-2 sm:w-auto sm:gap-3 sm:shrink-0">
           {children}
         </div>
       </div>
+
     </div>
   );
 }
@@ -3658,7 +3660,7 @@ function Confetti() {
   ];
   const pieces = Array.from({ length: 60 });
   return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden">
+    <div className="pointer-events-none absolute inset-0 z-20 overflow-hidden">
       {pieces.map((_, i) => {
         const left = Math.random() * 100;
         const delay = Math.random() * 0.6;
@@ -3703,6 +3705,355 @@ export function ScreenSuccess({ state }: any) {
   const tempPassword =
     "Qs@" + Math.random().toString(36).slice(2, 8).toUpperCase();
   const firstName = state.fullName?.split(" ")[0] || "there";
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const [remainingSeconds, setRemainingSeconds] = useState(30 * 60);
+  const [showEmailTemplate, setShowEmailTemplate] = useState(false);
+  const minutes = Math.floor(remainingSeconds / 60);
+  const seconds = remainingSeconds % 60;
+  const qwikServeRedirectUrl =
+    "https://www.figma.com/proto/5INxfo3oiLHKltD4Jc0Jqu/GC-Procurement_Corporate-Portal?page-id=653%3A20540&node-id=671-67129&viewport=-6018%2C-1301%2C0.07&t=UFx9UTb23qjZ51zU-1&scaling=min-zoom&content-scaling=fixed&starting-point-node-id=671%3A67129&show-proto-sidebar=1";
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setRemainingSeconds((value) => Math.max(0, value - 1));
+    }, 1000);
+
+    return () => window.clearInterval(timer);
+  }, []);
+
+  const handleVideoTimeUpdate = (event: React.SyntheticEvent<HTMLVideoElement>) => {
+    const video = event.currentTarget;
+    if (!video || video.currentTime < 7) return;
+
+    video.currentTime = 7;
+    video.pause();
+  };
+
+  return (
+    <div className="relative mx-auto w-full max-w-7xl px-2 py-6 sm:px-4 sm:py-8 lg:py-10">
+      <Confetti />
+
+      <div className="relative grid items-stretch gap-8 lg:grid-cols-[1.08fr_0.92fr] lg:gap-12">
+        <motion.section
+          initial={{ opacity: 0, x: -18 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+          className="mx-auto w-full max-w-[620px] text-left lg:mx-0"
+        >
+          <h1
+            className="text-[34px] font-bold leading-[1.06] text-[#005656] sm:text-[48px] lg:text-[52px]"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
+            Congratulations,
+            <br />
+            {firstName}! <span aria-hidden="true">🎉</span>
+          </h1>
+          <p
+            className="mt-6 text-base leading-7 sm:text-lg"
+            style={{ color: TEXT_2 }}
+          >
+            Your Pine Labs merchant account has been successfully activated.
+          </p>
+
+          <motion.aside
+            initial={{ opacity: 0, y: 18, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{
+              delay: 0.12,
+              duration: 0.6,
+              ease: [0.22, 1, 0.36, 1],
+            }}
+            className="mt-7 flex w-full lg:hidden"
+          >
+            <div
+              className="flex min-h-[320px] w-full items-center justify-center rounded-[22px] p-4 sm:min-h-[420px]"
+              style={{ background: "#F2F8EF" }}
+            >
+              <div className="aspect-square w-full max-w-[500px] overflow-hidden rounded-[18px]">
+                <video
+                  ref={videoRef}
+                  src={congratulationVideo}
+                  autoPlay
+                  muted
+                  playsInline
+                  preload="auto"
+                  onTimeUpdate={handleVideoTimeUpdate}
+                  onLoadedMetadata={(event) => {
+                    event.currentTarget.currentTime = 0;
+                  }}
+                  className="h-full w-full object-cover"
+                  style={{ objectPosition: "center center" }}
+                  aria-label="Congratulations animation"
+                />
+              </div>
+            </div>
+          </motion.aside>
+
+          <motion.button
+            type="button"
+            onClick={() => setShowEmailTemplate(true)}
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{
+              delay: 0.16,
+              duration: 0.5,
+              ease: [0.22, 1, 0.36, 1],
+            }}
+            className="mt-7 block w-full rounded-[16px] p-5 text-left transition hover:-translate-y-0.5 sm:p-6"
+            style={{
+              background: "linear-gradient(135deg, #005656 0%, #007f78 100%)",
+            }}
+          >
+            <div className="flex items-center gap-3 text-sm font-semibold text-white">
+              <Mail className="size-5" style={{ color: LIME }} />
+              Login Credentials Coming Soon
+            </div>
+
+            <div className="mt-5 grid grid-cols-[1fr_auto_1fr] items-center gap-3 sm:gap-6">
+              <div
+                className="rounded-[12px] px-4 py-4 text-center"
+                style={{ background: "rgba(255,255,255,0.16)" }}
+              >
+                <div
+                  className="text-[34px] font-black leading-none sm:text-[42px]"
+                  style={{ color: LIME }}
+                >
+                  {String(minutes).padStart(2, "0")}
+                </div>
+                <div className="mt-2 text-xs text-white/75">Minutes</div>
+              </div>
+              <div className="text-3xl font-bold" style={{ color: LIME }}>
+                :
+              </div>
+              <div
+                className="rounded-[12px] px-4 py-4 text-center"
+                style={{ background: "rgba(255,255,255,0.16)" }}
+              >
+                <div
+                  className="text-[34px] font-black leading-none sm:text-[42px]"
+                  style={{ color: LIME }}
+                >
+                  {String(seconds).padStart(2, "0")}
+                </div>
+                <div className="mt-2 text-xs text-white/75">Seconds</div>
+              </div>
+            </div>
+
+            <p className="mt-5 text-sm leading-6 text-white/90">
+              An email with your{" "}
+              <span className="font-bold" style={{ color: LIME }}>
+                self-serve portal
+              </span>{" "}
+              login credentials will be shared with you within the next 30
+              minutes.
+            </p>
+          </motion.button>
+
+          <motion.div
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{
+              delay: 0.28,
+              duration: 0.45,
+              ease: [0.22, 1, 0.36, 1],
+            }}
+            className="mt-6 rounded-[14px] p-4"
+            style={{
+              background: "#FFF8EA",
+              border: "1px solid #F9D58A",
+              color: "#824B00",
+            }}
+          >
+            <div className="flex items-start gap-3">
+              <Sparkles className="mt-0.5 size-5 shrink-0" />
+              <div>
+                <div className="text-sm font-bold">What happens next?</div>
+                <p className="mt-1 text-xs leading-5 sm:text-sm">
+                  Keep an eye on your inbox for the Pine Labs email. Use the
+                  credentials provided to access your self-serve dashboard and
+                  start managing your business.
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        </motion.section>
+
+        <motion.aside
+          initial={{ opacity: 0, x: 18, scale: 0.98 }}
+          animate={{ opacity: 1, x: 0, scale: 1 }}
+          transition={{ delay: 0.12, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+          className="mx-auto hidden h-full w-full max-w-[520px] lg:mx-0 lg:ml-auto lg:flex lg:max-w-none"
+        >
+          <div
+            className="flex min-h-[320px] w-full items-center justify-center rounded-[22px] p-4 sm:min-h-[420px] lg:min-h-0"
+            style={{
+              background: "#F2F8EF",
+            }}
+          >
+            <div className="aspect-square w-full max-w-[500px] overflow-hidden rounded-[18px]">
+              <video
+                ref={videoRef}
+                src={congratulationVideo}
+                autoPlay
+                muted
+                playsInline
+                preload="auto"
+                onTimeUpdate={handleVideoTimeUpdate}
+                onLoadedMetadata={(event) => {
+                  event.currentTarget.currentTime = 0;
+                }}
+                className="h-full w-full object-cover"
+                style={{ objectPosition: "center center" }}
+                aria-label="Congratulations animation"
+              />
+            </div>
+          </div>
+        </motion.aside>
+      </div>
+
+      <AnimatePresence>
+        {showEmailTemplate && (
+          <motion.div
+            className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6"
+            style={{
+              background: "rgba(10,13,18,0.62)",
+              backdropFilter: "blur(8px)",
+            }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className="flex max-h-[88vh] w-full max-w-2xl flex-col overflow-hidden rounded-[18px] bg-white"
+              style={{ boxShadow: "0 24px 70px rgba(10,13,18,0.28)" }}
+              initial={{ opacity: 0, y: 20, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 12, scale: 0.98 }}
+              transition={{ duration: 0.24, ease: "easeOut" }}
+            >
+              <div
+                className="flex items-center justify-between gap-3 border-b px-4 py-3 sm:px-5"
+                style={{ borderColor: BORDER }}
+              >
+                <div className="min-w-0">
+                  <div
+                    className="truncate text-sm sm:text-base"
+                    style={{ color: TEXT, fontWeight: 700 }}
+                  >
+                    Pine Labs Self-Serve
+                  </div>
+                  <div className="truncate text-xs" style={{ color: MUTED }}>
+                    Login credentials email preview
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowEmailTemplate(false)}
+                  className="inline-flex size-9 shrink-0 items-center justify-center rounded-lg"
+                  style={{ color: TEXT, background: BG_SOFT }}
+                  aria-label="Close email preview"
+                >
+                  <X className="size-5" />
+                </button>
+              </div>
+
+              <div className="min-h-0 overflow-y-auto px-4 py-5 sm:px-6 sm:py-6">
+                <div
+                  className="rounded-[14px] p-4 text-center sm:p-5"
+                  style={{
+                    background: `linear-gradient(135deg, ${PRIMARY} 0%, #007A7A 100%)`,
+                    color: "#fff",
+                  }}
+                >
+                  <Sparkles
+                    className="mx-auto mb-2 size-5"
+                    style={{ color: LIME }}
+                  />
+                  <div className="text-lg font-bold">
+                    Your self-serve portal is ready
+                  </div>
+                  <p className="mt-1 text-sm text-white/85">
+                    Use the credentials in this email to access QwikServe.
+                  </p>
+                </div>
+
+                <div
+                  className="mt-5 space-y-4 text-sm leading-6"
+                  style={{ color: TEXT_2 }}
+                >
+                  <p>Hi {firstName},</p>
+                  <p>
+                    Your Pine Labs merchant account has been activated. Your
+                    QwikServe self-serve portal login credentials are ready.
+                  </p>
+
+                  <div
+                    className="rounded-[12px] p-4"
+                    style={{
+                      background: BG_SOFT,
+                      border: `1px dashed ${BORDER_INPUT}`,
+                    }}
+                  >
+                    <div
+                      className="text-xs font-bold uppercase tracking-[0.08em]"
+                      style={{ color: MUTED }}
+                    >
+                      Login details
+                    </div>
+                    <div className="mt-3 space-y-2">
+                      <div className="flex justify-between gap-4">
+                        <span style={{ color: MUTED }}>Portal</span>
+                        <span
+                          className="font-semibold"
+                          style={{ color: PRIMARY }}
+                        >
+                          QwikServe
+                        </span>
+                      </div>
+                      <div className="flex justify-between gap-4">
+                        <span style={{ color: MUTED }}>Username</span>
+                        <span className="font-semibold">Shared by email</span>
+                      </div>
+                      <div className="flex justify-between gap-4">
+                        <span style={{ color: MUTED }}>Password</span>
+                        <span className="font-semibold">Shared by email</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      window.location.href = qwikServeRedirectUrl;
+                    }}
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-[10px] px-5 py-3 text-sm font-semibold"
+                    style={{ background: PRIMARY, color: "#fff" }}
+                  >
+                    Log in to QwikServe <ArrowRight className="size-4" />
+                  </button>
+
+                  <div
+                    className="flex items-start gap-2 rounded-[10px] p-3 text-xs"
+                    style={{
+                      background: "#FEF6E7",
+                      border: "1px solid #FCE7B3",
+                      color: "#7A4F01",
+                    }}
+                  >
+                    <Lock className="mt-0.5 size-4 shrink-0" />
+                    <span>
+                      For security, please change your temporary password on
+                      first login. Do not share these credentials.
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
   const successTickAnimation = useMemo(() => getRethemedSuccessTick(), []);
   const [showQwikServe, setShowQwikServe] = useState(false);
   const qwikServePrototypeUrl =

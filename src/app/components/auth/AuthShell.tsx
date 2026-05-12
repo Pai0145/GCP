@@ -169,7 +169,8 @@ export function AuthShell({
               <div
                 className="truncate hidden sm:block"
                 style={{
-                  color: "#A4A7AE",
+                  color: "#ffffff",
+                  opacity: 0.6,
                   fontSize: 14,
                   fontWeight: 600,
                   lineHeight: "18px",
@@ -248,7 +249,7 @@ export function AuthShell({
         ) : (
           <motion.div
             key="auth-content"
-            className={`relative z-10 w-full min-h-screen px-6 pt-20 sm:pt-24 pb-8 flex items-center justify-center ${
+            className={`relative z-10 w-full min-h-screen px-3 pt-20 pb-8 flex items-center justify-center sm:px-6 sm:pt-24 ${
               layout === "split" ? "max-w-[1200px] gap-20" : "max-w-[500px]"
             }`}
             initial={intro ? { opacity: 0, y: 10 } : false}
