@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useLayoutEffect, useState } from "react";
 import {
   ArrowRight,
   BadgeCheck,
@@ -134,18 +134,25 @@ const SIDEBAR_STEP_FOR_SCREEN: Record<number, number> = {
 const SUB_FOR_SCREEN: Record<number, string | undefined> = {
   3: "identity",
   4: "address",
+  6: "terms",
+  7: "terms",
+  8: "terms",
+  9: "terms",
+  10: "terms",
+  11: "aadhaar",
+  12: "signature",
 };
 
 const COMPLETED_SUBS_FOR_SCREEN: Record<number, string[]> = {
   4: ["identity"],
   5: ["identity", "address"],
-  6: ["identity", "address"],
-  7: ["identity", "address"],
-  8: ["identity", "address"],
-  9: ["identity", "address"],
-  10: ["identity", "address"],
-  11: ["identity", "address"],
-  12: ["identity", "address"],
+  6: [],
+  7: [],
+  8: [],
+  9: [],
+  10: [],
+  11: ["terms"],
+  12: ["terms", "aadhaar"],
 };
 
 const COMPLETED_FOR_SCREEN: Record<number, number[]> = {
@@ -155,13 +162,44 @@ const COMPLETED_FOR_SCREEN: Record<number, number[]> = {
   4: [1, 2],
   5: [1, 2, 3],
   6: [1, 2, 3, 4],
-  7: [1, 2, 3, 4, 5],
-  8: [1, 2, 3, 4, 5],
-  9: [1, 2, 3, 4, 5],
-  10: [1, 2, 3, 4, 5],
-  11: [1, 2, 3, 4, 5],
+  7: [1, 2, 3, 4],
+  8: [1, 2, 3, 4],
+  9: [1, 2, 3, 4],
+  10: [1, 2, 3, 4],
+  11: [1, 2, 3, 4],
   12: [1, 2, 3, 4, 5],
 };
+
+const PROGRESS_WEIGHTS_BY_CLICK: Record<number, number> = {
+  1: 2,
+  2: 1,
+  3: 1,
+  4: 1,
+  5: 1,
+  6: 1,
+  7: 0.25,
+  8: 0.25,
+  9: 0.25,
+  10: 0.25,
+  11: 1,
+};
+
+const TOTAL_PROGRESS_WEIGHT = Object.values(PROGRESS_WEIGHTS_BY_CLICK).reduce(
+  (total, weight) => total + weight,
+  0,
+);
+
+function getProgressPercent(progressScreen: number) {
+  if (progressScreen >= 12) return 100;
+
+  const completedWeight = Object.entries(PROGRESS_WEIGHTS_BY_CLICK).reduce(
+    (total, [screen, weight]) =>
+      Number(screen) < progressScreen ? total + weight : total,
+    0,
+  );
+
+  return Math.round((completedWeight / TOTAL_PROGRESS_WEIGHT) * 100);
+}
 
 const initialOnboardingState = {
   fullName: "John Doe",
@@ -210,6 +248,7 @@ function AppRoutes() {
 
   return (
     <>
+      <ScrollToTop />
       <Routes>
         <Route
           path="/"
@@ -226,6 +265,18 @@ function AppRoutes() {
       </AnimatePresence>
     </>
   );
+}
+
+function ScrollToTop() {
+  const location = useLocation();
+
+  useLayoutEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  }, [location.pathname]);
+
+  return null;
 }
 
 function LandingAuthBridge() {
@@ -323,8 +374,13 @@ function OnboardingFlow() {
     "documents" | "basicDetails" | "signing" | null
   >(null);
   const screen = SCREEN_BY_PATH[location.pathname] ?? 1;
+  const [progressScreen, setProgressScreen] = useState(screen);
 
   const go = (nextScreen: number) => {
+    if (nextScreen === screen) return;
+
+    setProgressScreen((current) => Math.max(current, nextScreen));
+
     if (screen === 1 && nextScreen === 2) {
       setTransitionContext("documents");
       return;
@@ -367,7 +423,11 @@ function OnboardingFlow() {
     if (stepId === 2) go(2);
     if (stepId === 3) go(subId === "address" ? 4 : 3);
     if (stepId === 4) go(5);
-    if (stepId === 5) go(6);
+    if (stepId === 5) {
+      if (subId === "aadhaar") go(11);
+      else if (subId === "signature") go(state.esignVerified ? 7 : 11);
+      else go(6);
+    }
   };
 
   if (transitionContext) {
@@ -381,7 +441,7 @@ function OnboardingFlow() {
         successIcon={isBasicDetails ? "profile" : "check"}
         stepOneText={
           isSigning
-            ? "Applying your Aadhaar eSign to all documents..."
+            ? "Applying your Aadhar eSign to all documents..."
             : undefined
         }
         stepTwoText={
@@ -405,40 +465,118 @@ function OnboardingFlow() {
     );
   }
 
-  const showSidebar = screen >= 1 && screen <= 10;
+  const showSidebar = screen >= 1 && screen <= 11;
   const sidebarStep = SIDEBAR_STEP_FOR_SCREEN[screen] ?? 5;
   const completed = COMPLETED_FOR_SCREEN[screen] ?? [];
-  const currentSub = SUB_FOR_SCREEN[screen];
-  const completedSubs = COMPLETED_SUBS_FOR_SCREEN[screen];
+  const currentSub =
+    state.esignVerified && screen >= 7 && screen <= 10
+      ? "signature"
+      : SUB_FOR_SCREEN[screen];
+  const completedSubs =
+    state.esignVerified && screen >= 7 && screen <= 10
+      ? ["terms", "aadhaar"]
+      : COMPLETED_SUBS_FOR_SCREEN[screen];
+  const progressPercent = getProgressPercent(Math.max(progressScreen, screen));
 
   let content: React.ReactNode = (
-    <ScreenBeforeYouBegin go={go} state={state} setState={setState} />
+    <ScreenBeforeYouBegin
+      go={go}
+      state={state}
+      setState={setState}
+      progress={progressPercent}
+    />
   );
 
   if (screen === 2)
-    content = <ScreenAccountOwner go={go} state={state} setState={setState} />;
+    content = (
+      <ScreenAccountOwner
+        go={go}
+        state={state}
+        setState={setState}
+        progress={progressPercent}
+      />
+    );
   if (screen === 3)
     content = (
-      <ScreenBusinessIdentity go={go} state={state} setState={setState} />
+      <ScreenBusinessIdentity
+        go={go}
+        state={state}
+        setState={setState}
+        progress={progressPercent}
+      />
     );
   if (screen === 4)
     content = (
-      <ScreenCompanyAddress go={go} state={state} setState={setState} />
+      <ScreenCompanyAddress
+        go={go}
+        state={state}
+        setState={setState}
+        progress={progressPercent}
+      />
     );
   if (screen === 5)
-    content = <ScreenSignatory go={go} state={state} setState={setState} />;
+    content = (
+      <ScreenSignatory
+        go={go}
+        state={state}
+        setState={setState}
+        progress={progressPercent}
+      />
+    );
   if (screen === 6)
-    content = <ScreenReviewSubmit go={go} state={state} setState={setState} />;
+    content = (
+      <ScreenReviewSubmit
+        go={go}
+        state={state}
+        setState={setState}
+        progress={progressPercent}
+      />
+    );
   if (screen === 7)
-    content = <ScreenTermsPage1 go={go} state={state} setState={setState} />;
+    content = (
+      <ScreenTermsPage1
+        go={go}
+        state={state}
+        setState={setState}
+        progress={progressPercent}
+      />
+    );
   if (screen === 8)
-    content = <ScreenTermsPage2 go={go} state={state} setState={setState} />;
+    content = (
+      <ScreenTermsPage2
+        go={go}
+        state={state}
+        setState={setState}
+        progress={progressPercent}
+      />
+    );
   if (screen === 9)
-    content = <ScreenTermsPage3 go={go} state={state} setState={setState} />;
+    content = (
+      <ScreenTermsPage3
+        go={go}
+        state={state}
+        setState={setState}
+        progress={progressPercent}
+      />
+    );
   if (screen === 10)
-    content = <ScreenTermsPage4 go={go} state={state} setState={setState} />;
+    content = (
+      <ScreenTermsPage4
+        go={go}
+        state={state}
+        setState={setState}
+        progress={progressPercent}
+      />
+    );
   if (screen === 11)
-    content = <ScreenAadhaarOTP go={go} state={state} setState={setState} />;
+    content = (
+      <ScreenAadhaarOTP
+        go={go}
+        state={state}
+        setState={setState}
+        progress={progressPercent}
+      />
+    );
   if (screen === 12) content = <ScreenSuccess state={state} />;
 
   return (
@@ -451,6 +589,7 @@ function OnboardingFlow() {
       onSaveExit={() => navigate("/")}
       onStepClick={handleStepClick}
       autosaveKey={`${screen}:${JSON.stringify(state)}`}
+      progressPercent={progressPercent}
     >
       {content}
     </PageShell>
@@ -521,11 +660,11 @@ function LandingPage({ onStartAuth }: { onStartAuth: () => void }) {
               Pine Labs inspired gift card platform
             </div> */}
             <h1 className="max-w-3xl text-[36px] font-semibold leading-[1.06] tracking-normal text-[#08263c] sm:text-[58px] lg:text-[70px]">
-              Corporate Gifting, Finally Simplied.
+              Gift Smarter. Grow Faster.
             </h1>
             <p className="mt-4 max-w-2xl text-base leading-7 text-[#4b6476] sm:mt-6 sm:text-lg sm:leading-8">
-              Bulk procurement, branded delivery, and full spend control, all in
-              one platform.
+              Simplify employee rewards, customer incentives, and business
+              gifting with instant digital gift cards.
             </p>
             <div className="mt-7 flex flex-col gap-3 sm:mt-8 sm:flex-row">
               <button

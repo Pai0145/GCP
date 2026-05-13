@@ -170,13 +170,13 @@ export function LoginSignup({
             transition={{ delay: 0.22, duration: 0.65, ease: easeOut }}
           >
             <h1
-              className="text-[60px] leading-[72px] font-bold text-white"
+              className="text-[64px] leading-[72px] font-bold text-white"
               style={{ mixBlendMode: "screen" }}
             >
               Power Your
             </h1>
             <h1
-              className="text-[60px] leading-[72px] font-bold text-[#d1f256]"
+              className="text-[64px] leading-[72px] font-bold text-[#d1f256]"
               style={{ mixBlendMode: "screen" }}
             >
               Business Growth
@@ -187,7 +187,7 @@ export function LoginSignup({
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.42, duration: 0.5, ease: easeOut }}
-            className="text-[16px] max-w-[550px] text-[rgba(255,255,255,0.7)]"
+            className="-mt-4 max-w-[550px] text-[16px] letter-spacing-[10px] text-[rgba(255,255,255,0.9)]"
             style={{ mixBlendMode: "screen" }}
           >
             Join the leading payment platform designed for modern businesses.
@@ -523,13 +523,14 @@ export function LoginSignup({
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.9, duration: 0.4, ease: easeOut }}
-                className="text-[13px] text-[#6a7282] text-center leading-5"
+                className="text-left text-[13px] leading-5 text-[#6a7282]"
               >
                 By creating an account, you agree to our{" "}
                 <span className="text-[#364153] underline cursor-pointer">
                   Terms of Service
                 </span>
                 {" and "}
+                <br />
                 <span className="text-[#364153] underline cursor-pointer">
                   Privacy Policy
                 </span>

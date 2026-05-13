@@ -2,25 +2,61 @@ import svgPaths from "./svg-e8cx6a29e7";
 
 function ButtonsCloseX() {
   return (
-    <div className="bg-[rgba(0,0,0,0.06)] content-stretch flex items-center justify-center overflow-clip relative rounded-[666666.063px] shrink-0 size-[40px]" data-name="Buttons/Close-X">
-      <div className="relative shrink-0 size-[33.333px]" data-name="Social Icons/Linear">
-        <div className="absolute flex inset-[32.32%] items-center justify-center" style={{ containerType: "size" }}>
+    <div
+      className="bg-[rgba(0,0,0,0.06)] content-stretch flex items-center justify-center overflow-clip relative rounded-[666666.063px] shrink-0 size-[40px]"
+      data-name="Buttons/Close-X"
+    >
+      <div
+        className="relative shrink-0 size-[33.333px]"
+        data-name="Social Icons/Linear"
+      >
+        <div
+          className="absolute flex inset-[32.32%] items-center justify-center"
+          style={{ containerType: "size" }}
+        >
           <div className="flex-none h-[hypot(-9.16667cqw,9.16667cqh)] rotate-45 w-[hypot(100cqw,100cqh)]">
             <div className="relative size-full" data-name="Vector">
               <div className="absolute inset-[-0.67px_-4%]">
-                <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 18 1.33333">
-                  <path d="M0.666667 0.666667H17.3333" id="Vector" stroke="var(--stroke-0, #252B37)" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.33333" />
+                <svg
+                  className="block size-full"
+                  fill="none"
+                  preserveAspectRatio="none"
+                  viewBox="0 0 18 1.33333"
+                >
+                  <path
+                    d="M0.666667 0.666667H17.3333"
+                    id="Vector"
+                    stroke="var(--stroke-0, #252B37)"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="1.33333"
+                  />
                 </svg>
               </div>
             </div>
           </div>
         </div>
-        <div className="absolute flex inset-[32.32%] items-center justify-center" style={{ containerType: "size" }}>
+        <div
+          className="absolute flex inset-[32.32%] items-center justify-center"
+          style={{ containerType: "size" }}
+        >
           <div className="flex-none h-[hypot(-100cqw,100cqh)] rotate-45 w-[hypot(9.16667cqw,9.16667cqh)]">
             <div className="relative size-full" data-name="Vector">
               <div className="absolute inset-[-4%_-0.67px]">
-                <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 1.33333 18">
-                  <path d="M0.666667 17.3333V0.666667" id="Vector" stroke="var(--stroke-0, #252B37)" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.33333" />
+                <svg
+                  className="block size-full"
+                  fill="none"
+                  preserveAspectRatio="none"
+                  viewBox="0 0 1.33333 18"
+                >
+                  <path
+                    d="M0.666667 17.3333V0.666667"
+                    id="Vector"
+                    stroke="var(--stroke-0, #252B37)"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="1.33333"
+                  />
                 </svg>
               </div>
             </div>
@@ -36,7 +72,10 @@ function Frame2() {
     <div className="relative shrink-0 w-full">
       <div className="flex flex-row items-center justify-center size-full">
         <div className="content-stretch flex items-center justify-between p-[32px] relative size-full">
-          <p className="font-['Roboto:Bold',sans-serif] font-bold leading-[1.5] relative shrink-0 text-[#003434] text-[24px] whitespace-nowrap" style={{ fontVariationSettings: "'wdth' 100" }}>
+          <p
+            className="font-['Roboto:Bold',sans-serif] font-bold leading-[1.5] relative shrink-0 text-[#003434] text-[24px] whitespace-nowrap"
+            style={{ fontVariationSettings: "'wdth' 100" }}
+          >
             Terms and Conditions
           </p>
           <ButtonsCloseX />
@@ -49,7 +88,9 @@ function Frame2() {
 function Frame4() {
   return (
     <div className="content-stretch flex items-center justify-center relative shrink-0 w-full">
-      <p className="font-['Lato:Regular',sans-serif] leading-[24px] not-italic relative shrink-0 text-[#181d27] text-[16px] tracking-[-0.16px] whitespace-nowrap">Page: 2/4</p>
+      <p className="font-['Lato:Regular',sans-serif] leading-[24px] not-italic relative shrink-0 text-[#181d27] text-[16px] tracking-[-0.16px] whitespace-nowrap">
+        Page: 2/4
+      </p>
     </div>
   );
 }
@@ -82,7 +123,10 @@ function Frame6() {
 function Frame9() {
   return (
     <div className="content-stretch flex flex-col items-center justify-center relative shrink-0 w-[415px]">
-      <ol className="block font-['Lato:Medium',sans-serif] leading-[0] list-decimal not-italic relative shrink-0 text-[#181d27] text-[0px] tracking-[-0.16px] w-full whitespace-pre-wrap" start="1">
+      <ol
+        className="block font-['Lato:Medium',sans-serif] leading-[0] list-decimal not-italic relative shrink-0 text-[#181d27] text-[0px] tracking-[-0.16px] w-full whitespace-pre-wrap"
+        start="1"
+      >
         <li className="leading-[24px] mb-0 ms-[calc(var(--list-marker-font-size,0)*1.5*1)] text-[16px]">
           <span className="font-['Lato:Bold',sans-serif] not-italic">{`Definitions `}</span>
           <span>
@@ -146,7 +190,10 @@ function Frame11() {
 function Frame10() {
   return (
     <div className="content-stretch flex flex-col items-center justify-center relative shrink-0 w-[415px]">
-      <ol className="block font-['Lato:Medium',sans-serif] leading-[0] list-decimal not-italic relative shrink-0 text-[#181d27] text-[16px] tracking-[-0.16px] w-full whitespace-pre-wrap" start="2">
+      <ol
+        className="block font-['Lato:Medium',sans-serif] leading-[0] list-decimal not-italic relative shrink-0 text-[#181d27] text-[16px] tracking-[-0.16px] w-full whitespace-pre-wrap"
+        start="2"
+      >
         <li className="mb-0 ms-[24px]">
           <span className="leading-[24px]">
             {`Voucher Terms `}
@@ -212,24 +259,39 @@ function Frame7() {
 
 function TextPadding() {
   return (
-    <div className="content-stretch flex items-center justify-center relative shrink-0" data-name="Text padding">
-      <p className="font-['Lato:Semibold',sans-serif] leading-[24px] not-italic relative shrink-0 text-[#005656] text-[16px] tracking-[-0.16px] whitespace-nowrap">Download</p>
+    <div
+      className="content-stretch flex items-center justify-center relative shrink-0"
+      data-name="Text padding"
+    >
+      <p className="font-['Lato:Semibold',sans-serif] leading-[24px] not-italic relative shrink-0 text-[#005656] text-[16px] tracking-[-0.16px] whitespace-nowrap">
+        Download
+      </p>
     </div>
   );
 }
 
 function TextPadding1() {
   return (
-    <div className="content-stretch flex items-center justify-center relative shrink-0" data-name="Text padding">
-      <p className="font-['Lato:Semibold',sans-serif] leading-[24px] not-italic relative shrink-0 text-[#005656] text-[16px] tracking-[-0.16px] whitespace-nowrap">Previous</p>
+    <div
+      className="content-stretch flex items-center justify-center relative shrink-0"
+      data-name="Text padding"
+    >
+      <p className="font-['Lato:Semibold',sans-serif] leading-[24px] not-italic relative shrink-0 text-[#005656] text-[16px] tracking-[-0.16px] whitespace-nowrap">
+        Previous
+      </p>
     </div>
   );
 }
 
 function TextPadding2() {
   return (
-    <div className="content-stretch flex items-center justify-center relative shrink-0" data-name="Text padding">
-      <p className="font-['Lato:Semibold',sans-serif] leading-[24px] not-italic relative shrink-0 text-[16px] text-white tracking-[-0.16px] whitespace-nowrap">Next</p>
+    <div
+      className="content-stretch flex items-center justify-center relative shrink-0"
+      data-name="Text padding"
+    >
+      <p className="font-['Lato:Semibold',sans-serif] leading-[24px] not-italic relative shrink-0 text-[16px] text-white tracking-[-0.16px] whitespace-nowrap">
+        Next
+      </p>
     </div>
   );
 }
@@ -237,28 +299,73 @@ function TextPadding2() {
 function Frame() {
   return (
     <div className="content-stretch flex gap-[42px] items-center relative shrink-0">
-      <div className="bg-white relative rounded-[12px] shrink-0 w-[120px]" data-name="Buttons/Button">
+      <div
+        className="bg-white relative rounded-[12px] shrink-0 w-[120px]"
+        data-name="Buttons/Button"
+      >
         <div className="content-stretch flex gap-[6px] items-center justify-center overflow-clip px-[24px] py-[12px] relative rounded-[inherit] size-full">
-          <div className="overflow-clip relative shrink-0 size-[20px]" data-name="Style=Linear">
-            <div className="absolute bottom-1/4 left-[16.67%] right-[16.67%] top-1/4" data-name="Vector">
+          <div
+            className="overflow-clip relative shrink-0 size-[20px]"
+            data-name="Style=Linear"
+          >
+            <div
+              className="absolute bottom-1/4 left-[16.67%] right-[16.67%] top-1/4"
+              data-name="Vector"
+            >
               <div className="absolute inset-[-7.5%_-5.63%]">
-                <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 14.8333 11.5">
-                  <path d={svgPaths.p32489400} id="Vector" stroke="var(--stroke-0, #005656)" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
+                <svg
+                  className="block size-full"
+                  fill="none"
+                  preserveAspectRatio="none"
+                  viewBox="0 0 14.8333 11.5"
+                >
+                  <path
+                    d={svgPaths.p32489400}
+                    id="Vector"
+                    stroke="var(--stroke-0, #005656)"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="1.5"
+                  />
                 </svg>
               </div>
             </div>
           </div>
           <TextPadding1 />
         </div>
-        <div aria-hidden="true" className="absolute border border-[#005656] border-solid inset-0 pointer-events-none rounded-[12px]" />
+        <div
+          aria-hidden="true"
+          className="absolute border border-[#005656] border-solid inset-0 pointer-events-none rounded-[12px]"
+        />
       </div>
-      <div className="bg-[#005656] content-stretch flex gap-[6px] items-center justify-center overflow-clip px-[24px] py-[12px] relative rounded-[12px] shrink-0 w-[120px]" data-name="Buttons/Button">
+      <div
+        className="bg-[#005656] content-stretch flex gap-[6px] items-center justify-center overflow-clip px-[24px] py-[12px] relative rounded-[12px] shrink-0 w-[120px]"
+        data-name="Buttons/Button"
+      >
         <TextPadding2 />
-        <div className="overflow-clip relative shrink-0 size-[20px]" data-name="Style=Linear">
-          <div className="absolute bottom-1/4 left-[16.67%] right-[16.67%] top-1/4" data-name="Vector">
+        <div
+          className="overflow-clip relative shrink-0 size-[20px]"
+          data-name="Style=Linear"
+        >
+          <div
+            className="absolute bottom-1/4 left-[16.67%] right-[16.67%] top-1/4"
+            data-name="Vector"
+          >
             <div className="absolute inset-[-7.5%_-5.63%]">
-              <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 14.8333 11.5">
-                <path d={svgPaths.p1cce8500} id="Vector" stroke="var(--stroke-0, white)" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
+              <svg
+                className="block size-full"
+                fill="none"
+                preserveAspectRatio="none"
+                viewBox="0 0 14.8333 11.5"
+              >
+                <path
+                  d={svgPaths.p1cce8500}
+                  id="Vector"
+                  stroke="var(--stroke-0, white)"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="1.5"
+                />
               </svg>
             </div>
           </div>
@@ -271,21 +378,57 @@ function Frame() {
 function Frame1() {
   return (
     <div className="content-stretch flex flex-[1_0_0] items-center justify-between min-w-px relative">
-      <div className="content-stretch flex gap-[6px] items-center justify-center overflow-clip px-[24px] py-[12px] relative rounded-[12px] shrink-0 w-[120px]" data-name="Buttons/Button">
-        <div className="overflow-clip relative rounded-[5px] shrink-0 size-[20px]" data-name="Style=Linear">
-          <div className="absolute inset-[62.5%_12.5%_12.5%_12.5%]" data-name="Vector">
+      <div
+        className="content-stretch flex gap-[6px] items-center justify-center overflow-clip px-[24px] py-[12px] relative rounded-[12px] shrink-0 w-[120px]"
+        data-name="Buttons/Button"
+      >
+        <div
+          className="overflow-clip relative rounded-[5px] shrink-0 size-[20px]"
+          data-name="Style=Linear"
+        >
+          <div
+            className="absolute inset-[62.5%_12.5%_12.5%_12.5%]"
+            data-name="Vector"
+          >
             <div className="absolute inset-[-15%_-5%]">
-              <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 16.5 6.5">
-                <path d={svgPaths.p2f730f80} id="Vector" stroke="var(--stroke-0, #005656)" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
+              <svg
+                className="block size-full"
+                fill="none"
+                preserveAspectRatio="none"
+                viewBox="0 0 16.5 6.5"
+              >
+                <path
+                  d={svgPaths.p2f730f80}
+                  id="Vector"
+                  stroke="var(--stroke-0, #005656)"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="1.5"
+                />
               </svg>
             </div>
           </div>
-          <div className="absolute flex inset-[12.5%_33.33%_33.33%_33.33%] items-center justify-center" style={{ containerType: "size" }}>
+          <div
+            className="absolute flex inset-[12.5%_33.33%_33.33%_33.33%] items-center justify-center"
+            style={{ containerType: "size" }}
+          >
             <div className="-rotate-180 -scale-x-100 flex-none h-[100cqh] w-[100cqw]">
               <div className="relative size-full" data-name="Vector">
                 <div className="absolute inset-[-6.92%_-11.25%]">
-                  <svg className="block size-full" fill="none" preserveAspectRatio="none" viewBox="0 0 8.16668 12.3333">
-                    <path d={svgPaths.p3bb45b60} id="Vector" stroke="var(--stroke-0, #005656)" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" />
+                  <svg
+                    className="block size-full"
+                    fill="none"
+                    preserveAspectRatio="none"
+                    viewBox="0 0 8.16668 12.3333"
+                  >
+                    <path
+                      d={svgPaths.p3bb45b60}
+                      id="Vector"
+                      stroke="var(--stroke-0, #005656)"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="1.5"
+                    />
                   </svg>
                 </div>
               </div>
@@ -313,7 +456,10 @@ function Frame3() {
 
 export default function TermsAndConditionsIndianCorporate() {
   return (
-    <div className="bg-white content-stretch flex flex-col items-center justify-between relative size-full" data-name="Terms and Conditions- INDIAN CORPORATE">
+    <div
+      className="bg-white content-stretch flex flex-col items-center justify-between relative size-full"
+      data-name="Terms and Conditions- INDIAN CORPORATE"
+    >
       <Frame8 />
       <Frame7 />
       <Frame3 />

@@ -920,7 +920,6 @@ function ActionBar({ left, children }: any) {
           {children}
         </div>
       </div>
-
     </div>
   );
 }
@@ -1039,7 +1038,7 @@ export function ScreenWelcome({ go }: { go: Nav }) {
 }
 
 // ============== SCREEN 2 ==============
-export function ScreenAccountOwner({ go, state, setState }: any) {
+export function ScreenAccountOwner({ go, state, setState, progress }: any) {
   const parts = (state.fullName || "").split(" ");
   const firstName = parts[0] || "";
   const lastName = parts.slice(1).join(" ");
@@ -1060,7 +1059,7 @@ export function ScreenAccountOwner({ go, state, setState }: any) {
       <FormCard
         title="Basic Details"
         subtitle="Please provide your information to get started"
-        progress={25}
+        progress={progress}
       >
         <div className="space-y-6 sm:space-y-7">
           <section>
@@ -1275,8 +1274,8 @@ const DOC_DEFS: {
   {
     key: "address",
     title: "Address proof (optional)",
-    hint: "Only needed if GST certificate is not available",
-    sample: { name: "Electricity Bill.pdf", ext: "PDF", size: "512 KB" },
+    hint: "PDF or image, up to 5 MB",
+    sample: { name: "Electricity Bill.pdf", ext: "PNG", size: "502 KB" },
   },
 ];
 
@@ -1374,15 +1373,16 @@ function DocumentUploadRow({
   );
 }
 
-export function ScreenBeforeYouBegin({ go, state, setState }: any) {
+export function ScreenBeforeYouBegin({ go, state, setState, progress }: any) {
   const [docs, setDocs] = useState<Record<DocKey, UploadedDoc>>({
     gst: null,
     cin: null,
     address: null,
   });
+  const [gstPresent, setGstPresent] = useState(true);
   const [parsing, setParsing] = useState(false);
 
-  const allUploaded = (!!docs.gst || !!docs.address) && !!docs.cin;
+  const allUploaded = !!docs.cin && (gstPresent ? !!docs.gst : !!docs.address);
 
   const handleContinue = () => {
     setParsing(true);
@@ -1399,214 +1399,272 @@ export function ScreenBeforeYouBegin({ go, state, setState }: any) {
         <FormCard
           title="Document upload"
           subtitle="Upload company documents so we can autofill your setup."
-          progress={10}
+          progress={progress}
         >
           <div className="space-y-6">
             <section>
-              <SectionHeading>Required Documents</SectionHeading>
-              <div className="space-y-3">
-                {DOC_DEFS.filter((doc) => doc.key !== "address").map(({ key, title, hint, sample }) => {
-                  const file = docs[key];
-                  const iconSrc = DOC_ICONS[key];
-                  return (
-                    <motion.div
-                      key={key}
-                      onClick={() =>
-                        !file && setDocs({ ...docs, [key]: sample })
-                      }
-                      className="min-h-[72px] rounded-2xl px-4 py-4 flex items-center gap-4 transition"
-                      style={{
-                        border: `1px solid ${file ? SUCCESS_BORDER : BORDER_INPUT}`,
-                        background: file ? SUCCESS_BG : "#fff",
-                        boxShadow: file
-                          ? "0 0 0 3px rgba(0,130,54,0.05)"
-                          : "none",
-                        cursor: file ? "default" : "pointer",
+              <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="[&>div]:mb-0">
+                  <SectionHeading>Required Documents</SectionHeading>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div
+                    className="text-sm"
+                    style={{ color: TEXT_2, fontWeight: 600 }}
+                  >
+                    GST present
+                  </div>
+                  <motion.button
+                    type="button"
+                    aria-pressed={gstPresent}
+                    onClick={() => setGstPresent((value) => !value)}
+                    className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors"
+                    style={{ background: gstPresent ? PRIMARY : "#e9eaeb" }}
+                    whileTap={{ scale: 0.96 }}
+                  >
+                    <motion.span
+                      className="inline-block size-5 rounded-full bg-white shadow-sm"
+                      animate={{ x: gstPresent ? 22 : 2 }}
+                      transition={{
+                        type: "spring",
+                        stiffness: 500,
+                        damping: 30,
                       }}
-                      whileHover={
-                        !file
-                          ? { scale: 1.01, borderColor: PRIMARY }
-                          : { borderColor: SUCCESS }
-                      }
-                      whileTap={!file ? { scale: 0.99 } : {}}
-                    >
-                      <div
-                        className="size-9 rounded-[10px] flex items-center justify-center shrink-0"
-                        style={{ background: file ? "#fff" : BG_SOFT }}
+                    />
+                  </motion.button>
+                </div>
+              </div>
+              <div className="space-y-3">
+                {DOC_DEFS.filter((doc) => doc.key !== "address").map(
+                  ({ key, title, hint, sample }) => {
+                    const file = docs[key];
+                    const iconSrc = DOC_ICONS[key];
+                    const disabled = key === "gst" && !gstPresent;
+
+                    return (
+                      <motion.div
+                        key={key}
+                        onClick={() =>
+                          !disabled &&
+                          !file &&
+                          setDocs({ ...docs, [key]: sample })
+                        }
+                        className="min-h-[72px] rounded-2xl px-4 py-4 flex items-center gap-4 transition"
+                        style={{
+                          border: `1px solid ${
+                            disabled
+                              ? "#e5e7eb"
+                              : file
+                                ? SUCCESS_BORDER
+                                : BORDER_INPUT
+                          }`,
+                          background: disabled
+                            ? "#f3f4f6"
+                            : file
+                              ? SUCCESS_BG
+                              : "#fff",
+                          boxShadow: file
+                            ? "0 0 0 3px rgba(0,130,54,0.05)"
+                            : "none",
+                          cursor: disabled
+                            ? "not-allowed"
+                            : file
+                              ? "default"
+                              : "pointer",
+                          opacity: disabled ? 0.62 : 1,
+                        }}
+                        whileHover={
+                          !disabled && !file
+                            ? { scale: 1.01, borderColor: PRIMARY }
+                            : disabled
+                              ? {}
+                              : { borderColor: SUCCESS }
+                        }
+                        whileTap={!disabled && !file ? { scale: 0.99 } : {}}
                       >
-                        {file ? (
-                          <CheckCircle2
-                            className="size-5"
-                            style={{ color: SUCCESS }}
-                          />
-                        ) : (
-                          <img
-                            src={iconSrc}
-                            alt=""
-                            className="size-6"
-                            draggable={false}
-                          />
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
                         <div
-                          className="text-sm truncate"
+                          className="size-9 rounded-[10px] flex items-center justify-center shrink-0"
+                          style={{ background: file ? "#fff" : BG_SOFT }}
+                        >
+                          {file ? (
+                            <CheckCircle2
+                              className="size-5"
+                              style={{ color: SUCCESS }}
+                            />
+                          ) : (
+                            <img
+                              src={iconSrc}
+                              alt=""
+                              className="size-6"
+                              draggable={false}
+                            />
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div
+                            className="text-sm truncate"
+                            style={{
+                              color: TEXT,
+                              fontWeight: 600,
+                              lineHeight: "20px",
+                            }}
+                          >
+                            {file ? file.name : title}
+                          </div>
+                          <div
+                            className="text-xs mt-0.5"
+                            style={{ color: MUTED, lineHeight: "16px" }}
+                          >
+                            {file
+                              ? `${file.ext} · ${file.size} · Uploaded`
+                              : hint}
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          disabled={disabled}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (disabled) return;
+                            setDocs({ ...docs, [key]: file ? null : sample });
+                          }}
+                          className="shrink-0 inline-flex items-center gap-2"
                           style={{
-                            color: TEXT,
+                            color: disabled ? MUTED_2 : PRIMARY,
                             fontWeight: 600,
+                            fontSize: 14,
                             lineHeight: "20px",
+                            cursor: disabled ? "not-allowed" : "pointer",
                           }}
                         >
-                          {file ? file.name : title}
-                        </div>
-                        <div
-                          className="text-xs mt-0.5"
-                          style={{ color: MUTED, lineHeight: "16px" }}
-                        >
-                          {file
-                            ? `${file.ext} · ${file.size} · Uploaded`
-                            : hint}
-                        </div>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setDocs({ ...docs, [key]: file ? null : sample });
-                        }}
-                        className="shrink-0 inline-flex items-center gap-2"
-                        style={{
-                          color: PRIMARY,
-                          fontWeight: 600,
-                          fontSize: 14,
-                          lineHeight: "20px",
-                        }}
-                      >
-                        {file ? (
-                          <RefreshCw className="size-5" />
-                        ) : (
-                          <img
-                            src={uploadMinimalisticIcon}
-                            alt=""
-                            className="size-6"
-                            draggable={false}
-                          />
-                        )}
-                        {file ? "Replace" : "Upload"}
-                      </button>
-                    </motion.div>
-                  );
-                })}
+                          {file ? (
+                            <RefreshCw className="size-5" />
+                          ) : (
+                            <img
+                              src={uploadMinimalisticIcon}
+                              alt=""
+                              className="size-6"
+                              draggable={false}
+                            />
+                          )}
+                          {file ? "Replace" : "Upload"}
+                        </button>
+                      </motion.div>
+                    );
+                  },
+                )}
               </div>
-              <p
+              {/* <p
                 className="text-xs mt-4"
                 style={{ color: MUTED, lineHeight: "16px" }}
               >
                 We'll use these only for verification. Nothing is shared.
-              </p>
+              </p> */}
             </section>
-            <section>
-              <h2
-                className="mb-4 text-base sm:text-lg"
-                style={{ color: TEXT, fontWeight: 700, lineHeight: "24px" }}
-              >
-                If GST not present
-              </h2>
-              {DOC_DEFS.filter((doc) => doc.key === "address").map(
-                ({ key, title, hint, sample }) => {
-                  const file = docs[key];
-                  const iconSrc = DOC_ICONS[key];
-                  return (
-                    <motion.div
-                      key={key}
-                      onClick={() =>
-                        !file && setDocs({ ...docs, [key]: sample })
-                      }
-                      className="min-h-[72px] rounded-2xl px-4 py-4 flex items-center gap-4 transition"
-                      style={{
-                        border: `1px solid ${file ? SUCCESS_BORDER : BORDER_INPUT}`,
-                        background: file ? SUCCESS_BG : "#fff",
-                        boxShadow: file
-                          ? "0 0 0 3px rgba(0,130,54,0.05)"
-                          : "none",
-                        cursor: file ? "default" : "pointer",
-                      }}
-                      whileHover={
-                        !file
-                          ? { scale: 1.01, borderColor: PRIMARY }
-                          : { borderColor: SUCCESS }
-                      }
-                      whileTap={!file ? { scale: 0.99 } : {}}
-                    >
-                      <div
-                        className="size-9 rounded-[10px] flex items-center justify-center shrink-0"
-                        style={{ background: file ? "#fff" : BG_SOFT }}
+            {!gstPresent && (
+              <section>
+                <h2
+                  className="mb-4 text-base sm:text-lg"
+                  style={{ color: TEXT, fontWeight: 700, lineHeight: "24px" }}
+                >
+                  If GST not present
+                </h2>
+                {DOC_DEFS.filter((doc) => doc.key === "address").map(
+                  ({ key, title, hint, sample }) => {
+                    const file = docs[key];
+                    const iconSrc = DOC_ICONS[key];
+                    return (
+                      <motion.div
+                        key={key}
+                        onClick={() =>
+                          !file && setDocs({ ...docs, [key]: sample })
+                        }
+                        className="min-h-[72px] rounded-2xl px-4 py-4 flex items-center gap-4 transition"
+                        style={{
+                          border: `1px solid ${file ? SUCCESS_BORDER : BORDER_INPUT}`,
+                          background: file ? SUCCESS_BG : "#fff",
+                          boxShadow: file
+                            ? "0 0 0 3px rgba(0,130,54,0.05)"
+                            : "none",
+                          cursor: file ? "default" : "pointer",
+                        }}
+                        whileHover={
+                          !file
+                            ? { scale: 1.01, borderColor: PRIMARY }
+                            : { borderColor: SUCCESS }
+                        }
+                        whileTap={!file ? { scale: 0.99 } : {}}
                       >
-                        {file ? (
-                          <CheckCircle2
-                            className="size-5"
-                            style={{ color: SUCCESS }}
-                          />
-                        ) : (
-                          <img
-                            src={iconSrc}
-                            alt=""
-                            className="size-6"
-                            draggable={false}
-                          />
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
                         <div
-                          className="text-sm truncate"
+                          className="size-9 rounded-[10px] flex items-center justify-center shrink-0"
+                          style={{ background: file ? "#fff" : BG_SOFT }}
+                        >
+                          {file ? (
+                            <CheckCircle2
+                              className="size-5"
+                              style={{ color: SUCCESS }}
+                            />
+                          ) : (
+                            <img
+                              src={iconSrc}
+                              alt=""
+                              className="size-6"
+                              draggable={false}
+                            />
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div
+                            className="text-sm truncate"
+                            style={{
+                              color: TEXT,
+                              fontWeight: 600,
+                              lineHeight: "20px",
+                            }}
+                          >
+                            {file ? file.name : title}
+                          </div>
+                          <div
+                            className="text-xs mt-0.5"
+                            style={{ color: MUTED, lineHeight: "16px" }}
+                          >
+                            {file
+                              ? `${file.ext} · ${file.size} · Uploaded`
+                              : hint}
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setDocs({ ...docs, [key]: file ? null : sample });
+                          }}
+                          className="shrink-0 inline-flex items-center gap-2"
                           style={{
-                            color: TEXT,
+                            color: PRIMARY,
                             fontWeight: 600,
+                            fontSize: 14,
                             lineHeight: "20px",
                           }}
                         >
-                          {file ? file.name : title}
-                        </div>
-                        <div
-                          className="text-xs mt-0.5"
-                          style={{ color: MUTED, lineHeight: "16px" }}
-                        >
-                          {file
-                            ? `${file.ext} · ${file.size} · Uploaded`
-                            : hint}
-                        </div>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setDocs({ ...docs, [key]: file ? null : sample });
-                        }}
-                        className="shrink-0 inline-flex items-center gap-2"
-                        style={{
-                          color: PRIMARY,
-                          fontWeight: 600,
-                          fontSize: 14,
-                          lineHeight: "20px",
-                        }}
-                      >
-                        {file ? (
-                          <RefreshCw className="size-5" />
-                        ) : (
-                          <img
-                            src={uploadMinimalisticIcon}
-                            alt=""
-                            className="size-6"
-                            draggable={false}
-                          />
-                        )}
-                        {file ? "Replace" : "Upload"}
-                      </button>
-                    </motion.div>
-                  );
-                },
-              )}
-            </section>
+                          {file ? (
+                            <RefreshCw className="size-5" />
+                          ) : (
+                            <img
+                              src={uploadMinimalisticIcon}
+                              alt=""
+                              className="size-6"
+                              draggable={false}
+                            />
+                          )}
+                          {file ? "Replace" : "Upload"}
+                        </button>
+                      </motion.div>
+                    );
+                  },
+                )}
+              </section>
+            )}
           </div>
         </FormCard>
 
@@ -1901,7 +1959,7 @@ export function ScreenCompanyIdentifier({ go, state, setState }: any) {
 }
 
 // ============== Business identity ==============
-export function ScreenBusinessIdentity({ go, state, setState }: any) {
+export function ScreenBusinessIdentity({ go, state, setState, progress }: any) {
   const [gstPresent, setGstPresent] = useState(true);
   const [showGstConfirm, setShowGstConfirm] = useState(false);
 
@@ -1924,7 +1982,7 @@ export function ScreenBusinessIdentity({ go, state, setState }: any) {
       <FormCard
         title="Organisation Details"
         subtitle="Verify your company's legal information"
-        progress={40}
+        progress={progress}
       >
         <div className="space-y-6 sm:space-y-7">
           <section>
@@ -2179,13 +2237,13 @@ function GstUnavailableConfirm({ open, onCancel, onConfirm }: any) {
 }
 
 // ============== Registered address ==============
-export function ScreenCompanyAddress({ go, state, setState }: any) {
+export function ScreenCompanyAddress({ go, state, setState, progress }: any) {
   return (
     <div className="pb-2 px-2 sm:px-0">
       <FormCard
         title="Organisation Details"
         subtitle="Confirm your registered and billing addresses"
-        progress={55}
+        progress={progress}
       >
         <div className="space-y-6 sm:space-y-7">
           <section>
@@ -2638,7 +2696,7 @@ function PrefilledWithCheck({
 }
 
 // ============== SCREEN 5 ==============
-export function ScreenSignatory({ go, state, setState }: any) {
+export function ScreenSignatory({ go, state, setState, progress }: any) {
   const needsLetter = [
     "Procurement Manager",
     "Admin Manager",
@@ -2652,7 +2710,7 @@ export function ScreenSignatory({ go, state, setState }: any) {
       <FormCard
         title="Authorised Signatory"
         subtitle="This person will accept terms and complete business verification"
-        progress={70}
+        progress={progress}
       >
         <div className="space-y-6 sm:space-y-7">
           <section>
@@ -2907,13 +2965,13 @@ export function ScreenDocuments({ go }: { go: Nav }) {
 }
 
 // ============== SCREEN 6 ==============
-export function ScreenReviewSubmit({ go, state, setState }: any) {
+export function ScreenReviewSubmit({ go, state, setState, progress }: any) {
   return (
     <div className="pb-2 px-2 sm:px-0">
       <FormCard
         title="Review and Submit"
         subtitle="Verify your information before proceeding to terms & conditions"
-        progress={85}
+        progress={progress}
       >
         <div className="space-y-7">
           <section>
@@ -3117,18 +3175,6 @@ function TermsDocument({
       }
     >
       <div className="flex flex-col items-center gap-8">
-        <div
-          className="text-center"
-          style={{
-            color: TEXT,
-            fontSize: 16,
-            lineHeight: "24px",
-            fontWeight: 400,
-          }}
-        >
-          Page: {page}/4
-        </div>
-
         <div className="w-full space-y-8">
           <div className="space-y-3 text-center">
             {page === 1 && (
@@ -3163,15 +3209,13 @@ function TermsDocument({
               <div className="space-y-5">{right}</div>
             </div>
           )}
-
-          {signed && <SignatureStamp />}
         </div>
       </div>
     </div>
   );
 }
 
-function TermsFormPage({ page, children }: any) {
+function TermsFormPage({ page, progress, children }: any) {
   return (
     <FormCard
       eyebrow={`Page ${page} of 4`}
@@ -3181,7 +3225,7 @@ function TermsFormPage({ page, children }: any) {
           ? "Final page - please read and accept to proceed to digital signature"
           : "Please review the terms before proceeding"
       }
-      progress={page === 1 ? 80 : page === 2 ? 85 : page === 3 ? 90 : 95}
+      progress={progress}
       maxWidth={1040}
       animateIn={false}
     >
@@ -3409,10 +3453,10 @@ function TermsProcurementFormContent({ signed = false }: { signed?: boolean }) {
   );
 }
 
-export function ScreenTermsPage1({ go, state }: any) {
+export function ScreenTermsPage1({ go, state, progress }: any) {
   return (
     <div className="pb-2 px-2 sm:px-0">
-      <TermsFormPage page={1}>
+      <TermsFormPage page={1} progress={progress}>
         <TermsDocument
           page={1}
           title="Gift Voucher Procurement (Corporate) Form"
@@ -3428,10 +3472,10 @@ export function ScreenTermsPage1({ go, state }: any) {
   );
 }
 
-export function ScreenTermsPage2({ go, state }: any) {
+export function ScreenTermsPage2({ go, state, progress }: any) {
   return (
     <div className="pb-2 px-2 sm:px-0">
-      <TermsFormPage page={2}>
+      <TermsFormPage page={2} progress={progress}>
         <TermsDocument
           page={2}
           framed={false}
@@ -3494,10 +3538,10 @@ export function ScreenTermsPage2({ go, state }: any) {
   );
 }
 
-export function ScreenTermsPage3({ go, state }: any) {
+export function ScreenTermsPage3({ go, state, progress }: any) {
   return (
     <div className="pb-2 px-2 sm:px-0">
-      <TermsFormPage page={3}>
+      <TermsFormPage page={3} progress={progress}>
         <TermsDocument
           page={3}
           framed={false}
@@ -3553,10 +3597,10 @@ export function ScreenTermsPage3({ go, state }: any) {
   );
 }
 
-export function ScreenTermsPage4({ go, state }: any) {
+export function ScreenTermsPage4({ go, state, progress }: any) {
   return (
     <div className="pb-2 px-2 sm:px-0">
-      <TermsFormPage page={4}>
+      <TermsFormPage page={4} progress={progress}>
         <TermsDocument
           page={4}
           framed={false}
@@ -3651,8 +3695,8 @@ export function ScreenTermsPage4({ go, state }: any) {
   );
 }
 
-// ============== AADHAAR OTP (Screen 11) ==============
-export function ScreenAadhaarOTP({ go, state, setState }: any) {
+// ============== Aadhar OTP (Screen 11) ==============
+export function ScreenAadhaarOTP({ go, state, setState, progress }: any) {
   const [otpSent, setOtpSent] = useState(false);
   const [verifying, setVerifying] = useState(false);
 
@@ -3676,12 +3720,13 @@ export function ScreenAadhaarOTP({ go, state, setState }: any) {
     <div className="py-2 px-2 sm:px-0">
       <FormCard
         eyebrow="Final step"
-        title={otpSent ? "Verify Your Aadhaar" : "Aadhaar eSign verification"}
+        title={otpSent ? "Verify Your Aadhaar" : "Aadhar eSign verification"}
         subtitle={
           otpSent
             ? "We've sent a 6-digit code to your registered mobile number"
-            : "Complete your digital signature using Aadhaar OTP"
+            : "Complete your digital signature using Aadhar OTP"
         }
+        progress={progress}
       >
         <div className="mx-auto w-full max-w-[500px] space-y-6">
           {!otpSent ? (
@@ -3707,15 +3752,15 @@ export function ScreenAadhaarOTP({ go, state, setState }: any) {
                     className="text-sm"
                     style={{ color: MUTED, lineHeight: 1.6 }}
                   >
-                    Your Aadhaar details are used only for identity verification
+                    Your Aadhar details are used only for identity verification
                     and creating a legally binding digital signature. We don't
-                    store your Aadhaar number.
+                    store your Aadhar number.
                   </p>
                 </div>
               </div>
-              <FieldLabel required>Aadhaar Number</FieldLabel>
+              <FieldLabel required>Aadhar Number</FieldLabel>
               <TextInput
-                placeholder="Enter 12-digit Aadhaar number"
+                placeholder="Enter 12-digit Aadhar number"
                 maxLength={12}
                 value={state.aadhaarNumber || ""}
                 onChange={(e: any) => {
@@ -3791,7 +3836,7 @@ export function ScreenAadhaarOTP({ go, state, setState }: any) {
                     lineHeight: "28px",
                   }}
                 >
-                  I am the holder of the above Aadhaar Number. I hereby
+                  I am the holder of the above Aadhar Number. I hereby
                   authenticate myself as the legal signee for this document.
                 </p>
               </div>
@@ -3897,7 +3942,9 @@ export function ScreenSuccess({ state }: any) {
     return () => window.clearInterval(timer);
   }, []);
 
-  const handleVideoTimeUpdate = (event: React.SyntheticEvent<HTMLVideoElement>) => {
+  const handleVideoTimeUpdate = (
+    event: React.SyntheticEvent<HTMLVideoElement>,
+  ) => {
     const video = event.currentTarget;
     if (!video || video.currentTime < 7) return;
 

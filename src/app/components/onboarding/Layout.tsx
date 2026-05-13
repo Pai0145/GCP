@@ -47,7 +47,15 @@ export const STEPS: {
     ],
   },
   { id: 4, label: "Authorised signatory" },
-  { id: 5, label: "Review and Submit" },
+  {
+    id: 5,
+    label: "Review and Submit",
+    subs: [
+      { id: "terms", label: "Terms & Conditions" },
+      { id: "aadhaar", label: "Aadhaar eSign" },
+      { id: "signature", label: "Signature" },
+    ],
+  },
 ];
 
 export function TopNav({
@@ -236,10 +244,13 @@ function SidebarComponent({
             },
           }}
         >
-          {STEPS.map((step) => {
+          {STEPS.map((step, index) => {
             const isComplete = completed.includes(step.id);
             const isActive = step.id === currentStep;
             const isClickable = isComplete || isActive;
+            const hasNextStep = index < STEPS.length - 1;
+            const stepLineColor =
+              isComplete || isActive ? "rgba(0, 86, 86, 0.34)" : BORDER_INPUT;
 
             return (
               <motion.li
@@ -247,7 +258,7 @@ function SidebarComponent({
                 onClick={() =>
                   isClickable && onStepClick && onStepClick(step.id)
                 }
-                className={isClickable && onStepClick ? "cursor-pointer" : ""}
+                className={`relative ${isClickable && onStepClick ? "cursor-pointer" : ""}`}
                 variants={{
                   hidden: { opacity: 0, x: -10 },
                   visible: {
@@ -257,11 +268,18 @@ function SidebarComponent({
                   },
                 }}
               >
+                {hasNextStep && (
+                  <div
+                    aria-hidden="true"
+                    className="absolute left-[28px] top-[44px] bottom-[-16px] w-[3px] rounded-full"
+                    style={{ background: stepLineColor }}
+                  />
+                )}
                 <AnimatePresence mode="wait" initial={false}>
                   {isActive ? (
                     <motion.div
                       key="active"
-                      className="rounded-[12px] p-4"
+                      className="relative z-10 rounded-[12px] p-4"
                       style={{
                         background: HEADER_GRADIENT,
                         boxShadow:
@@ -303,7 +321,7 @@ function SidebarComponent({
                   ) : (
                     <motion.div
                       key="inactive"
-                      className="rounded-[12px] p-4"
+                      className="relative z-10 rounded-[12px] p-4"
                       style={{
                         background: isComplete ? "#F3FCF6" : BG_SUBTLE,
                         border: `1px solid ${isComplete ? "#77D4A3" : BORDER_INPUT}`,
@@ -353,13 +371,17 @@ function SidebarComponent({
                   {step.subs && isActive && (
                     <motion.ul
                       key="subs"
-                      className="mx-4 mt-2 pl-4 space-y-2 overflow-hidden"
-                      style={{ borderLeft: `1px solid ${BORDER}` }}
+                      className="relative ml-[29px] mt-3 space-y-1 overflow-hidden pl-0"
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: "auto" }}
                       exit={{ opacity: 0, height: 0 }}
                       transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
                     >
+                      <div
+                        aria-hidden="true"
+                        className="absolute left-[3px] top-0 bottom-[13px] w-px"
+                        style={{ background: "rgba(0, 86, 86, 0.22)" }}
+                      />
                       {step.subs.map((sub, i) => {
                         const subActive = currentSub === sub.id;
                         const subDone = completedSubs?.includes(sub.id);
@@ -373,7 +395,7 @@ function SidebarComponent({
                                 onStepClick(step.id, sub.id);
                               }
                             }}
-                            className={`flex h-[26px] items-center gap-2 px-2 py-1 ${isSubClickable && onStepClick ? "cursor-pointer" : ""}`}
+                            className={`relative flex min-h-[26px] items-center py-1 pl-0 pr-2 ${isSubClickable && onStepClick ? "cursor-pointer" : ""}`}
                             initial={{ opacity: 0, x: -6 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{
@@ -383,7 +405,7 @@ function SidebarComponent({
                             }}
                           >
                             <div
-                              className="size-1.5 rounded-full"
+                              className="relative z-10 size-1.5 rounded-full"
                               style={{
                                 background: subDone
                                   ? SUCCESS
@@ -393,7 +415,11 @@ function SidebarComponent({
                               }}
                             />
                             <span
+                              className={subActive ? "ml-3 rounded-full px-3 py-1" : "ml-3 px-0 py-1"}
                               style={{
+                                background: subActive
+                                  ? "rgba(0,86,86,0.12)"
+                                  : "transparent",
                                 color: subActive
                                   ? PRIMARY
                                   : subDone
@@ -632,6 +658,7 @@ export function PageShell({
   onSaveExit,
   onStepClick,
   autosaveKey,
+  progressPercent,
 }: {
   currentStep: number;
   completed: number[];
@@ -642,9 +669,11 @@ export function PageShell({
   onSaveExit?: () => void;
   onStepClick?: (step: number, subId?: string) => void;
   autosaveKey?: string;
+  progressPercent?: number;
 }) {
   const totalSteps = STEPS.length;
-  const progressPercent = (completed.length / totalSteps) * 100;
+  const setupProgressPercent =
+    progressPercent ?? (completed.length / totalSteps) * 100;
 
   return (
     <div
@@ -697,7 +726,7 @@ export function PageShell({
             currentSub={currentSub}
             completedSubs={completedSubs}
             totalSteps={totalSteps}
-            progressPercent={progressPercent}
+            progressPercent={setupProgressPercent}
             onStepClick={onStepClick}
           />
         )}

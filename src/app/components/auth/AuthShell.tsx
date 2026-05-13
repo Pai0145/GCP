@@ -157,7 +157,7 @@ export function AuthShell({
               <div
                 className="uppercase truncate"
                 style={{
-                  color: "#36CC8B",
+                  color: "#D1F256",
                   fontSize: 9,
                   fontWeight: 700,
                   letterSpacing: "0.08em",

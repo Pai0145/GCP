@@ -99,7 +99,7 @@ function Container5() {
     >
       <Container6 />
       <Heading />
-      <p className="font-['Lato:Medium',sans-serif] leading-[24px] not-italic relative shrink-0 text-[16px] text-[rgba(255,255,255,0.7)] tracking-[-0.16px] w-[550px]">
+      <p className="font-['Lato:Regular',sans-serif] leading-[24px] not-italic relative shrink-0 text-[16px] letter-spacing-[1px] text-[rgb(255,255,255)] tracking-[-0.16px] w-[550px]">
         Join the leading payment platform designed for modern businesses. Accept
         payments, manage transactions, and grow revenue seamlessly.
       </p>
