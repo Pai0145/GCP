@@ -1,4 +1,4 @@
-import { useCallback, useLayoutEffect, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useState } from "react";
 import {
   ArrowRight,
   BadgeCheck,
@@ -9,6 +9,7 @@ import {
   Globe2,
   LayoutDashboard,
   Menu,
+  ShieldCheck,
   Sparkles,
   WalletCards,
 } from "lucide-react";
@@ -238,6 +239,7 @@ export default function App() {
 
 function AppRoutes() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [logoTransitionOpen, setLogoTransitionOpen] = useState(false);
 
   const startAuthTransition = useCallback(() => {
@@ -246,12 +248,19 @@ function AppRoutes() {
     window.setTimeout(() => setLogoTransitionOpen(false), 2720);
   }, [navigate]);
 
+  useEffect(() => {
+    if (location.pathname !== "/landing") return;
+    if (window.sessionStorage.getItem("onboardingFlowMode")) return;
+    window.sessionStorage.setItem("onboardingFlowMode", "all");
+  }, [location.pathname]);
+
   return (
     <>
       <ScrollToTop />
       <Routes>
+        <Route path="/" element={<FlowSelectorPage />} />
         <Route
-          path="/"
+          path="/landing"
           element={<LandingPage onStartAuth={startAuthTransition} />}
         />
         <Route path="/signup" element={<AuthPage mode="signup" />} />
@@ -264,6 +273,129 @@ function AppRoutes() {
         {logoTransitionOpen && <LandingAuthBridge />}
       </AnimatePresence>
     </>
+  );
+}
+
+function FlowSelectorPage() {
+  const navigate = useNavigate();
+
+  const chooseFlow = (mode: "happy" | "all") => {
+    window.sessionStorage.setItem("onboardingFlowMode", mode);
+    navigate("/landing");
+  };
+
+  return (
+    <main className="min-h-screen overflow-hidden bg-[#06161d] text-white">
+      <div
+        aria-hidden="true"
+        className="absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(circle at 18% 20%, rgba(208,242,85,0.18) 0%, rgba(208,242,85,0) 28%), radial-gradient(circle at 80% 16%, rgba(0,168,137,0.18) 0%, rgba(0,168,137,0) 26%), linear-gradient(160deg, #031217 0%, #08263c 48%, #0a1b22 100%)",
+        }}
+      />
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 opacity-[0.14]"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(255,255,255,0.12) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.12) 1px, transparent 1px)",
+          backgroundSize: "72px 72px",
+          maskImage:
+            "radial-gradient(circle at center, rgba(0,0,0,0.8) 0%, transparent 78%)",
+          WebkitMaskImage:
+            "radial-gradient(circle at center, rgba(0,0,0,0.8) 0%, transparent 78%)",
+        }}
+      />
+      <div className="relative mx-auto flex min-h-screen max-w-6xl flex-col justify-center px-5 py-16 lg:px-8">
+        <motion.div
+          initial={{ opacity: 0, y: 18 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+          className="max-w-3xl"
+        >
+          <p className="text-sm font-black uppercase tracking-[0.18em] text-[#d0f255]">
+            Onboarding Modes
+          </p>
+          <h1 className="mt-4 text-[40px] font-semibold leading-[1.02] text-white sm:text-[58px] lg:text-[72px]">
+            Choose how you want to demo the onboarding journey.
+          </h1>
+          <p className="mt-5 max-w-2xl text-base leading-7 text-[#c4d4de] sm:text-lg sm:leading-8">
+            Start with the cleanest happy path, or keep every scenario chooser
+            enabled so reviewers can test success and error states from the same
+            experience.
+          </p>
+        </motion.div>
+
+        <div className="mt-12 grid gap-5 lg:grid-cols-2">
+          {[
+            {
+              key: "happy" as const,
+              icon: Sparkles,
+              title: "Happy Flow",
+              copy: "Every upload follows the success path automatically. No scenario popup appears during onboarding.",
+              cta: "Open happy flow",
+              accent: "#d0f255",
+              bg: "linear-gradient(180deg, rgba(208,242,85,0.18) 0%, rgba(208,242,85,0.06) 100%)",
+            },
+            {
+              key: "all" as const,
+              icon: ShieldCheck,
+              title: "All Case Scenarios",
+              copy: "Keep the scenario chooser enabled so teams can trigger success and error states for every upload interaction.",
+              cta: "Open all scenarios",
+              accent: "#8be3c8",
+              bg: "linear-gradient(180deg, rgba(9,105,105,0.36) 0%, rgba(9,105,105,0.12) 100%)",
+            },
+          ].map((option, index) => {
+            const Icon = option.icon;
+            return (
+              <motion.button
+                key={option.key}
+                type="button"
+                onClick={() => chooseFlow(option.key)}
+                initial={{ opacity: 0, y: 18 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{
+                  delay: 0.14 + index * 0.08,
+                  duration: 0.55,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
+                whileHover={{ y: -4, scale: 1.01 }}
+                whileTap={{ scale: 0.99 }}
+                className="group rounded-[28px] border border-white/10 p-7 text-left shadow-[0_20px_60px_rgba(0,0,0,0.25)] backdrop-blur-xl transition"
+                style={{
+                  background: option.bg,
+                }}
+              >
+                <div
+                  className="flex h-14 w-14 items-center justify-center rounded-2xl"
+                  style={{ background: "rgba(255,255,255,0.08)", color: option.accent }}
+                >
+                  <Icon size={26} />
+                </div>
+                <h2 className="mt-6 text-[30px] font-semibold leading-tight text-white">
+                  {option.title}
+                </h2>
+                <p className="mt-4 max-w-lg text-[15px] leading-7 text-[#d4e1e8]">
+                  {option.copy}
+                </p>
+                <div
+                  className="mt-8 inline-flex items-center gap-3 rounded-full px-5 py-3 text-sm font-black transition group-hover:translate-x-1"
+                  style={{
+                    background: option.key === "happy" ? "#d0f255" : "#0f3d49",
+                    color: option.key === "happy" ? "#042126" : "#ffffff",
+                  }}
+                >
+                  {option.cta}
+                  <ArrowRight size={18} />
+                </div>
+              </motion.button>
+            );
+          })}
+        </div>
+      </div>
+    </main>
   );
 }
 

@@ -331,6 +331,8 @@ function FieldLabel({ children, optional, required }: any) {
 }
 
 function TextInput({ valid, ...props }: any) {
+  const isReadOnly = Boolean(props.readOnly || props.disabled);
+
   return (
     <div className="relative">
       <input
@@ -338,13 +340,20 @@ function TextInput({ valid, ...props }: any) {
         className="w-full px-4 py-2.5 rounded-[8px] outline-none transition"
         style={{
           border: `1px solid ${BORDER_INPUT}`,
-          color: TEXT,
-          background: "#fff",
+          color: props.value ? TEXT : MUTED,
+          background: isReadOnly ? BG_SOFT : "#fff",
           fontSize: 14,
           lineHeight: "21px",
+          cursor: isReadOnly ? "not-allowed" : "text",
         }}
-        onFocus={(e) => (e.currentTarget.style.borderColor = PRIMARY)}
-        onBlur={(e) => (e.currentTarget.style.borderColor = BORDER_INPUT)}
+        onFocus={(e) => {
+          if (isReadOnly) return;
+          e.currentTarget.style.borderColor = PRIMARY;
+        }}
+        onBlur={(e) => {
+          if (isReadOnly) return;
+          e.currentTarget.style.borderColor = BORDER_INPUT;
+        }}
       />
       <AnimatePresence>
         {valid && (
@@ -1291,10 +1300,10 @@ export function ScreenAccountOwner({ go, state, setState, progress }: any) {
 }
 
 // ============== BEFORE YOU BEGIN — Document upload + autofill ==============
-type DocKey = "gst" | "cin" | "address";
+type DocKey = "gst" | "cin" | "pan" | "address";
 type UploadedDoc = { name: string; ext: string; size: string } | null;
 type UploadScenario = "success" | "error";
-type FetchedDocKey = Extract<DocKey, "gst" | "cin">;
+type FetchedDocKey = Extract<DocKey, "gst" | "cin" | "pan">;
 type FetchedDetail = { label: string; value: string };
 
 const DOC_DEFS: {
@@ -1316,6 +1325,12 @@ const DOC_DEFS: {
     sample: { name: "CIN Certificate.pdf", ext: "PDF", size: "1.2 MB" },
   },
   {
+    key: "pan",
+    title: "Company PAN",
+    hint: "PDF or image, up to 5 MB",
+    sample: { name: "PAN Card.pdf", ext: "PDF", size: "186 KB" },
+  },
+  {
     key: "address",
     title: "Address proof (optional)",
     hint: "PDF or image, up to 5 MB",
@@ -1326,6 +1341,7 @@ const DOC_DEFS: {
 const DOC_ICONS: Record<DocKey, string> = {
   gst: diplomaVerifiedIcon,
   cin: plateIcon,
+  pan: plateIcon,
   address: mapPointWaveIcon,
 };
 
@@ -1436,11 +1452,14 @@ const AUTOFETCHED_DETAILS: Record<FetchedDocKey, FetchedDetail[]> = {
     { label: "GSTIN number", value: "29AABCP1234F1Z5" },
     { label: "GSTIN name", value: "Pine Labs Private Limited" },
     { label: "GSTIN state", value: "Karnataka" },
-    { label: "PAN number", value: "AABCP1234F" },
   ],
   cin: [
     { label: "CIN/LLP No", value: "U72900DL1998PTC096693" },
     { label: "CIN/LLP Name", value: "Pine Labs Private Limited" },
+  ],
+  pan: [
+    { label: "PAN number", value: "AABCP1234F" },
+    { label: "Legal name", value: "Pine Labs Private Limited" },
   ],
 };
 
@@ -1556,6 +1575,10 @@ function EditFetchedDetailsModal({
   onClose: () => void;
 }) {
   const [draftRows, setDraftRows] = useState(rows);
+  const isEditableRow = (label: string) => {
+    const normalized = label.trim().toLowerCase();
+    return normalized === "first name" || normalized === "last name";
+  };
 
   return (
     <motion.div
@@ -1615,7 +1638,9 @@ function EditFetchedDetailsModal({
                 </span>
                 <input
                   value={row.value}
+                  readOnly={!isEditableRow(row.label)}
                   onChange={(e) => {
+                    if (!isEditableRow(row.label)) return;
                     const value = e.target.value;
                     setDraftRows((current) =>
                       current.map((item, itemIndex) =>
@@ -1623,8 +1648,12 @@ function EditFetchedDetailsModal({
                       ),
                     );
                   }}
-                  className="h-11 w-full rounded-[10px] border border-[#d0d5dd] bg-white px-3 text-sm outline-none transition focus:border-[#005656] focus:ring-2 focus:ring-[#005656]/10"
-                  style={{ color: TEXT }}
+                  className="h-11 w-full rounded-[10px] border border-[#d0d5dd] px-3 text-sm outline-none transition focus:border-[#005656] focus:ring-2 focus:ring-[#005656]/10"
+                  style={{
+                    color: TEXT,
+                    background: isEditableRow(row.label) ? "#fff" : BG_SOFT,
+                    cursor: isEditableRow(row.label) ? "text" : "not-allowed",
+                  }}
                 />
               </label>
             ))}
@@ -1655,19 +1684,27 @@ function EditFetchedDetailsModal({
 }
 
 export function ScreenBeforeYouBegin({ go, state, setState, progress }: any) {
+  const flowMode =
+    typeof window !== "undefined"
+      ? window.sessionStorage.getItem("onboardingFlowMode") ?? "all"
+      : "all";
+  const isHappyFlow = flowMode === "happy";
   const [docs, setDocs] = useState<Record<DocKey, UploadedDoc>>({
     gst: null,
     cin: null,
+    pan: null,
     address: null,
   });
   const [docErrors, setDocErrors] = useState<Record<DocKey, string | null>>({
     gst: null,
     cin: null,
+    pan: null,
     address: null,
   });
   const [scanningDocs, setScanningDocs] = useState<Record<DocKey, boolean>>({
     gst: false,
     cin: false,
+    pan: false,
     address: false,
   });
   const [scenarioDoc, setScenarioDoc] = useState<DocKey | null>(null);
@@ -1680,7 +1717,8 @@ export function ScreenBeforeYouBegin({ go, state, setState, progress }: any) {
   const [gstPresent, setGstPresent] = useState(true);
   const [parsing, setParsing] = useState(false);
 
-  const allUploaded = !!docs.cin && (gstPresent ? !!docs.gst : !!docs.address);
+  const allUploaded =
+    !!docs.cin && !!docs.pan && (gstPresent ? !!docs.gst : !!docs.address);
 
   const handleContinue = () => {
     setParsing(true);
@@ -1691,14 +1729,22 @@ export function ScreenBeforeYouBegin({ go, state, setState, progress }: any) {
     }, 1400);
   };
 
-  const openScenario = (key: DocKey) => setScenarioDoc(key);
+  const openScenario = (key: DocKey) => {
+    const doc = DOC_DEFS.find((item) => item.key === key);
+    if (!doc) return;
+    if (isHappyFlow) {
+      startSuccessfulUpload(key, doc.sample);
+      return;
+    }
+    setScenarioDoc(key);
+  };
 
   const startSuccessfulUpload = (key: DocKey, sample: UploadedDoc) => {
     setScenarioDoc(null);
     setDocErrors((current) => ({ ...current, [key]: null }));
     setScanningDocs((current) => ({ ...current, [key]: true }));
 
-    if (key === "gst" || key === "cin") {
+    if (key === "gst" || key === "cin" || key === "pan") {
       const details = AUTOFETCHED_DETAILS[key];
       setFetchedDocs((current) => (current.includes(key) ? current : [...current, key]));
       setFetchedDetails((current) => ({ ...current, [key]: [] }));
@@ -1764,7 +1810,7 @@ export function ScreenBeforeYouBegin({ go, state, setState, progress }: any) {
   return (
     <div className="pb-2 px-2 sm:px-0">
       <AnimatePresence>
-        {scenarioDocDef && (
+        {!isHappyFlow && scenarioDocDef && (
           <UploadScenarioModal
             docTitle={scenarioDocDef.title}
             onChoose={handleScenario}
@@ -2666,28 +2712,20 @@ export function ScreenBusinessIdentity({ go, state, setState, progress }: any) {
               >
                 PAN details
               </h3>
-              <PANInputWithVerify
-                index={3}
-                label="PAN Number"
-                value={state.panNumber}
-                legalName={state.panName}
-                onChange={(e: any) =>
-                  setState({
-                    ...state,
-                    panNumber: e.target.value.toUpperCase(),
-                  })
-                }
-                verified={state.panVerified}
-                onVerify={() => {
-                  setState({
-                    ...state,
-                    panVerified: true,
-                    panName: "PINE LABS LIMITED",
-                  });
-                }}
-                source="Fetched from documents"
-                required
-              />
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
+                <PrefilledWithCheck
+                  index={3}
+                  label="PAN Number"
+                  value={state.panNumber}
+                  source="Fetched from documents"
+                />
+                <Prefilled
+                  index={4}
+                  label="Legal name"
+                  value={state.panName}
+                  source="Fetched from documents"
+                />
+              </div>
               <p className="text-xs sm:text-sm mt-2" style={{ color: MUTED }}>
                 PAN details will be matched against the type of
                 entity/organisation.
@@ -2859,7 +2897,7 @@ export function ScreenCompanyAddress({ go, state, setState, progress }: any) {
               />
               <div>
                 <FieldLabel optional>Address line 2</FieldLabel>
-                <TextInput placeholder="Apartment, suite, etc." />
+                <TextInput readOnly value="" placeholder="Not available" />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <Prefilled index={1} label="PIN code" value="122002" />

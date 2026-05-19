@@ -20,6 +20,18 @@ interface LoginSignupProps {
 }
 
 const easeOut = [0.22, 1, 0.36, 1] as const;
+const PERSONAL_EMAIL_DOMAINS = new Set([
+  "gmail.com",
+  "yahoo.com",
+  "hotmail.com",
+  "outlook.com",
+  "icloud.com",
+  "live.com",
+  "aol.com",
+  "proton.me",
+  "protonmail.com",
+  "rediffmail.com",
+]);
 
 export function LoginSignup({
   onContinue,
@@ -28,7 +40,7 @@ export function LoginSignup({
   onModeChange,
 }: LoginSignupProps) {
   const [mode, setMode] = useState<"signup" | "login">(initialMode);
-  const [email, setEmail] = useState("john.doe@company.com");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -40,6 +52,18 @@ export function LoginSignup({
   useEffect(() => {
     setMode(initialMode);
   }, [initialMode]);
+
+  const flowMode =
+    typeof window !== "undefined"
+      ? window.sessionStorage.getItem("onboardingFlowMode") ?? "all"
+      : "all";
+  const isAllScenariosMode = flowMode === "all";
+  const emailDomain = email.includes("@")
+    ? email.split("@")[1].trim().toLowerCase()
+    : "";
+  const hasPersonalEmailDomain = PERSONAL_EMAIL_DOMAINS.has(emailDomain);
+  const showWorkEmailError =
+    isAllScenariosMode && email.trim().length > 0 && hasPersonalEmailDomain;
 
   const handleModeChange = (nextMode: "signup" | "login") => {
     setMode(nextMode);
@@ -65,7 +89,11 @@ export function LoginSignup({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (submitting) return;
-    if (email && (mode === "login" || (mode === "signup" && isPasswordValid))) {
+    if (
+      email &&
+      !showWorkEmailError &&
+      (mode === "login" || (mode === "signup" && isPasswordValid))
+    ) {
       setSubmitting(true);
       setTimeout(() => {
         setSubmitting(false);
@@ -355,9 +383,28 @@ export function LoginSignup({
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="john.doe@company.com"
-                className="auth-input w-full px-4 py-2.5 bg-[#fafafa] border border-[#d5d7da] rounded-lg text-[16px] text-[#111111] focus:outline-none focus:ring-2 focus:ring-[#005656] focus:border-transparent"
+                className="auth-input w-full px-4 py-2.5 bg-[#fafafa] border rounded-lg text-[16px] text-[#111111] focus:outline-none focus:ring-2 focus:border-transparent"
+                style={{
+                  borderColor: showWorkEmailError ? "#f04438" : "#d5d7da",
+                  boxShadow: showWorkEmailError
+                    ? "0 0 0 2px rgba(240,68,56,0.12)"
+                    : undefined,
+                }}
                 required
               />
+              <AnimatePresence initial={false}>
+                {showWorkEmailError && (
+                  <motion.p
+                    initial={{ opacity: 0, y: -4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -4 }}
+                    transition={{ duration: 0.18, ease: easeOut }}
+                    className="mt-2 text-[13px] leading-5 text-[#d92d20]"
+                  >
+                    Please enter your company or work email address.
+                  </motion.p>
+                )}
+              </AnimatePresence>
             </motion.div>
 
             {/* Password input */}
@@ -417,9 +464,19 @@ export function LoginSignup({
             {/* Submit button */}
             <motion.button
               type="submit"
-              disabled={(mode === "signup" && !isPasswordValid) || submitting}
+              disabled={
+                showWorkEmailError ||
+                (mode === "signup" && !isPasswordValid) ||
+                submitting
+              }
               onPointerDown={(e) => {
-                if (!((mode === "signup" && !isPasswordValid) || submitting))
+                if (
+                  !(
+                    showWorkEmailError ||
+                    (mode === "signup" && !isPasswordValid) ||
+                    submitting
+                  )
+                )
                   spawnRipple(e);
               }}
               initial={{ opacity: 0, y: 8 }}
@@ -427,7 +484,9 @@ export function LoginSignup({
                 opacity: 1,
               }}
               whileHover={
-                (mode === "signup" && !isPasswordValid) || submitting
+                showWorkEmailError ||
+                (mode === "signup" && !isPasswordValid) ||
+                submitting
                   ? undefined
                   : {
                       y: -2,
@@ -437,7 +496,9 @@ export function LoginSignup({
                     }
               }
               whileTap={
-                (mode === "signup" && !isPasswordValid) || submitting
+                showWorkEmailError ||
+                (mode === "signup" && !isPasswordValid) ||
+                submitting
                   ? undefined
                   : {
                       y: 0,
