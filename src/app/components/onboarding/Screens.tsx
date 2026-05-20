@@ -99,6 +99,10 @@ const SPEND_OPTIONS = [
   "Above 1 Crore",
 ];
 
+function usesDelegatedSignoffFlow(state: any) {
+  return ["Admin Manager", "Other"].includes(state.designation);
+}
+
 function getRethemedSuccessTick() {
   const cloned = JSON.parse(JSON.stringify(successTickRaw));
 
@@ -3547,11 +3551,7 @@ function PrefilledWithCheck({
 
 // ============== SCREEN 5 ==============
 export function ScreenSignatory({ go, state, setState, progress }: any) {
-  const needsLetter = [
-    "Procurement Manager",
-    "Admin Manager",
-    "Other",
-  ].includes(state.designation);
+  const needsLetter = state.designation === "Procurement Manager";
   const valid =
     state.sigName &&
     state.sigEmail &&
@@ -3823,11 +3823,17 @@ export function ScreenDocuments({ go }: { go: Nav }) {
 
 // ============== SCREEN 6 ==============
 export function ScreenReviewSubmit({ go, state, setState, progress }: any) {
+  const delegatedSignoff = usesDelegatedSignoffFlow(state);
+
   return (
     <div className="pb-2 px-2 sm:px-0">
       <FormCard
         title="Review and Submit"
-        subtitle="Verify your information before proceeding to terms & conditions"
+        subtitle={
+          delegatedSignoff
+            ? "Verify your information before sending the terms to the authorised signatory"
+            : "Verify your information before proceeding to terms & conditions"
+        }
         progress={progress}
       >
         <div className="space-y-7">
@@ -3892,8 +3898,9 @@ export function ScreenReviewSubmit({ go, state, setState, progress }: any) {
                 className="text-sm"
                 style={{ color: TEXT, fontWeight: 600 }}
               >
-                I confirm that the information provided is accurate and I'm
-                ready to proceed with terms review and digital signature.
+                {delegatedSignoff
+                  ? "I confirm that the information provided is accurate and is ready to be shared with the authorised signatory for review and signoff."
+                  : "I confirm that the information provided is accurate and I'm ready to proceed with terms review and digital signature."}
               </span>
             </label>
           </section>
@@ -3901,8 +3908,20 @@ export function ScreenReviewSubmit({ go, state, setState, progress }: any) {
       </FormCard>
 
       <ActionBar>
-        <PrimaryButton disabled={!state.declaration} onClick={() => go(7)}>
-          Review terms & sign
+        <PrimaryButton
+          disabled={!state.declaration}
+          onClick={() => {
+            if (delegatedSignoff) {
+              setState({ ...state, awaitingAuthorisedSignoff: true });
+              go(12);
+              return;
+            }
+            go(7);
+          }}
+        >
+          {delegatedSignoff
+            ? "Send to Authorised Person"
+            : "Review terms & sign"}
         </PrimaryButton>
       </ActionBar>
     </div>
@@ -4190,7 +4209,13 @@ function TermsSplitRow({ leftLabel, leftValue, rightLabel, rightValue }: any) {
   );
 }
 
-function TermsProcurementFormContent({ signed = false }: { signed?: boolean }) {
+function TermsProcurementFormContent({
+  signed = false,
+  showSignatureSection = true,
+}: {
+  signed?: boolean;
+  showSignatureSection?: boolean;
+}) {
   const orgTypes = [
     "Sole Proprietorship",
     "Partnership",
@@ -4284,33 +4309,39 @@ function TermsProcurementFormContent({ signed = false }: { signed?: boolean }) {
         rightLabel="TAN Number (If applicable):"
         rightValue=""
       />
-      <TermsCell center className="border-r">
-        Signature of authorized person of the Company:
-      </TermsCell>
-      <TermsRow label="Company Name" value="PINE LABS LIMITED" tall />
-      <TermsRow label="Designation" value="MANAGER" tall />
-      <div className="grid grid-cols-1 sm:grid-cols-[180px_1fr]">
-        <TermsCell label className="min-h-[160px] sm:min-h-[200px]">
-          Signature & Seal
-        </TermsCell>
-        <TermsCell className="min-h-[160px] border-r sm:min-h-[200px]">
-          {signed && (
-            <div className="flex h-full w-full items-end justify-end">
-              <img
-                src={signatureImg}
-                alt="Authorised digital signature"
-                className="h-16 sm:h-20 w-auto object-contain"
-                draggable={false}
-              />
-            </div>
-          )}
-        </TermsCell>
-      </div>
+      {showSignatureSection && (
+        <>
+          <TermsCell center className="border-r">
+            Signature of authorized person of the Company:
+          </TermsCell>
+          <TermsRow label="Company Name" value="PINE LABS LIMITED" tall />
+          <TermsRow label="Designation" value="MANAGER" tall />
+          <div className="grid grid-cols-1 sm:grid-cols-[180px_1fr]">
+            <TermsCell label className="min-h-[160px] sm:min-h-[200px]">
+              Signature & Seal
+            </TermsCell>
+            <TermsCell className="min-h-[160px] border-r sm:min-h-[200px]">
+              {signed && (
+                <div className="flex h-full w-full items-end justify-end">
+                  <img
+                    src={signatureImg}
+                    alt="Authorised digital signature"
+                    className="h-16 sm:h-20 w-auto object-contain"
+                    draggable={false}
+                  />
+                </div>
+              )}
+            </TermsCell>
+          </div>
+        </>
+      )}
     </div>
   );
 }
 
 export function ScreenTermsPage1({ go, state, progress }: any) {
+  const delegatedSignoff = usesDelegatedSignoffFlow(state);
+
   return (
     <div className="pb-2 px-2 sm:px-0">
       <TermsFormPage page={1} progress={progress}>
@@ -4318,7 +4349,10 @@ export function ScreenTermsPage1({ go, state, progress }: any) {
           page={1}
           title="Gift Voucher Procurement (Corporate) Form"
         >
-          <TermsProcurementFormContent signed={state.esignVerified} />
+          <TermsProcurementFormContent
+            signed={state.esignVerified}
+            showSignatureSection={!delegatedSignoff}
+          />
         </TermsDocument>
       </TermsFormPage>
 
@@ -4409,7 +4443,9 @@ export function ScreenTermsPage3({ go, state, progress }: any) {
   );
 }
 
-export function ScreenTermsPage4({ go, state, progress }: any) {
+export function ScreenTermsPage4({ go, state, setState, progress }: any) {
+  const delegatedSignoff = usesDelegatedSignoffFlow(state);
+
   return (
     <div className="pb-2 px-2 sm:px-0">
       <TermsFormPage page={4} progress={progress}>
@@ -4487,9 +4523,9 @@ export function ScreenTermsPage4({ go, state, progress }: any) {
                     Final acceptance required
                   </div>
                   <p className="text-sm" style={{ color: MUTED }}>
-                    By proceeding to the next step, you confirm that you have
-                    read, understood, and accept all 4 pages of these Terms &
-                    Conditions on behalf of your organization.
+                    {delegatedSignoff
+                      ? "By sending this package forward, you confirm these details are ready for the authorised signatory to review and sign on behalf of your organization."
+                      : "By proceeding to the next step, you confirm that you have read, understood, and accept all 4 pages of these Terms & Conditions on behalf of your organization."}
                   </p>
                 </div>
               </div>
@@ -4499,8 +4535,21 @@ export function ScreenTermsPage4({ go, state, progress }: any) {
       </TermsFormPage>
 
       <ActionBar>
-        <PrimaryButton onClick={() => (state.esignVerified ? go(12) : go(11))}>
-          {state.esignVerified ? "Sign" : "Accept & proceed to eSign"}
+        <PrimaryButton
+          onClick={() => {
+            if (delegatedSignoff) {
+              setState({ ...state, awaitingAuthorisedSignoff: true });
+              go(12);
+              return;
+            }
+            state.esignVerified ? go(12) : go(11);
+          }}
+        >
+          {delegatedSignoff
+            ? "Send to Authorised Person"
+            : state.esignVerified
+              ? "Sign"
+              : "Accept & proceed to eSign"}
         </PrimaryButton>
       </ActionBar>
     </div>
@@ -5853,6 +5902,72 @@ export function ScreenSuccess({ state }: any) {
           </motion.div>
         )}
       </AnimatePresence>
+    </div>
+  );
+}
+
+export function ScreenAuthorisedSignoffPending({ state }: any) {
+  const firstName = state.fullName?.split(" ")[0] || "there";
+
+  return (
+    <div className="relative mx-auto w-full max-w-4xl px-2 py-8 sm:px-4 sm:py-12">
+      <motion.section
+        initial={{ opacity: 0, y: 18 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+        className="mx-auto rounded-[28px] border border-[#d5efe8] bg-white/90 p-7 shadow-[0_25px_60px_-20px_rgba(0,86,86,0.22)] backdrop-blur sm:p-10"
+      >
+        <div className="mx-auto flex max-w-2xl flex-col items-center text-center">
+          <div className="inline-flex size-16 items-center justify-center rounded-full bg-[#ecfdf3] text-[#027a48]">
+            <Mail className="size-8" />
+          </div>
+          <h1
+            className="mt-6 text-[32px] font-bold leading-tight text-[#005656] sm:text-[42px]"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
+            Waiting for the authorised signatory to sign off
+          </h1>
+          <p className="mt-4 text-base leading-7 sm:text-lg" style={{ color: TEXT_2 }}>
+            {firstName}, the terms and company details have been sent to the
+            authorised signatory for review. We’ll continue once they complete
+            the signoff step.
+          </p>
+
+          <div className="mt-8 grid w-full gap-4 rounded-[20px] border border-[#d5e7e4] bg-[#f7fbfa] p-5 text-left sm:grid-cols-2 sm:p-6">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.08em]" style={{ color: MUTED }}>
+                Signatory
+              </p>
+              <p className="mt-2 text-base font-semibold" style={{ color: TEXT }}>
+                {state.sigName || "Authorised signatory"}
+              </p>
+              <p className="mt-1 text-sm" style={{ color: TEXT_2 }}>
+                {state.sigEmail || "Email will be shared with the signatory"}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.08em]" style={{ color: MUTED }}>
+                Status
+              </p>
+              <div className="mt-2 inline-flex items-center gap-2 rounded-full bg-[#fff7e8] px-3 py-1.5 text-sm font-semibold text-[#b54708]">
+                <CircleAlert className="size-4" />
+                Awaiting signoff
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-8 w-full rounded-[20px] border border-[#d5efe8] bg-[linear-gradient(135deg,_rgba(208,242,85,0.18),_rgba(0,86,86,0.06))] p-5 text-left sm:p-6">
+            <p className="text-sm font-semibold" style={{ color: TEXT }}>
+              What happens next
+            </p>
+            <p className="mt-2 text-sm leading-6" style={{ color: TEXT_2 }}>
+              The authorised signatory will review the terms, complete the
+              signoff, and finish the final approval steps on behalf of your
+              organization.
+            </p>
+          </div>
+        </div>
+      </motion.section>
     </div>
   );
 }

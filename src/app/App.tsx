@@ -27,10 +27,11 @@ import { AuthShell } from "./components/auth/AuthShell";
 import { LoginSignup } from "./components/auth/LoginSignup";
 import { OTPVerification } from "./components/auth/OTPVerification";
 import { AnalyzingTransition } from "./components/onboarding/AnalyzingTransition";
-import { PageShell } from "./components/onboarding/Layout";
+import { PageShell, STEPS } from "./components/onboarding/Layout";
 import {
   ScreenAadhaarOTP,
   ScreenAccountOwner,
+  ScreenAuthorisedSignoffPending,
   ScreenBeforeYouBegin,
   ScreenBusinessIdentity,
   ScreenCompanyAddress,
@@ -224,6 +225,7 @@ const initialOnboardingState = {
   aadhaarOTP: "",
   aadhaarNumber: "",
   esignVerified: false,
+  awaitingAuthorisedSignoff: false,
   panNumber: "AABCP1234F",
   panName: "PINE LABS LIMITED",
   panVerified: true,
@@ -538,6 +540,19 @@ function OnboardingFlow() {
   >(null);
   const screen = SCREEN_BY_PATH[location.pathname] ?? 1;
   const [progressScreen, setProgressScreen] = useState(screen);
+  const usesDelegatedSignoff = ["Admin Manager", "Other"].includes(
+    state.designation,
+  );
+  const steps = usesDelegatedSignoff
+    ? STEPS.map((step) =>
+        step.id === 5
+          ? {
+              ...step,
+              subs: [{ id: "terms", label: "Terms & Conditions" }],
+            }
+          : step,
+      )
+    : STEPS;
 
   const go = (nextScreen: number) => {
     if (nextScreen === screen) return;
@@ -554,7 +569,7 @@ function OnboardingFlow() {
       return;
     }
 
-    if (nextScreen === 12) {
+    if (nextScreen === 12 && !usesDelegatedSignoff) {
       setTransitionContext("signing");
       return;
     }
@@ -587,8 +602,9 @@ function OnboardingFlow() {
     if (stepId === 3) go(subId === "address" ? 4 : 3);
     if (stepId === 4) go(5);
     if (stepId === 5) {
-      if (subId === "aadhaar") go(11);
-      else if (subId === "signature") go(state.esignVerified ? 7 : 11);
+      if (subId === "aadhaar" && !usesDelegatedSignoff) go(11);
+      else if (subId === "signature" && !usesDelegatedSignoff)
+        go(state.esignVerified ? 7 : 11);
       else go(6);
     }
   };
@@ -741,6 +757,9 @@ function OnboardingFlow() {
       />
     );
   if (screen === 12) content = <ScreenSuccess state={state} />;
+  if (screen === 12 && state.awaitingAuthorisedSignoff) {
+    content = <ScreenAuthorisedSignoffPending state={state} />;
+  }
 
   return (
     <PageShell
@@ -753,6 +772,7 @@ function OnboardingFlow() {
       onStepClick={handleStepClick}
       autosaveKey={`${screen}:${JSON.stringify(state)}`}
       progressPercent={progressPercent}
+      steps={steps}
     >
       {content}
     </PageShell>

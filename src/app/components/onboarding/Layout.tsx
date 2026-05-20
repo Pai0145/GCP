@@ -31,11 +31,13 @@ export const REQUIRED = "#fb2c36";
 export const HEADER_GRADIENT =
   "linear-gradient(90deg, #005656 0%, #006565 50%, #007A7A 100%)";
 
-export const STEPS: {
+export type SetupStep = {
   id: number;
   label: string;
   subs?: { id: string; label: string }[];
-}[] = [
+};
+
+export const STEPS: SetupStep[] = [
   { id: 1, label: "Document upload" },
   { id: 2, label: "Basic details" },
   {
@@ -189,12 +191,14 @@ function SidebarComponent({
   completed,
   currentSub,
   completedSubs,
+  steps = STEPS,
   onStepClick,
 }: {
   currentStep: number;
   completed: number[];
   currentSub?: string;
   completedSubs?: string[];
+  steps?: SetupStep[];
   onStepClick?: (step: number, subId?: string) => void;
 }) {
   return (
@@ -229,7 +233,7 @@ function SidebarComponent({
             Account Setup
           </div>
           <div style={{ color: MUTED, fontSize: 12, lineHeight: "18px" }}>
-            {currentStep} of {STEPS.length} steps
+            {currentStep} of {steps.length} steps
           </div>
         </motion.div>
 
@@ -244,11 +248,11 @@ function SidebarComponent({
             },
           }}
         >
-          {STEPS.map((step, index) => {
+          {steps.map((step, index) => {
             const isComplete = completed.includes(step.id);
             const isActive = step.id === currentStep;
             const isClickable = isComplete || isActive;
-            const hasNextStep = index < STEPS.length - 1;
+            const hasNextStep = index < steps.length - 1;
             const hasActiveSubs = Boolean(step.subs && isActive);
             const stepLineColor =
               isComplete || isActive ? "rgba(0, 86, 86, 0.34)" : BORDER_INPUT;
@@ -493,6 +497,7 @@ export function MobileStepsAccordion({
   completedSubs,
   totalSteps,
   progressPercent,
+  steps = STEPS,
   onStepClick,
 }: any) {
   const [open, setOpen] = useState(false);
@@ -538,7 +543,7 @@ export function MobileStepsAccordion({
           style={{ borderColor: BORDER }}
         >
           <ol className="space-y-2.5">
-            {STEPS.map((step) => {
+            {steps.map((step: SetupStep) => {
               const isComplete = completed.includes(step.id);
               const isActive = step.id === currentStep;
               const isClickable = isComplete || isActive;
@@ -656,6 +661,7 @@ export function PageShell({
   onStepClick,
   autosaveKey,
   progressPercent,
+  steps = STEPS,
 }: {
   currentStep: number;
   completed: number[];
@@ -667,8 +673,9 @@ export function PageShell({
   onStepClick?: (step: number, subId?: string) => void;
   autosaveKey?: string;
   progressPercent?: number;
+  steps?: SetupStep[];
 }) {
-  const totalSteps = STEPS.length;
+  const totalSteps = steps.length;
   const setupProgressPercent =
     progressPercent ?? (completed.length / totalSteps) * 100;
 
@@ -724,6 +731,7 @@ export function PageShell({
             completedSubs={completedSubs}
             totalSteps={totalSteps}
             progressPercent={setupProgressPercent}
+            steps={steps}
             onStepClick={onStepClick}
           />
         )}
@@ -740,6 +748,7 @@ export function PageShell({
                   completed={completed}
                   currentSub={currentSub}
                   completedSubs={completedSubs}
+                  steps={steps}
                   onStepClick={onStepClick}
                 />
               )}
