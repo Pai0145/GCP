@@ -1302,9 +1302,20 @@ export function ScreenAccountOwner({ go, state, setState, progress }: any) {
 // ============== BEFORE YOU BEGIN — Document upload + autofill ==============
 type DocKey = "gst" | "cin" | "pan" | "address";
 type UploadedDoc = { name: string; ext: string; size: string } | null;
-type UploadScenario = "success" | "error";
+type UploadScenario =
+  | "success"
+  | "error"
+  | "ocr_unreadable"
+  | "gst_inactive"
+  | "cin_existing"
+  | "pan_personal";
+type ContinueScenario = "success" | "gst_inactive" | "legal_name_mismatch";
 type FetchedDocKey = Extract<DocKey, "gst" | "cin" | "pan">;
 type FetchedDetail = { label: string; value: string };
+type DocAlertTone = "error" | "warning";
+type DocAlert = { message: string; tone: DocAlertTone } | null;
+type ExpandedDocs = Partial<Record<FetchedDocKey, boolean>>;
+type SavedDocs = Partial<Record<FetchedDocKey, boolean>>;
 
 const DOC_DEFS: {
   key: DocKey;
@@ -1313,16 +1324,16 @@ const DOC_DEFS: {
   sample: UploadedDoc;
 }[] = [
   {
-    key: "gst",
-    title: "GST certificate",
-    hint: "PDF or image, up to 5 MB",
-    sample: { name: "GST Certificate.pdf", ext: "PDF", size: "248 KB" },
-  },
-  {
     key: "cin",
     title: "CIN certificate",
     hint: "PDF or image, up to 5 MB",
     sample: { name: "CIN Certificate.pdf", ext: "PDF", size: "1.2 MB" },
+  },
+  {
+    key: "gst",
+    title: "GST certificate",
+    hint: "PDF or image, up to 5 MB",
+    sample: { name: "GST Certificate.pdf", ext: "PDF", size: "248 KB" },
   },
   {
     key: "pan",
@@ -1447,27 +1458,33 @@ function DocumentUploadRow({
 
 const AUTOFETCHED_DETAILS: Record<FetchedDocKey, FetchedDetail[]> = {
   gst: [
-    { label: "First Name", value: "Priya" },
-    { label: "Last Name", value: "Sharma" },
-    { label: "GSTIN number", value: "29AABCP1234F1Z5" },
-    { label: "GSTIN name", value: "Pine Labs Private Limited" },
-    { label: "GSTIN state", value: "Karnataka" },
+    { label: "GSTIN", value: "29AABCP1234F1Z5" },
+    { label: "Legal business name as per GST", value: "Pine Labs Private Limited" },
+    { label: "Trade name", value: "Pine Labs" },
+    { label: "Principal place of business", value: "12 Business Park, Fort, Mumbai" },
+    { label: "State / UT", value: "Maharashtra" },
+    { label: "PIN code", value: "400001" },
   ],
   cin: [
-    { label: "CIN/LLP No", value: "U72900DL1998PTC096693" },
-    { label: "CIN/LLP Name", value: "Pine Labs Private Limited" },
+    { label: "CIN/LLPIN", value: "U72900DL1998PTC096693" },
+    { label: "Legal company name", value: "Pine Labs Private Limited" },
+    { label: "Incorporation date", value: "18 May 1998" },
+    { label: "Registered office", value: "Delhi" },
   ],
   pan: [
-    { label: "PAN number", value: "AABCP1234F" },
-    { label: "Legal name", value: "Pine Labs Private Limited" },
+    { label: "Company PAN", value: "AABCP1234F" },
+    { label: "Legal name as per PAN", value: "Pine Labs Private Limited" },
+    { label: "Entity type", value: "Private Limited Company" },
   ],
 };
 
 function UploadScenarioModal({
+  docKey,
   docTitle,
   onChoose,
   onClose,
 }: {
+  docKey: DocKey;
   docTitle: string;
   onChoose: (scenario: UploadScenario) => void;
   onClose: () => void;
@@ -1536,7 +1553,7 @@ function UploadScenarioModal({
               className="mt-1 block text-xs"
               style={{ color: MUTED, lineHeight: "18px" }}
             >
-              Upload succeeds and fetched details appear.
+	              Upload succeeds and document details expand below.
             </span>
           </button>
           <button
@@ -1559,6 +1576,94 @@ function UploadScenarioModal({
               Upload fails and asks the user to Re-Upload.
             </span>
           </button>
+          {docKey === "gst" && (
+            <button
+              type="button"
+              onClick={() => onChoose("gst_inactive")}
+              className="rounded-[14px] border px-4 py-4 text-left transition hover:-translate-y-0.5 sm:col-span-2"
+              style={{ borderColor: "#fde68a", background: "#fffbeb" }}
+            >
+              <CircleAlert className="mb-3 size-5 text-[#d97706]" />
+              <span
+                className="block text-sm"
+                style={{ color: TEXT, fontWeight: 700 }}
+              >
+                GST is cancelled or suspended
+              </span>
+              <span
+                className="mt-1 block text-xs"
+                style={{ color: MUTED, lineHeight: "18px" }}
+              >
+                GST format is valid, but the GST API returns inactive status.
+              </span>
+            </button>
+          )}
+          {docKey === "cin" && (
+            <button
+              type="button"
+              onClick={() => onChoose("cin_existing")}
+              className="rounded-[14px] border px-4 py-4 text-left transition hover:-translate-y-0.5 sm:col-span-2"
+              style={{ borderColor: "#fde68a", background: "#fffbeb" }}
+            >
+              <CircleAlert className="mb-3 size-5 text-[#d97706]" />
+              <span
+                className="block text-sm"
+                style={{ color: TEXT, fontWeight: 700 }}
+              >
+                Company already exists in Pine Labs records
+              </span>
+              <span
+                className="mt-1 block text-xs"
+                style={{ color: MUTED, lineHeight: "18px" }}
+              >
+                Same PAN or GSTIN already exists in our records.
+              </span>
+            </button>
+          )}
+          {docKey === "pan" && (
+            <button
+              type="button"
+              onClick={() => onChoose("pan_personal")}
+              className="rounded-[14px] border px-4 py-4 text-left transition hover:-translate-y-0.5 sm:col-span-2"
+              style={{ borderColor: "#fde68a", background: "#fffbeb" }}
+            >
+              <CircleAlert className="mb-3 size-5 text-[#d97706]" />
+              <span
+                className="block text-sm"
+                style={{ color: TEXT, fontWeight: 700 }}
+              >
+                Personal PAN uploaded in place of company PAN
+              </span>
+              <span
+                className="mt-1 block text-xs"
+                style={{ color: MUTED, lineHeight: "18px" }}
+              >
+                4th character is P instead of a company identifier.
+              </span>
+            </button>
+          )}
+          {docKey !== "address" && (
+            <button
+              type="button"
+              onClick={() => onChoose("ocr_unreadable")}
+              className="rounded-[14px] border px-4 py-4 text-left transition hover:-translate-y-0.5 sm:col-span-2"
+              style={{ borderColor: "#fed7aa", background: "#fffaf5" }}
+            >
+              <CircleAlert className="mb-3 size-5 text-[#ea580c]" />
+              <span
+                className="block text-sm"
+                style={{ color: TEXT, fontWeight: 700 }}
+              >
+                Document image is blurry, glared, or rotated
+              </span>
+              <span
+                className="mt-1 block text-xs"
+                style={{ color: MUTED, lineHeight: "18px" }}
+              >
+                OCR cannot extract reliably.
+              </span>
+            </button>
+          )}
         </div>
       </motion.div>
     </motion.div>
@@ -1695,7 +1800,7 @@ export function ScreenBeforeYouBegin({ go, state, setState, progress }: any) {
     pan: null,
     address: null,
   });
-  const [docErrors, setDocErrors] = useState<Record<DocKey, string | null>>({
+  const [docAlerts, setDocAlerts] = useState<Record<DocKey, DocAlert>>({
     gst: null,
     cin: null,
     pan: null,
@@ -1708,25 +1813,70 @@ export function ScreenBeforeYouBegin({ go, state, setState, progress }: any) {
     address: false,
   });
   const [scenarioDoc, setScenarioDoc] = useState<DocKey | null>(null);
-  const [showFetchedDetails, setShowFetchedDetails] = useState(false);
   const [fetchedDocs, setFetchedDocs] = useState<FetchedDocKey[]>([]);
   const [fetchedDetails, setFetchedDetails] = useState<
     Partial<Record<FetchedDocKey, FetchedDetail[]>>
   >({});
-  const [editingFetchedDetails, setEditingFetchedDetails] = useState(false);
+  const [expandedDocs, setExpandedDocs] = useState<ExpandedDocs>({});
+  const [savedDocs, setSavedDocs] = useState<SavedDocs>({});
   const [gstPresent, setGstPresent] = useState(true);
   const [parsing, setParsing] = useState(false);
+  const [showContinueScenario, setShowContinueScenario] = useState(false);
 
   const allUploaded =
     !!docs.cin && !!docs.pan && (gstPresent ? !!docs.gst : !!docs.address);
 
-  const handleContinue = () => {
+  const proceedToNextStep = () => {
     setParsing(true);
     setTimeout(() => {
       setParsing(false);
       setState({ ...state, idType: "GSTIN", idValue: "29AABCP1234F1Z5" });
       go(2);
     }, 1400);
+  };
+
+  const handleContinue = () => {
+    if (isHappyFlow) {
+      proceedToNextStep();
+      return;
+    }
+    setShowContinueScenario(true);
+  };
+
+  const handleContinueScenario = (scenario: ContinueScenario) => {
+    setShowContinueScenario(false);
+
+    if (scenario === "success") {
+      proceedToNextStep();
+      return;
+    }
+
+    if (scenario === "gst_inactive") {
+      setDocAlerts((current) => ({
+        ...current,
+        gst: {
+          tone: "warning",
+          message:
+            "Your GST registration appears to be inactive. Please reactivate with the GST department, or continue via the non-GST path.",
+        },
+      }));
+      return;
+    }
+
+    setDocAlerts((current) => ({
+      ...current,
+      gst: {
+        tone: "warning",
+        message:
+          "We found different versions of your company name across your inputs and verification records. Please review the legal name below and confirm the exact registered company name before continuing.",
+      },
+    }));
+    setExpandedDocs((current) => ({
+      ...current,
+      gst: true,
+      ...(fetchedDocs.includes("cin") ? { cin: true } : {}),
+      ...(fetchedDocs.includes("pan") ? { pan: true } : {}),
+    }));
   };
 
   const openScenario = (key: DocKey) => {
@@ -1741,14 +1891,15 @@ export function ScreenBeforeYouBegin({ go, state, setState, progress }: any) {
 
   const startSuccessfulUpload = (key: DocKey, sample: UploadedDoc) => {
     setScenarioDoc(null);
-    setDocErrors((current) => ({ ...current, [key]: null }));
+    setDocAlerts((current) => ({ ...current, [key]: null }));
     setScanningDocs((current) => ({ ...current, [key]: true }));
 
     if (key === "gst" || key === "cin" || key === "pan") {
       const details = AUTOFETCHED_DETAILS[key];
       setFetchedDocs((current) => (current.includes(key) ? current : [...current, key]));
       setFetchedDetails((current) => ({ ...current, [key]: [] }));
-      setShowFetchedDetails(true);
+      setExpandedDocs((current) => ({ ...current, [key]: true }));
+      setSavedDocs((current) => ({ ...current, [key]: false }));
 
       details.forEach((_, index) => {
         window.setTimeout(
@@ -1775,7 +1926,6 @@ export function ScreenBeforeYouBegin({ go, state, setState, progress }: any) {
     window.setTimeout(() => {
       setDocs((current) => ({ ...current, [key]: sample }));
       setScanningDocs((current) => ({ ...current, [key]: false }));
-      setShowFetchedDetails(fetchedDocs.length > 0);
     }, 1300);
   };
 
@@ -1788,13 +1938,65 @@ export function ScreenBeforeYouBegin({ go, state, setState, progress }: any) {
     if (scenario === "success") {
       startSuccessfulUpload(scenarioDoc, doc.sample);
     } else {
-      setDocs({ ...docs, [scenarioDoc]: null });
+      const isReviewScenario =
+        scenario === "ocr_unreadable" ||
+        scenario === "gst_inactive" ||
+        scenario === "cin_existing" ||
+        scenario === "pan_personal";
+      const canShowDetails =
+        scenarioDoc === "gst" || scenarioDoc === "cin" || scenarioDoc === "pan";
+
+      setDocs({ ...docs, [scenarioDoc]: isReviewScenario ? doc.sample : null });
       setScanningDocs({ ...scanningDocs, [scenarioDoc]: false });
-      setDocErrors({
-        ...docErrors,
+      setDocAlerts({
+        ...docAlerts,
         [scenarioDoc]:
-          "We could not read this document. Please Re-Upload a clear PDF or image under 5 MB.",
+          scenario === "cin_existing"
+            ? {
+                tone: "warning",
+                message:
+                  "An account for this company already exists. Please log in, or contact your sales POC if you need help accessing it.",
+              }
+            : scenario === "pan_personal"
+              ? {
+                  tone: "warning",
+                  message:
+                    `This looks like a personal PAN, not a company PAN. If you're a sole proprietor, please choose "Sole Proprietorship" as your entity type.`,
+                }
+            : {
+                tone:
+                  scenario === "gst_inactive" || scenario === "ocr_unreadable"
+                    ? "warning"
+                    : "error",
+                message:
+                  scenario === "ocr_unreadable"
+                    ? "We couldn't read your document clearly. Please re-upload a flat, well-lit photo or scan."
+                    : scenario === "gst_inactive"
+                      ? "Your GST registration appears to be inactive. Please reactivate with the GST department, or continue via the non-GST path."
+                      : "We could not read this document. Please Re-Upload a clear PDF or image under 5 MB.",
+              },
       });
+      if (isReviewScenario && canShowDetails) {
+        setFetchedDocs((current) =>
+          current.includes(scenarioDoc as FetchedDocKey)
+            ? current
+            : [...current, scenarioDoc as FetchedDocKey],
+        );
+        setFetchedDetails((current) => ({
+          ...current,
+          [scenarioDoc as FetchedDocKey]:
+            current[scenarioDoc as FetchedDocKey] ??
+            AUTOFETCHED_DETAILS[scenarioDoc as FetchedDocKey],
+        }));
+        setExpandedDocs((current) => ({
+          ...current,
+          [scenarioDoc as FetchedDocKey]: true,
+        }));
+        setSavedDocs((current) => ({
+          ...current,
+          [scenarioDoc as FetchedDocKey]: false,
+        }));
+      }
     }
 
     setScenarioDoc(null);
@@ -1803,15 +2005,13 @@ export function ScreenBeforeYouBegin({ go, state, setState, progress }: any) {
   const scenarioDocDef = scenarioDoc
     ? DOC_DEFS.find(({ key }) => key === scenarioDoc)
     : null;
-  const visibleFetchedRows = fetchedDocs.flatMap(
-    (docKey) => fetchedDetails[docKey] ?? AUTOFETCHED_DETAILS[docKey],
-  );
 
   return (
     <div className="pb-2 px-2 sm:px-0">
       <AnimatePresence>
         {!isHappyFlow && scenarioDocDef && (
           <UploadScenarioModal
+            docKey={scenarioDocDef.key}
             docTitle={scenarioDocDef.title}
             onChoose={handleScenario}
             onClose={() => setScenarioDoc(null)}
@@ -1819,31 +2019,17 @@ export function ScreenBeforeYouBegin({ go, state, setState, progress }: any) {
         )}
       </AnimatePresence>
       <AnimatePresence>
-        {editingFetchedDetails && (
-          <EditFetchedDetailsModal
-            rows={visibleFetchedRows}
-            onClose={() => setEditingFetchedDetails(false)}
-            onSave={(rows) => {
-              let offset = 0;
-              setFetchedDetails((current) => {
-                const next = { ...current };
-                fetchedDocs.forEach((docKey) => {
-                  const count = (current[docKey] ?? AUTOFETCHED_DETAILS[docKey])
-                    .length;
-                  next[docKey] = rows.slice(offset, offset + count);
-                  offset += count;
-                });
-                return next;
-              });
-              setEditingFetchedDetails(false);
-            }}
+        {!isHappyFlow && showContinueScenario && (
+          <ContinueScenarioModal
+            onChoose={handleContinueScenario}
+            onClose={() => setShowContinueScenario(false)}
           />
         )}
       </AnimatePresence>
       <div className="w-full">
         <FormCard
           title="Document upload"
-          subtitle="Upload company documents so we can autofill your setup."
+	          subtitle="Upload company documents and review each document's details inline."
           progress={progress}
         >
           <div className="space-y-6">
@@ -1883,25 +2069,46 @@ export function ScreenBeforeYouBegin({ go, state, setState, progress }: any) {
                 {DOC_DEFS.filter((doc) => doc.key !== "address").map(
                   ({ key, title, hint }) => {
                     const file = docs[key];
-                    const error = docErrors[key];
+                    const alert = docAlerts[key];
                     const scanning = scanningDocs[key];
                     const iconSrc = DOC_ICONS[key];
-                    const disabled = key === "gst" && !gstPresent;
-
-                    return (
-                      <motion.div
-                        key={key}
-                        onClick={() =>
-                          !disabled && !file && !scanning && openScenario(key)
-                        }
-                        className="relative min-h-[72px] overflow-hidden rounded-2xl px-4 py-4 flex items-center gap-4 transition"
+	                    const disabled = key === "gst" && !gstPresent;
+	                    const isWarning = alert?.tone === "warning";
+	                    const isError = alert?.tone === "error";
+	                    const hasDetails =
+	                      (key === "gst" || key === "cin" || key === "pan") &&
+	                      fetchedDocs.includes(key);
+	                    const isSaved =
+	                      key === "gst" || key === "cin" || key === "pan"
+	                        ? (savedDocs[key] ?? false)
+	                        : false;
+	
+	                    return (
+	                      <motion.div
+	                        key={key}
+	                        onClick={() => {
+	                          if (disabled || scanning) return;
+	                          if (hasDetails) {
+	                            setExpandedDocs((current) => ({
+	                              ...current,
+	                              [key as FetchedDocKey]: !(
+	                                current[key as FetchedDocKey] ?? false
+	                              ),
+	                            }));
+	                            return;
+	                          }
+	                          if (!file) openScenario(key);
+	                        }}
+                        className="relative min-h-[72px] overflow-hidden rounded-2xl px-4 py-4 flex flex-wrap items-center gap-4 transition"
                         style={{
                           border: `1px solid ${
                             disabled
                               ? "#e5e7eb"
-                              : scanning
+                            : scanning
                                 ? SUCCESS_BORDER
-                              : error
+                              : isWarning
+                                ? "#fde68a"
+                              : isError
                                 ? "#fecaca"
                                 : file
                                   ? SUCCESS_BORDER
@@ -1911,7 +2118,9 @@ export function ScreenBeforeYouBegin({ go, state, setState, progress }: any) {
                             ? "#f3f4f6"
                             : scanning
                               ? "#fff"
-                            : error
+                            : isWarning
+                              ? "#fffbeb"
+                            : isError
                               ? "#fff7f7"
                               : file
                                 ? SUCCESS_BG
@@ -1969,30 +2178,50 @@ export function ScreenBeforeYouBegin({ go, state, setState, progress }: any) {
                           )}
                         </div>
                         <div className="relative z-10 flex-1 min-w-0">
-                          <div
-                            className="text-sm truncate"
-                            style={{
-                              color: TEXT,
-                              fontWeight: 600,
-                              lineHeight: "20px",
-                            }}
-                          >
-                            {file ? file.name : title}
-                          </div>
+	                          <div
+	                            className="flex flex-wrap items-center gap-2 text-sm"
+	                            style={{
+	                              color: TEXT,
+	                              fontWeight: 600,
+	                              lineHeight: "20px",
+	                            }}
+	                          >
+	                            <span className="truncate">{file ? title : title}</span>
+	                            {alert && (
+	                              <span
+	                                className="rounded-[6px] px-2 py-0.5 text-[11px]"
+	                                style={{
+	                                  background: isWarning ? "#fef3c7" : "#fee2e2",
+	                                  color: isWarning ? "#b45309" : "#b91c1c",
+	                                  fontWeight: 700,
+	                                }}
+	                              >
+	                                {isWarning ? "Needs review" : "Upload failed"}
+	                              </span>
+	                            )}
+	                          </div>
                           <div
                             className="text-xs mt-0.5"
                             style={{
-                              color: error ? "#dc2626" : MUTED,
+                              color: isWarning
+                                ? "#b54708"
+                                : isError
+                                  ? "#dc2626"
+                                  : MUTED,
                               lineHeight: "16px",
                             }}
-                          >
-                            {scanning
-                              ? "Scanning document for auto fetched details..."
-                              : error
-                              ? error
-                              : file
-                                ? `${file.ext} - ${file.size} - Uploaded`
-                                : hint}
+	                          >
+	                            {scanning
+	                              ? "Reading document details..."
+	                              : file && hasDetails && isSaved
+	                                ? "Details saved"
+	                              : file && hasDetails
+	                                ? "Review extracted details"
+	                              : file
+	                                ? `${file.ext} - ${file.size} - Uploaded`
+	                              : alert
+	                                ? alert.message
+	                                : hint}
                           </div>
                         </div>
                         <button
@@ -2003,7 +2232,7 @@ export function ScreenBeforeYouBegin({ go, state, setState, progress }: any) {
                               ? "Uploading document"
                               : file
                               ? "Replace document"
-                              : error
+                              : alert
                                 ? "Re-upload document"
                                 : "Upload document"
                           }
@@ -2012,7 +2241,7 @@ export function ScreenBeforeYouBegin({ go, state, setState, progress }: any) {
                             if (disabled || scanning) return;
                             if (file) {
                               setDocs({ ...docs, [key]: null });
-                              setDocErrors({ ...docErrors, [key]: null });
+                              setDocAlerts({ ...docAlerts, [key]: null });
                               setFetchedDocs((current) =>
                                 current.filter((docKey) => docKey !== key),
                               );
@@ -2021,13 +2250,22 @@ export function ScreenBeforeYouBegin({ go, state, setState, progress }: any) {
                                 delete next[key as FetchedDocKey];
                                 return next;
                               });
-                              return;
+                              setSavedDocs((current) => {
+                                const next = { ...current };
+                                delete next[key as FetchedDocKey];
+                                return next;
+                              });
+                              setExpandedDocs((current) => ({
+                                ...current,
+                                [key as FetchedDocKey]: false,
+                              }));
+	                              return;
                             }
                             openScenario(key);
                           }}
                           className="relative z-10 shrink-0 inline-flex items-center gap-2"
                           style={{
-                            color: disabled ? MUTED_2 : error ? TEXT_2 : PRIMARY,
+                            color: disabled ? MUTED_2 : alert ? TEXT_2 : PRIMARY,
                             fontWeight: 600,
                             fontSize: 14,
                             lineHeight: "20px",
@@ -2042,7 +2280,7 @@ export function ScreenBeforeYouBegin({ go, state, setState, progress }: any) {
 	                              alt=""
 	                              className="size-6"
                               style={{
-                                filter: error
+                                filter: alert
                                   ? "grayscale(1) brightness(0.45)"
                                   : undefined,
                               }}
@@ -2054,13 +2292,51 @@ export function ScreenBeforeYouBegin({ go, state, setState, progress }: any) {
                               ? "Uploading"
                               : file
                                 ? "Replace"
-                                : error
+                                : alert
                                   ? "Re-Upload"
                                   : "Upload"}
-                          </span>
-                        </button>
-                      </motion.div>
-                    );
+	                          </span>
+	                        </button>
+	                        {(key === "gst" || key === "cin" || key === "pan") &&
+	                          fetchedDocs.includes(key) && (
+	                            <DocumentDetailsAccordion
+	                              docKey={key}
+	                              alert={alert}
+	                              rows={fetchedDetails[key] ?? AUTOFETCHED_DETAILS[key]}
+	                              expanded={expandedDocs[key] ?? false}
+	                              saved={savedDocs[key] ?? false}
+	                              onToggle={() =>
+	                                setExpandedDocs((current) => ({
+	                                  ...current,
+	                                  [key]: !(current[key] ?? false),
+	                                }))
+	                              }
+	                              onRowsChange={(rows) =>
+	                                {
+	                                  setFetchedDetails((current) => ({
+	                                    ...current,
+	                                    [key]: rows,
+	                                  }));
+	                                  setSavedDocs((current) => ({
+	                                    ...current,
+	                                    [key]: false,
+	                                  }));
+	                                }
+	                              }
+	                              onSave={() => {
+	                                setSavedDocs((current) => ({
+	                                  ...current,
+	                                  [key]: true,
+	                                }));
+	                                setExpandedDocs((current) => ({
+	                                  ...current,
+	                                  [key]: false,
+	                                }));
+	                              }}
+	                            />
+	                          )}
+	                      </motion.div>
+	                    );
                   },
                 )}
               </div>
@@ -2082,20 +2358,24 @@ export function ScreenBeforeYouBegin({ go, state, setState, progress }: any) {
                 {DOC_DEFS.filter((doc) => doc.key === "address").map(
                   ({ key, title, hint }) => {
                     const file = docs[key];
-                    const error = docErrors[key];
+                    const alert = docAlerts[key];
                     const scanning = scanningDocs[key];
                     const iconSrc = DOC_ICONS[key];
+                    const isWarning = alert?.tone === "warning";
+                    const isError = alert?.tone === "error";
 
                     return (
                       <motion.div
                         key={key}
                         onClick={() => !file && !scanning && openScenario(key)}
-                        className="relative min-h-[72px] overflow-hidden rounded-2xl px-4 py-4 flex items-center gap-4 transition"
+                        className="relative min-h-[72px] overflow-hidden rounded-2xl px-4 py-4 flex flex-wrap items-center gap-4 transition"
                         style={{
                           border: `1px solid ${
                             scanning
                               ? SUCCESS_BORDER
-                              : error
+                              : isWarning
+                              ? "#fde68a"
+                              : isError
                               ? "#fecaca"
                               : file
                                 ? SUCCESS_BORDER
@@ -2103,7 +2383,9 @@ export function ScreenBeforeYouBegin({ go, state, setState, progress }: any) {
                           }`,
                           background: scanning
                             ? "#fff"
-                            : error
+                            : isWarning
+                            ? "#fffbeb"
+                            : isError
                             ? "#fff7f7"
                             : file
                               ? SUCCESS_BG
@@ -2165,14 +2447,18 @@ export function ScreenBeforeYouBegin({ go, state, setState, progress }: any) {
                           <div
                             className="text-xs mt-0.5"
                             style={{
-                              color: error ? "#dc2626" : MUTED,
+                              color: isWarning
+                                ? "#b54708"
+                                : isError
+                                  ? "#dc2626"
+                                  : MUTED,
                               lineHeight: "16px",
                             }}
                           >
                             {scanning
-                              ? "Scanning document for auto fetched details..."
-                              : error
-                              ? error
+	                              ? "Reading document details..."
+                              : alert
+                              ? alert.message
                               : file
                                 ? `${file.ext} - ${file.size} - Uploaded`
                                 : hint}
@@ -2185,7 +2471,7 @@ export function ScreenBeforeYouBegin({ go, state, setState, progress }: any) {
                               ? "Uploading document"
                               : file
                               ? "Replace document"
-                              : error
+                              : alert
                                 ? "Re-upload document"
                                 : "Upload document"
                           }
@@ -2194,14 +2480,14 @@ export function ScreenBeforeYouBegin({ go, state, setState, progress }: any) {
                             if (scanning) return;
                             if (file) {
                               setDocs({ ...docs, [key]: null });
-                              setDocErrors({ ...docErrors, [key]: null });
+                              setDocAlerts({ ...docAlerts, [key]: null });
                               return;
                             }
                             openScenario(key);
                           }}
                           className="relative z-10 shrink-0 inline-flex items-center gap-2"
                           style={{
-                            color: error ? TEXT_2 : PRIMARY,
+                            color: alert ? TEXT_2 : PRIMARY,
                             fontWeight: 600,
                             fontSize: 14,
                             lineHeight: "20px",
@@ -2215,7 +2501,7 @@ export function ScreenBeforeYouBegin({ go, state, setState, progress }: any) {
 	                              alt=""
 	                              className="size-6"
                               style={{
-                                filter: error
+                                filter: alert
                                   ? "grayscale(1) brightness(0.45)"
                                   : undefined,
                               }}
@@ -2227,7 +2513,7 @@ export function ScreenBeforeYouBegin({ go, state, setState, progress }: any) {
                               ? "Uploading"
                               : file
                                 ? "Replace"
-                                : error
+                                : alert
                                   ? "Re-Upload"
                                   : "Upload"}
                           </span>
@@ -2240,83 +2526,7 @@ export function ScreenBeforeYouBegin({ go, state, setState, progress }: any) {
             )}
           </div>
         </FormCard>
-
-        <AnimatePresence>
-          {showFetchedDetails && fetchedDocs.length > 0 && (
-            <motion.div
-              className="mx-auto mt-4 w-full max-w-[960px] rounded-[16px] border bg-white p-5 shadow-sm sm:mt-5 sm:rounded-[20px] sm:p-6"
-              style={{ borderColor: SUCCESS_BORDER }}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 12 }}
-              transition={{ duration: 0.25, ease: "easeOut" }}
-            >
-              <div className="mb-4 flex items-start justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <div
-                    className="flex size-9 items-center justify-center rounded-[10px]"
-                    style={{ background: SUCCESS_BG }}
-                  >
-                    <CheckCircle2
-                      className="size-5"
-                      style={{ color: SUCCESS }}
-                    />
-                  </div>
-                  <div>
-                    <h3
-                      className="text-base"
-                      style={{ color: TEXT, fontWeight: 700 }}
-                    >
-                      Auto fetched details
-                    </h3>
-                    <p className="text-xs" style={{ color: MUTED }}>
-                      These details were read from the uploaded document.
-                    </p>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setEditingFetchedDetails(true)}
-                  className="inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-[10px] border border-[#d0d5dd] bg-white px-3 text-xs transition hover:bg-[#f9fafb]"
-                  style={{ color: "#111111", fontWeight: 700 }}
-                >
-                  <EditIcon className="size-4" />
-                  Edit
-                </button>
-              </div>
-              <div className="grid gap-3 sm:grid-cols-2">
-                {fetchedDocs.flatMap((docKey) =>
-                  (fetchedDetails[docKey] ?? AUTOFETCHED_DETAILS[docKey]).map(
-                    ({ label, value }) => (
-                    <motion.div
-                      key={`${docKey}-${label}`}
-                      className="rounded-[12px] border border-[#eef0f2] bg-[#fbfcfc] px-4 py-3"
-                      initial={{ opacity: 0, y: 8, scale: 0.98 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      transition={{ duration: 0.24, ease: "easeOut" }}
-                    >
-                        <p
-                          className="text-xs"
-                          style={{ color: MUTED, fontWeight: 600 }}
-                        >
-                          {label}
-                        </p>
-                        <p
-                          className="mt-1 text-sm"
-                          style={{ color: TEXT, fontWeight: 600 }}
-                        >
-                          {value}
-                        </p>
-                      </motion.div>
-                    ),
-                  ),
-                )}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        <ActionBar>
+	        <ActionBar>
           {parsing ? (
             <motion.div
               className="min-w-[120px] px-6 py-3 rounded-[12px] text-sm inline-flex items-center justify-center gap-2"
@@ -3343,7 +3553,11 @@ export function ScreenSignatory({ go, state, setState, progress }: any) {
     "Other",
   ].includes(state.designation);
   const valid =
-    state.sigName && state.sigEmail && state.designation && state.sigConfirm;
+    state.sigName &&
+    state.sigEmail &&
+    state.sigMobile &&
+    state.designation &&
+    state.sigConfirm;
 
   return (
     <div className="pb-2 px-2 sm:px-0">
@@ -3404,7 +3618,7 @@ export function ScreenSignatory({ go, state, setState, progress }: any) {
                   />
                 </div>
                 <div>
-                  <FieldLabel optional>Mobile number</FieldLabel>
+                  <FieldLabel required>Mobile number</FieldLabel>
                   <TextInput
                     value={state.sigMobile}
                     placeholder="+91 9876543210"
@@ -3412,6 +3626,9 @@ export function ScreenSignatory({ go, state, setState, progress }: any) {
                       setState({ ...state, sigMobile: e.target.value })
                     }
                   />
+                  <p className="mt-1.5 text-xs" style={{ color: MUTED }}>
+                    Please use the same mobile number linked to Aadhaar.
+                  </p>
                 </div>
               </div>
               <div>
@@ -4539,6 +4756,254 @@ export function ScreenAadhaarOTP({ go, state, setState, progress }: any) {
         </div>
       </div>
     </div>
+  );
+}
+
+function DocumentDetailsAccordion({
+  docKey,
+  alert,
+  rows,
+  expanded,
+  saved,
+  onToggle,
+  onRowsChange,
+  onSave,
+}: {
+  docKey: FetchedDocKey;
+  alert: DocAlert;
+  rows: FetchedDetail[];
+  expanded: boolean;
+  saved: boolean;
+  onToggle: () => void;
+  onRowsChange: (rows: FetchedDetail[]) => void;
+  onSave: () => void;
+}) {
+  const isWarning = alert?.tone === "warning";
+  const borderColor = isWarning ? "#fbbf24" : SUCCESS_BORDER;
+  const panelBg = isWarning ? "#fffbeb" : "#f7fff9";
+  const accent = isWarning ? "#d97706" : SUCCESS;
+  const docTitle = DOC_DEFS.find((doc) => doc.key === docKey)?.title ?? "Document";
+  const warningTitle = alert?.message.toLowerCase().includes("read your document")
+    ? `We couldn't read the ${docTitle} clearly`
+    : `We need a quick review for the ${docTitle}`;
+
+  const updateRow = (index: number, value: string) => {
+    onRowsChange(rows.map((row, rowIndex) => (rowIndex === index ? { ...row, value } : row)));
+  };
+
+  return (
+    <AnimatePresence initial={false}>
+      {expanded && (
+        <motion.div
+          onClick={(event) => event.stopPropagation()}
+          className="relative z-10 mt-4 basis-full overflow-hidden rounded-[14px] border"
+          style={{ borderColor, background: "#fff" }}
+          initial={{ height: 0, opacity: 0 }}
+          animate={{ height: "auto", opacity: 1 }}
+          exit={{ height: 0, opacity: 0 }}
+          transition={{ duration: 0.24, ease: "easeOut" }}
+        >
+          <div
+            className="flex flex-col gap-3 border-b px-4 py-4 sm:flex-row sm:items-center sm:justify-between"
+            style={{ borderColor, background: panelBg }}
+          >
+            <div className="flex items-start gap-3">
+              {isWarning ? (
+                <CircleAlert className="mt-0.5 size-5 shrink-0" style={{ color: accent }} />
+              ) : (
+                <CheckCircle2 className="mt-0.5 size-5 shrink-0" style={{ color: accent }} />
+              )}
+              <div>
+                <p className="text-sm" style={{ color: TEXT, fontWeight: 700 }}>
+                  {isWarning
+                    ? warningTitle
+                    : `${docTitle} details fetched successfully`}
+                </p>
+                <p className="mt-1 text-xs sm:text-sm" style={{ color: isWarning ? "#92400e" : MUTED, lineHeight: "20px" }}>
+                  {alert?.message ??
+                    "Review the extracted details below. You can edit them if something looks incorrect."}
+                </p>
+              </div>
+            </div>
+            <div className="flex flex-wrap items-center gap-3 text-xs font-bold sm:justify-end">
+              <button
+                type="button"
+                aria-label="Collapse details"
+                onClick={onToggle}
+                className="inline-flex items-center"
+                style={{ color: TEXT_2 }}
+              >
+                <ChevronDown className="size-4 rotate-180" />
+              </button>
+            </div>
+          </div>
+
+          <div className="grid gap-4 p-4 sm:grid-cols-2">
+            {rows.map((row, index) => (
+              <label key={`${docKey}-${row.label}`} className="block">
+                <span className="text-xs" style={{ color: TEXT_2, fontWeight: 700 }}>
+                  {row.label}
+                  {index === 0 || row.label.toLowerCase().includes("name") ? (
+                    <span style={{ color: REQUIRED }}> *</span>
+                  ) : null}
+                </span>
+                <input
+                  value={row.value}
+                  onChange={(event) => updateRow(index, event.target.value)}
+                  className="mt-1 w-full rounded-[10px] border bg-white px-3 py-2 text-sm outline-none transition focus:ring-2"
+                  style={{
+                    borderColor: isWarning ? "#f8cc7a" : BORDER_INPUT,
+                    color: TEXT,
+                    boxShadow: "0 1px 2px rgba(16,24,40,0.04)",
+                  }}
+                />
+              </label>
+            ))}
+          </div>
+
+          <div className="flex flex-col gap-3 border-t px-4 py-4 sm:flex-row sm:items-center sm:justify-between" style={{ borderColor: "#eef0f2" }}>
+            <label className="inline-flex items-start gap-2 text-xs sm:text-sm" style={{ color: TEXT_2 }}>
+              <span className="mt-0.5 inline-flex size-4 shrink-0 items-center justify-center rounded-[4px]" style={{ background: PRIMARY, color: "#fff" }}>
+                <Check className="size-3" />
+              </span>
+              I confirm these details match the uploaded {docTitle}.
+            </label>
+            <button
+              type="button"
+              onClick={onSave}
+              className="inline-flex items-center justify-center rounded-[10px] px-4 py-2.5 text-sm font-bold text-white"
+              style={{ background: saved ? SUCCESS : PRIMARY }}
+            >
+              {saved
+                ? `${docTitle.replace(" certificate", "")} details saved`
+                : `Save ${docTitle.replace(" certificate", "")} details`}
+            </button>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
+function ContinueScenarioModal({
+  onChoose,
+  onClose,
+}: {
+  onChoose: (scenario: ContinueScenario) => void;
+  onClose: () => void;
+}) {
+  return (
+    <motion.div
+      className="fixed inset-0 z-50 flex items-center justify-center px-4"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="continue-scenario-title"
+    >
+      <button
+        type="button"
+        aria-label="Close continue scenario selector"
+        className="absolute inset-0 bg-[#101828]/45 backdrop-blur-[2px]"
+        onClick={onClose}
+      />
+      <motion.div
+        className="relative w-full max-w-xl rounded-[20px] bg-white p-5 shadow-2xl sm:p-6"
+        initial={{ y: 18, scale: 0.98 }}
+        animate={{ y: 0, scale: 1 }}
+        exit={{ y: 18, scale: 0.98 }}
+        transition={{ duration: 0.2, ease: "easeOut" }}
+      >
+        <button
+          type="button"
+          aria-label="Close"
+          onClick={onClose}
+          className="absolute right-4 top-4 inline-flex size-9 items-center justify-center rounded-full border border-[#e5e7eb] text-[#667085] transition hover:bg-[#f9fafb]"
+        >
+          <X className="size-4" />
+        </button>
+        <div className="pr-10">
+          <p
+            className="text-xs uppercase tracking-[0.08em]"
+            style={{ color: MUTED, fontWeight: 700 }}
+          >
+            Document upload
+          </p>
+          <h3
+            id="continue-scenario-title"
+            className="mt-2 text-lg"
+            style={{ color: TEXT, fontWeight: 700, lineHeight: "28px" }}
+          >
+            Choose a Continue Scenario
+          </h3>
+        </div>
+        <div className="mt-5 grid gap-3">
+          <button
+            type="button"
+            onClick={() => onChoose("success")}
+            className="rounded-[14px] border px-4 py-4 text-left transition hover:-translate-y-0.5"
+            style={{ borderColor: SUCCESS_BORDER, background: SUCCESS_BG }}
+          >
+            <CheckCircle2 className="mb-3 size-5" style={{ color: SUCCESS }} />
+            <span
+              className="block text-sm"
+              style={{ color: TEXT, fontWeight: 700 }}
+            >
+              Success
+            </span>
+            <span
+              className="mt-1 block text-xs"
+              style={{ color: MUTED, lineHeight: "18px" }}
+            >
+              Continue to the next step after validation completes.
+            </span>
+          </button>
+          <button
+            type="button"
+            onClick={() => onChoose("gst_inactive")}
+            className="rounded-[14px] border px-4 py-4 text-left transition hover:-translate-y-0.5"
+            style={{ borderColor: "#fde68a", background: "#fffbeb" }}
+          >
+            <CircleAlert className="mb-3 size-5 text-[#d97706]" />
+            <span
+              className="block text-sm"
+              style={{ color: TEXT, fontWeight: 700 }}
+            >
+              GST is cancelled or suspended
+            </span>
+            <span
+              className="mt-1 block text-xs"
+              style={{ color: MUTED, lineHeight: "18px" }}
+            >
+              GST number is valid in format, but the GST API returns inactive
+              status.
+            </span>
+          </button>
+          <button
+            type="button"
+            onClick={() => onChoose("legal_name_mismatch")}
+            className="rounded-[14px] border px-4 py-4 text-left transition hover:-translate-y-0.5"
+            style={{ borderColor: "#fde68a", background: "#fffbeb" }}
+          >
+            <CircleAlert className="mb-3 size-5 text-[#d97706]" />
+            <span
+              className="block text-sm"
+              style={{ color: TEXT, fontWeight: 700 }}
+            >
+              Legal name mismatch across records
+            </span>
+            <span
+              className="mt-1 block text-xs"
+              style={{ color: MUTED, lineHeight: "18px" }}
+            >
+              Form-entered legal name does not match the document or API
+              record.
+            </span>
+          </button>
+        </div>
+      </motion.div>
+    </motion.div>
   );
 }
 // ============== SUCCESS - Celebration + Email Template (Screen 12) ==============

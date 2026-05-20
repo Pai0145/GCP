@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
   ArrowRight,
   BadgeCheck,
@@ -13,7 +13,7 @@ import {
   Sparkles,
   WalletCards,
 } from "lucide-react";
-import Lottie from "lottie-react";
+import lottie from "lottie-web";
 import { AnimatePresence, motion } from "motion/react";
 import {
   HashRouter,
@@ -44,8 +44,8 @@ import {
 } from "./components/onboarding/Screens";
 import pineLogo from "../../pinelabs logo.png";
 import pineBg from "../../bg pinlabs.png";
+import fastLoadingAnimation from "../imports/fastloading-transition.json";
 import landingImage from "../imports/landing image.png";
-import logoAnimation from "../imports/logo-animation.json";
 
 const stats = [
   { value: "10M+", label: "Gift Cards issued" },
@@ -412,6 +412,25 @@ function ScrollToTop() {
 }
 
 function LandingAuthBridge() {
+  const lottieContainerRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!lottieContainerRef.current) return;
+
+    const animation = lottie.loadAnimation({
+      container: lottieContainerRef.current,
+      renderer: "svg",
+      loop: true,
+      autoplay: true,
+      animationData: fastLoadingAnimation,
+      rendererSettings: {
+        preserveAspectRatio: "xMidYMid meet",
+      },
+    });
+
+    return () => animation.destroy();
+  }, []);
+
   return (
     <motion.div
       className="fixed inset-0 z-[300] flex items-center justify-center overflow-hidden bg-[#f8fff7]"
@@ -441,19 +460,31 @@ function LandingAuthBridge() {
         transition={{ duration: 2.8, ease: [0.22, 1, 0.36, 1] }}
       />
       <motion.div
-        className="relative h-36 w-36"
-        initial={{ opacity: 0, scale: 0.86 }}
-        animate={{ opacity: 1, scale: [0.86, 1.06, 1] }}
-        exit={{ opacity: 0, scale: 0.98 }}
-        transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+        className="relative flex h-40 w-40 items-center justify-center"
+        initial={{ opacity: 0, scale: 0.82, y: 16 }}
+        animate={{
+          opacity: 1,
+          scale: [0.82, 1.08, 1],
+          y: [16, -4, 0],
+        }}
+        exit={{ opacity: 0, scale: 0.96, y: -10 }}
+        transition={{ duration: 0.78, ease: [0.22, 1, 0.36, 1] }}
+        aria-label="Pine Labs loading animation"
       >
-        <Lottie
-          animationData={logoAnimation}
-          loop
-          autoplay
-          className="h-full w-full"
-          aria-label="Pine Labs loading animation"
-          rendererSettings={{ preserveAspectRatio: "xMidYMid meet" }}
+        <motion.div
+          aria-hidden="true"
+          className="absolute inset-[-18px] rounded-[42px] border border-[#d0f255]/50"
+          initial={{ opacity: 0, scale: 0.78 }}
+          animate={{ opacity: [0, 0.9, 0], scale: [0.78, 1.18, 1.34] }}
+          transition={{ duration: 1.25, repeat: Infinity, ease: "easeOut" }}
+        />
+        <motion.div
+          ref={lottieContainerRef}
+          className="relative h-24 w-24"
+          initial={{ opacity: 0, filter: "blur(8px)" }}
+          animate={{ opacity: 1, filter: "blur(0px)" }}
+          transition={{ delay: 0.16, duration: 0.42, ease: "easeOut" }}
+          aria-hidden="true"
         />
       </motion.div>
     </motion.div>
