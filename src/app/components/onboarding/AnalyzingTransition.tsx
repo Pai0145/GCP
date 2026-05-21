@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { UserRound } from "lucide-react";
+import { AlertTriangle, UserRound } from "lucide-react";
 
 interface AnalyzingTransitionProps {
   onComplete: () => void;
@@ -9,7 +9,7 @@ interface AnalyzingTransitionProps {
   successTitle?: string;
   successText?: string;
   successOnly?: boolean;
-  successIcon?: "check" | "profile";
+  successIcon?: "check" | "profile" | "warning";
 }
 
 export function AnalyzingTransition({
@@ -22,6 +22,7 @@ export function AnalyzingTransition({
   successIcon = "check",
 }: AnalyzingTransitionProps) {
   const [currentStep, setCurrentStep] = useState(successOnly ? 3 : 0);
+  const isWarning = successIcon === "warning";
 
   useEffect(() => {
     if (successOnly) {
@@ -34,7 +35,7 @@ export function AnalyzingTransition({
     const timer1 = setTimeout(() => setCurrentStep(1), 100);
     // Switch to second subtext after 2s
     const timer2 = setTimeout(() => setCurrentStep(2), 2000);
-    // Show congratulations after 4s
+    // Show final status after 4s
     const timer3 = setTimeout(() => setCurrentStep(3), 4000);
     // Complete after 6.5s
     const timer4 = setTimeout(() => onComplete(), 6500);
@@ -133,7 +134,7 @@ export function AnalyzingTransition({
 
       {/* Content */}
       <div className="relative z-10 flex flex-col items-center justify-center">
-        {/* Success checkmark - shows only on step 3 */}
+        {/* Final status mark - shows only on step 3 */}
         <AnimatePresence mode="wait">
           {currentStep === 3 && (
             <motion.div
@@ -156,9 +157,13 @@ export function AnalyzingTransition({
                   className="absolute inset-0 rounded-full"
                   style={{
                     background:
-                      "linear-gradient(135deg, #00a896 0%, #005f73 100%)",
+                      isWarning
+                        ? "linear-gradient(135deg, #f59e0b 0%, #b45309 100%)"
+                        : "linear-gradient(135deg, #00a896 0%, #005f73 100%)",
                     boxShadow:
-                      "0 0 40px rgba(0, 168, 150, 0.6), 0 0 80px rgba(0, 168, 150, 0.3)",
+                      isWarning
+                        ? "0 0 40px rgba(245, 158, 11, 0.5), 0 0 80px rgba(245, 158, 11, 0.24)"
+                        : "0 0 40px rgba(0, 168, 150, 0.6), 0 0 80px rgba(0, 168, 150, 0.3)",
                   }}
                   animate={{
                     scale: [1, 1.05, 1],
@@ -170,7 +175,20 @@ export function AnalyzingTransition({
                   }}
                 />
 
-                {successIcon === "profile" ? (
+                {successIcon === "warning" ? (
+                  <motion.div
+                    className="absolute inset-0 flex items-center justify-center text-white"
+                    initial={{ opacity: 0, scale: 0.5 }}
+                    animate={{ opacity: 1, scale: [0.5, 1.12, 1] }}
+                    transition={{
+                      duration: 0.65,
+                      delay: 0.2,
+                      ease: [0.34, 1.56, 0.64, 1],
+                    }}
+                  >
+                    <AlertTriangle size={48} strokeWidth={2.4} />
+                  </motion.div>
+                ) : successIcon === "profile" ? (
                   <motion.div
                     className="absolute inset-0 flex items-center justify-center text-[#d0f255]"
                     initial={{ opacity: 0, scale: 0.5 }}
@@ -211,7 +229,9 @@ export function AnalyzingTransition({
                   className="absolute inset-0 rounded-full"
                   style={{
                     background:
-                      "radial-gradient(circle, rgba(208, 242, 85, 0.4) 0%, transparent 70%)",
+                      isWarning
+                        ? "radial-gradient(circle, rgba(245, 158, 11, 0.35) 0%, transparent 70%)"
+                        : "radial-gradient(circle, rgba(208, 242, 85, 0.4) 0%, transparent 70%)",
                     filter: "blur(20px)",
                   }}
                   animate={{
@@ -226,7 +246,7 @@ export function AnalyzingTransition({
                 />
 
                 {/* Celebration particles */}
-                {[...Array(8)].map((_, i) => (
+                {!isWarning && [...Array(8)].map((_, i) => (
                   <motion.div
                     key={i}
                     className="absolute w-1.5 h-1.5 rounded-full"
@@ -410,7 +430,7 @@ export function AnalyzingTransition({
             )}
             {currentStep === 3 && (
               <motion.div
-                key="congratulations"
+                key={isWarning ? "manual-review" : "congratulations"}
                 initial={{ opacity: 0, scale: 0.8, y: 30 }}
                 animate={{
                   opacity: 1,
@@ -430,9 +450,11 @@ export function AnalyzingTransition({
                 <motion.h2
                   className="text-4xl sm:text-5xl font-bold mb-4"
                   style={{
-                    color: "#d0f255",
+                    color: isWarning ? "#fbbf24" : "#d0f255",
                     fontFamily: "Lato, sans-serif",
-                    textShadow: "0 0 30px rgba(208, 242, 85, 0.5)",
+                    textShadow: isWarning
+                      ? "0 0 30px rgba(245, 158, 11, 0.35)"
+                      : "0 0 30px rgba(208, 242, 85, 0.5)",
                   }}
                   initial={{ opacity: 0, y: 30, scale: 0.8 }}
                   animate={{

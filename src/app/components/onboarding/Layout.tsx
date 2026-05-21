@@ -8,6 +8,7 @@ import {
   Loader2,
   Lock,
   UserRound,
+  X,
 } from "lucide-react";
 import { useNavigate } from "react-router";
 import pineLabsLogoImg from "../../../../pinelabs logo.png";
@@ -63,9 +64,13 @@ export const STEPS: SetupStep[] = [
 export function TopNav({
   onSaveExit,
   autosaveKey,
+  signzRejectEnabled,
+  onSignzReject,
 }: {
   onSaveExit?: () => void;
   autosaveKey?: string;
+  signzRejectEnabled?: boolean;
+  onSignzReject?: () => void;
 }) {
   const navigate = useNavigate();
   const [isSaving, setIsSaving] = useState(false);
@@ -130,11 +135,26 @@ export function TopNav({
                 lineHeight: "18px",
               }}
             >
-              Gift Card Procurement
+              Elevate One
             </div>
           </div>
         </div>
         <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+          {signzRejectEnabled && (
+            <button
+              type="button"
+              onClick={onSignzReject}
+              className="flex size-9 items-center justify-center rounded-full transition hover:bg-[#fef2f2] sm:size-10"
+              style={{
+                color: "#b42318",
+                border: "1px solid #fecdca",
+                background: "#fff",
+              }}
+              aria-label="Close signing session"
+            >
+              <X size={18} />
+            </button>
+          )}
           <div
             className="hidden items-center gap-2 rounded-full px-3 py-2 text-xs font-semibold sm:flex"
             style={{
@@ -663,6 +683,8 @@ export function PageShell({
   autosaveKey,
   progressPercent,
   steps = STEPS,
+  signzRejectEnabled,
+  onSignzReject,
 }: {
   currentStep: number;
   completed: number[];
@@ -676,6 +698,8 @@ export function PageShell({
   autosaveKey?: string;
   progressPercent?: number;
   steps?: SetupStep[];
+  signzRejectEnabled?: boolean;
+  onSignzReject?: () => void;
 }) {
   const totalSteps = steps.length;
   const setupProgressPercent =
@@ -724,7 +748,12 @@ export function PageShell({
       )}
 
       <div className="relative z-10 flex flex-col flex-1 w-full">
-        <TopNav onSaveExit={onSaveExit} autosaveKey={autosaveKey} />
+        <TopNav
+          onSaveExit={onSaveExit}
+          autosaveKey={autosaveKey}
+          signzRejectEnabled={signzRejectEnabled}
+          onSignzReject={onSignzReject}
+        />
 
         {/* Mobile progress bar and steps accordion */}
         {showSidebar && (

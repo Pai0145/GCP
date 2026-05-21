@@ -90,7 +90,7 @@ Subtitle:
 Fields:
 
 - Full name
-- Work email
+- Email
 - Mobile number
 - Expected annual gift card spend, optional dropdown
 
@@ -111,7 +111,7 @@ Secondary link:
 “Save and continue later”
 
 Validation:
-Continue button stays disabled until Full name, Work email, and Mobile number are filled.
+Continue button stays disabled until Full name, Email, and Mobile number are filled.
 Show green check icon when email and mobile are valid.
 Use sample values:
 Full name: John Doe
@@ -228,13 +228,13 @@ At top, show checkbox:
 If checked, auto-fill:
 
 - Full name
-- Work email
+- Email
 - Mobile number
 
 Fields:
 
 - Full name
-- Work email
+- Email
 - Mobile number
 - Designation dropdown
 
@@ -311,7 +311,7 @@ Show summary cards:
 Card 1: Account owner
 
 - Name
-- Work email
+- Email
 - Mobile number
   Edit link
 
@@ -430,7 +430,7 @@ Section 2:
 Fields:
 
 - Full name
-- Work email
+- Email
 - Mobile number
 - Role dropdown
 

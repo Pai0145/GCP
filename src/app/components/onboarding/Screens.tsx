@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import Lottie from "lottie-react";
 import {
   motion,
   AnimatePresence,
@@ -20,6 +21,10 @@ import signzTermsPage1Img from "../../../imports/signz-terms/page-1.png";
 import signzTermsPage2Img from "../../../imports/signz-terms/page-2.png";
 import signzTermsPage3Img from "../../../imports/signz-terms/page-3.png";
 import signzTermsPage4Img from "../../../imports/signz-terms/page-4.png";
+import signzTermsSignedPage1Img from "../../../imports/signz-terms-signed/page-1.png";
+import signzTermsSignedPage2Img from "../../../imports/signz-terms-signed/page-2.png";
+import signzTermsSignedPage3Img from "../../../imports/signz-terms-signed/page-3.png";
+import signzTermsSignedPage4Img from "../../../imports/signz-terms-signed/page-4.png";
 
 function AnimatedPercent({
   value,
@@ -100,6 +105,16 @@ const SPEND_OPTIONS = [
   "10 Lacs - 50 Lacs",
   "50 Lacs - 1 Crore",
   "Above 1 Crore",
+];
+
+const BUSINESS_CATEGORY_OPTIONS = [
+  "Automobiles",
+  "Auto Finance",
+  "Transport",
+  "Retail Jewellery",
+  "Education",
+  "Construction",
+  "Others",
 ];
 
 function usesSameEmailSignatoryFlow(state: any) {
@@ -401,12 +416,13 @@ function Select({ value, onChange, options, placeholder }: any) {
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full appearance-none pl-4 pr-10 py-2.5 rounded-[8px] outline-none bg-white"
+        className="w-full appearance-none rounded-[8px] bg-white px-4 py-2.5 pr-10 outline-none transition"
         style={{
           border: `1px solid ${BORDER_INPUT}`,
           color: value ? TEXT : MUTED_2,
           fontSize: 14,
           lineHeight: "21px",
+          minHeight: 44,
         }}
       >
         <option value="">{placeholder}</option>
@@ -1196,7 +1212,7 @@ export function ScreenAccountOwner({ go, state, setState, progress }: any) {
                   className="text-xs mt-1.5 flex items-center gap-1"
                   style={{ color: SUCCESS }}
                 >
-                  <CheckCircle2 className="size-3" /> Fetched from documents
+                  <CheckCircle2 className="size-3" /> Fetched from Company PAN
                 </motion.p>
               </motion.div>
               <motion.div
@@ -1261,7 +1277,7 @@ export function ScreenAccountOwner({ go, state, setState, progress }: any) {
                   className="text-xs mt-1.5 flex items-center gap-1"
                   style={{ color: SUCCESS }}
                 >
-                  <CheckCircle2 className="size-3" /> Fetched from documents
+                  <CheckCircle2 className="size-3" /> Fetched from Company PAN
                 </motion.p>
               </motion.div>
             </div>
@@ -1333,6 +1349,8 @@ type ContinueScenario =
   | "gst_inactive"
   | "legal_name_mismatch"
   | "api_unavailable";
+
+type SignatoryScenario = "same_person" | "send_to_authorised";
 type FetchedDocKey = Extract<DocKey, "gst" | "cin" | "pan">;
 type FetchedDetail = { label: string; value: string };
 type DocAlertTone = "error" | "warning";
@@ -1850,12 +1868,17 @@ export function ScreenBeforeYouBegin({ go, state, setState, progress }: any) {
   const allUploaded =
     !!docs.cin && !!docs.pan && (gstPresent ? !!docs.gst : !!docs.address);
 
-  const proceedToNextStep = () => {
+  const proceedToNextStep = (options?: { manualVerification?: boolean }) => {
     setBeginErrorMessage(null);
     setParsing(true);
     setTimeout(() => {
       setParsing(false);
-      setState({ ...state, idType: "GSTIN", idValue: "29AABCP1234F1Z5" });
+      setState((current: any) => ({
+        ...current,
+        idType: "GSTIN",
+        idValue: "29AABCP1234F1Z5",
+        manualVerification: Boolean(options?.manualVerification),
+      }));
       go(2);
     }, 1400);
   };
@@ -1891,8 +1914,11 @@ export function ScreenBeforeYouBegin({ go, state, setState, progress }: any) {
 
     if (scenario === "api_unavailable") {
       setBeginErrorMessage(
-        "We’re unable to continue right now due to a network or server issue. Please try again after 1–2 minutes.",
+        "Auto-verification is unavailable due to a network or server issue. You can continue now, and our team will review your details manually.",
       );
+      window.setTimeout(() => {
+        proceedToNextStep({ manualVerification: true });
+      }, 900);
       return;
     }
 
@@ -1926,6 +1952,12 @@ export function ScreenBeforeYouBegin({ go, state, setState, progress }: any) {
     setScenarioDoc(null);
     setDocAlerts((current) => ({ ...current, [key]: null }));
     setScanningDocs((current) => ({ ...current, [key]: true }));
+    if (key === "pan") {
+      setState((current: any) => ({
+        ...current,
+        panDocumentScenario: "",
+      }));
+    }
 
     if (key === "gst" || key === "cin" || key === "pan") {
       const details = AUTOFETCHED_DETAILS[key];
@@ -1971,6 +2003,13 @@ export function ScreenBeforeYouBegin({ go, state, setState, progress }: any) {
     if (scenario === "success") {
       startSuccessfulUpload(scenarioDoc, doc.sample);
     } else {
+      if (scenario === "pan_personal") {
+        setState((current: any) => ({
+          ...current,
+          panDocumentScenario: "personal",
+        }));
+      }
+
       const isReviewScenario = scenario === "ocr_unreadable";
       const canShowDetails =
         scenarioDoc === "gst" || scenarioDoc === "cin" || scenarioDoc === "pan";
@@ -2065,19 +2104,19 @@ export function ScreenBeforeYouBegin({ go, state, setState, progress }: any) {
             {beginErrorMessage && (
               <Card
                 className="p-4 sm:p-5"
-                style={{ background: "#fff7f7", borderColor: "#fecaca" } as any}
+                style={{ background: "#fffbeb", borderColor: "#fcd34d" } as any}
               >
                 <div className="flex items-start gap-3">
                   <CircleAlert
                     className="mt-0.5 size-5 shrink-0"
-                    style={{ color: "#dc2626" }}
+                    style={{ color: "#d97706" }}
                   />
                   <div>
                     <div
                       className="text-sm"
                       style={{ color: TEXT, fontWeight: 700 }}
                     >
-                      Something went wrong while continuing
+                      Auto-verification needs manual review
                     </div>
                     <p
                       className="mt-1 text-sm"
@@ -2876,6 +2915,10 @@ export function ScreenCompanyIdentifier({ go, state, setState }: any) {
 export function ScreenBusinessIdentity({ go, state, setState, progress }: any) {
   const [gstPresent, setGstPresent] = useState(true);
   const [showGstConfirm, setShowGstConfirm] = useState(false);
+  const organisationEntityType =
+    state.panDocumentScenario === "personal"
+      ? "Sole Proprietor"
+      : "Limited Liability Partnership";
 
   const handleGstToggle = () => {
     if (gstPresent) {
@@ -2928,6 +2971,33 @@ export function ScreenBusinessIdentity({ go, state, setState, progress }: any) {
               </div>
             </div>
 
+            <div className="mb-6 grid grid-cols-2 gap-4 sm:mb-7 sm:gap-6">
+              <PrefilledWithCheck
+                index={0}
+                label="Organisation/Entity Type"
+                value={organisationEntityType}
+                source={
+                  state.panDocumentScenario === "personal"
+                    ? "Fetched from Company PAN"
+                    : "Fetched from CIN certificate"
+                }
+              />
+              <div>
+                <FieldLabel>Business Category</FieldLabel>
+                <Select
+                  value={state.businessCategory || ""}
+                  onChange={(value: string) =>
+                    setState((current: any) => ({
+                      ...current,
+                      businessCategory: value,
+                    }))
+                  }
+                  options={BUSINESS_CATEGORY_OPTIONS}
+                  placeholder="Select business category"
+                />
+              </div>
+            </div>
+
             {/* GST Details Section */}
             <AnimatePresence initial={false}>
               {gstPresent && (
@@ -2949,20 +3019,20 @@ export function ScreenBusinessIdentity({ go, state, setState, progress }: any) {
                       index={0}
                       label="GSTIN Number"
                       value="27AAAAA0000A1Z5"
-                      source="Fetched from documents"
+                      source="Fetched from GST certificate"
                     />
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                       <Prefilled
                         index={1}
                         label="GSTIN Name"
                         value="PINE LABS LIMITED"
-                        source="Fetched from documents"
+                        source="Fetched from GST certificate"
                       />
                       <Prefilled
                         index={2}
                         label="GSTIN State"
                         value="KARNATAKA"
-                        source="Fetched from documents"
+                        source="Fetched from GST certificate"
                       />
                     </div>
                   </div>
@@ -2983,13 +3053,13 @@ export function ScreenBusinessIdentity({ go, state, setState, progress }: any) {
                   index={3}
                   label="PAN Number"
                   value={state.panNumber}
-                  source="Fetched from documents"
+                  source="Fetched from Company PAN"
                 />
                 <Prefilled
                   index={4}
                   label="Legal name"
                   value={state.panName}
-                  source="Fetched from documents"
+                  source="Fetched from Company PAN"
                 />
               </div>
               <p className="text-xs sm:text-sm mt-2" style={{ color: MUTED }}>
@@ -3011,13 +3081,13 @@ export function ScreenBusinessIdentity({ go, state, setState, progress }: any) {
                   index={4}
                   label="CIN/LLP No"
                   value="U31900DL1991PLC043974"
-                  source="Fetched from documents"
+                  source="Fetched from CIN certificate"
                 />
                 <Prefilled
                   index={5}
                   label="CIN/LLP Name"
                   value="PINE LABS LIMITED"
-                  source="Fetched from documents"
+                  source="Fetched from CIN certificate"
                 />
               </div>
             </div>
@@ -3159,7 +3229,7 @@ export function ScreenCompanyAddress({ go, state, setState, progress }: any) {
                 index={0}
                 label="Address line 1"
                 value="4th Floor, Tower B, Building 9, DLF Cyber City"
-                source="Fetched from GSTIN"
+                source="Fetched from GST certificate"
               />
               <div>
                 <FieldLabel optional>Address line 2</FieldLabel>
@@ -3601,8 +3671,109 @@ function PrefilledWithCheck({
   );
 }
 
+function SignatoryScenarioModal({
+  onChoose,
+  onClose,
+}: {
+  onChoose: (scenario: SignatoryScenario) => void;
+  onClose: () => void;
+}) {
+  return (
+    <motion.div
+      className="fixed inset-0 z-50 flex items-center justify-center px-4"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="signatory-scenario-title"
+    >
+      <button
+        type="button"
+        aria-label="Close signatory scenario selector"
+        className="absolute inset-0 bg-[#101828]/45 backdrop-blur-[2px]"
+        onClick={onClose}
+      />
+      <motion.div
+        className="relative w-full max-w-xl rounded-[20px] bg-white p-5 shadow-2xl sm:p-6"
+        initial={{ y: 18, scale: 0.98 }}
+        animate={{ y: 0, scale: 1 }}
+        exit={{ y: 18, scale: 0.98 }}
+        transition={{ duration: 0.2, ease: "easeOut" }}
+      >
+        <button
+          type="button"
+          aria-label="Close"
+          onClick={onClose}
+          className="absolute right-4 top-4 inline-flex size-9 items-center justify-center rounded-full border border-[#e5e7eb] text-[#667085] transition hover:bg-[#f9fafb]"
+        >
+          <X className="size-4" />
+        </button>
+        <div className="pr-10">
+          <p
+            className="text-xs uppercase tracking-[0.08em]"
+            style={{ color: MUTED, fontWeight: 700 }}
+          >
+            Authorised signatory
+          </p>
+          <h3
+            id="signatory-scenario-title"
+            className="mt-2 text-lg"
+            style={{ color: TEXT, fontWeight: 700, lineHeight: "28px" }}
+          >
+            Choose a Scenario
+          </h3>
+        </div>
+        <div className="mt-5 grid gap-3 sm:grid-cols-2">
+          <button
+            type="button"
+            onClick={() => onChoose("same_person")}
+            className="rounded-[14px] border px-4 py-4 text-left transition hover:-translate-y-0.5"
+            style={{ borderColor: SUCCESS_BORDER, background: SUCCESS_BG }}
+          >
+            <CheckCircle2 className="mb-3 size-5" style={{ color: SUCCESS }} />
+            <span
+              className="block text-sm"
+              style={{ color: TEXT, fontWeight: 700 }}
+            >
+              Same person signing
+            </span>
+            <span
+              className="mt-1 block text-xs"
+              style={{ color: MUTED, lineHeight: "18px" }}
+            >
+              Authorised signatory is the same person filling the form.
+            </span>
+          </button>
+          <button
+            type="button"
+            onClick={() => onChoose("send_to_authorised")}
+            className="rounded-[14px] border px-4 py-4 text-left transition hover:-translate-y-0.5"
+            style={{ borderColor: "#fde68a", background: "#fffbeb" }}
+          >
+            <Mail className="mb-3 size-5 text-[#d97706]" />
+            <span
+              className="block text-sm"
+              style={{ color: TEXT, fontWeight: 700 }}
+            >
+              Send to authorised person
+            </span>
+            <span
+              className="mt-1 block text-xs"
+              style={{ color: MUTED, lineHeight: "18px" }}
+            >
+              Sends the terms package to a different authorised signatory.
+            </span>
+          </button>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
 // ============== SCREEN 5 ==============
 export function ScreenSignatory({ go, state, setState, progress }: any) {
+  const [showScenario, setShowScenario] = useState(false);
   const needsLetter = state.designation === "Procurement Manager";
   const valid =
     state.sigName &&
@@ -3611,8 +3782,53 @@ export function ScreenSignatory({ go, state, setState, progress }: any) {
     state.designation &&
     state.sigConfirm;
 
+  const handleScenario = (scenario: SignatoryScenario) => {
+    setShowScenario(false);
+
+    if (scenario === "same_person") {
+      setState((current: any) => ({
+        ...current,
+        sameAsOwner: true,
+        sigName: current.fullName,
+        sigEmail: current.email,
+        sigMobile: current.mobile || current.sigMobile,
+      }));
+      go(6);
+      return;
+    }
+
+    setState((current: any) => {
+      const currentSignatoryEmail = (current.sigEmail || "").trim().toLowerCase();
+      const ownerEmail = (current.email || "").trim().toLowerCase();
+      const hasDelegatedEmail =
+        currentSignatoryEmail && currentSignatoryEmail !== ownerEmail;
+
+      return {
+        ...current,
+        sameAsOwner: false,
+        sigName:
+          !current.sigName || current.sigName === current.fullName
+            ? "Animesh Mandal"
+            : current.sigName,
+        sigEmail: hasDelegatedEmail
+          ? current.sigEmail
+          : "authorised.signatory@company.com",
+        sigMobile: current.sigMobile || current.mobile,
+      };
+    });
+    go(6);
+  };
+
   return (
     <div className="pb-2 px-2 sm:px-0">
+      <AnimatePresence>
+        {showScenario && (
+          <SignatoryScenarioModal
+            onChoose={handleScenario}
+            onClose={() => setShowScenario(false)}
+          />
+        )}
+      </AnimatePresence>
       <FormCard
         title="Authorised Signatory"
         subtitle="This person will accept terms and complete business verification"
@@ -3660,7 +3876,7 @@ export function ScreenSignatory({ go, state, setState, progress }: any) {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <FieldLabel required>Work email</FieldLabel>
+                  <FieldLabel required>Email</FieldLabel>
                   <TextInput
                     value={state.sigEmail}
                     placeholder="you@company.com"
@@ -3755,7 +3971,7 @@ export function ScreenSignatory({ go, state, setState, progress }: any) {
       </FormCard>
 
       <ActionBar>
-        <PrimaryButton disabled={!valid} onClick={() => go(6)}>
+        <PrimaryButton disabled={!valid} onClick={() => setShowScenario(true)}>
           Save & continue
         </PrimaryButton>
       </ActionBar>
@@ -3902,7 +4118,7 @@ export function ScreenReviewSubmit({
               onEdit={() => go(2)}
               rows={[
                 ["Name", state.fullName],
-                ["Work email", state.email],
+                ["Email", state.email],
                 ["Mobile number", state.mobile],
               ]}
             />
@@ -4102,7 +4318,7 @@ function SignatureStamp() {
 
 function TermsDocument({
   page,
-  title = "Terms and Conditions for Gift Voucher Procurement",
+  title = "Terms and Conditions for Elevate One",
   left,
   right,
   children,
@@ -4434,7 +4650,7 @@ export function ScreenTermsPage1({ go, state, progress }: any) {
     <div className="pb-2 px-2 sm:px-0">
       <TermsFormPage page={1} progress={progress}>
         <TermsImagePage
-          src={signzTermsPage1Img}
+          src={state.esignVerified ? signzTermsSignedPage1Img : signzTermsPage1Img}
           alt="Terms and Conditions page 1"
         />
       </TermsFormPage>
@@ -4451,7 +4667,7 @@ export function ScreenTermsPage2({ go, state, progress }: any) {
     <div className="pb-2 px-2 sm:px-0">
       <TermsFormPage page={2} progress={progress}>
         <TermsImagePage
-          src={signzTermsPage2Img}
+          src={state.esignVerified ? signzTermsSignedPage2Img : signzTermsPage2Img}
           alt="Terms and Conditions page 2"
         />
       </TermsFormPage>
@@ -4468,7 +4684,7 @@ export function ScreenTermsPage3({ go, state, progress }: any) {
     <div className="pb-2 px-2 sm:px-0">
       <TermsFormPage page={3} progress={progress}>
         <TermsImagePage
-          src={signzTermsPage3Img}
+          src={state.esignVerified ? signzTermsSignedPage3Img : signzTermsPage3Img}
           alt="Terms and Conditions page 3"
         />
       </TermsFormPage>
@@ -4488,7 +4704,7 @@ export function ScreenTermsPage4({ go, state, setState, progress }: any) {
       <TermsFormPage page={4} progress={progress}>
         <div className="space-y-5">
           <TermsImagePage
-            src={signzTermsPage4Img}
+            src={state.esignVerified ? signzTermsSignedPage4Img : signzTermsPage4Img}
             alt="Terms and Conditions page 4"
           />
           <Card
@@ -5120,25 +5336,14 @@ function Confetti() {
 }
 
 export function ScreenSuccess({ state }: any) {
-  const merchantId = "PL-" + Math.floor(100000 + Math.random() * 900000);
-  const tempPassword =
-    "Qs@" + Math.random().toString(36).slice(2, 8).toUpperCase();
   const firstName = state.fullName?.split(" ")[0] || "there";
+  const isManualVerification = Boolean(state.manualVerification);
+  const applicationRef =
+    "EO-" + Math.floor(100000 + Math.random() * 900000);
+  const successTickAnimation = useMemo(() => getRethemedSuccessTick(), []);
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const [remainingSeconds, setRemainingSeconds] = useState(30 * 60);
-  const [showEmailTemplate, setShowEmailTemplate] = useState(false);
-  const minutes = Math.floor(remainingSeconds / 60);
-  const seconds = remainingSeconds % 60;
-  const qwikServeRedirectUrl =
-    "https://www.figma.com/proto/5INxfo3oiLHKltD4Jc0Jqu/GC-Procurement_Corporate-Portal?page-id=653%3A20540&node-id=671-67129&viewport=-6018%2C-1301%2C0.07&t=UFx9UTb23qjZ51zU-1&scaling=min-zoom&content-scaling=fixed&starting-point-node-id=671%3A67129&show-proto-sidebar=1";
-
-  useEffect(() => {
-    const timer = window.setInterval(() => {
-      setRemainingSeconds((value) => Math.max(0, value - 1));
-    }, 1000);
-
-    return () => window.clearInterval(timer);
-  }, []);
+  const qwikServePrototypeUrl =
+    "https://www.figma.com/proto/5INxfo3oiLHKltD4Jc0Jqu/GC-Procurement_Corporate-Portal?node-id=671-67129&viewport=-6018%2C-1301%2C0.07&t=wRlZ2PtAWqnyJlMm-1&scaling=min-zoom&content-scaling=fixed&starting-point-node-id=671%3A67129&show-proto-sidebar=1&page-id=653%3A20540";
 
   const handleVideoTimeUpdate = (
     event: React.SyntheticEvent<HTMLVideoElement>,
@@ -5152,129 +5357,213 @@ export function ScreenSuccess({ state }: any) {
 
   return (
     <div className="relative mx-auto w-full max-w-7xl px-2 py-6 sm:px-4 sm:py-8 lg:py-10">
-      <Confetti />
+      {!isManualVerification && <Confetti />}
 
-      <div className="relative grid items-stretch gap-8 lg:grid-cols-[1.08fr_0.92fr] lg:gap-12">
+      <div className="relative grid items-stretch gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:gap-12">
         <motion.section
           initial={{ opacity: 0, x: -18 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-          className="mx-auto w-full max-w-[620px] text-left lg:mx-0"
+          className="mx-auto w-full max-w-[680px] text-left lg:mx-0"
         >
+          <div className="relative">
+            <motion.div
+              aria-hidden
+              className="absolute -left-2 top-0 h-[220px] w-[220px] rounded-full"
+              style={{
+                background:
+                  "radial-gradient(circle, rgba(208,242,85,0.2) 0%, rgba(208,242,85,0.08) 35%, rgba(208,242,85,0) 72%)",
+                filter: "blur(20px)",
+              }}
+              initial={{ opacity: 0, scale: 0.72 }}
+              animate={{ opacity: [0.4, 0.65, 0.42], scale: [0.92, 1.05, 1] }}
+              transition={{
+                duration: 2.6,
+                ease: "easeInOut",
+                repeat: Infinity,
+                repeatType: "mirror",
+              }}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.72, y: 14 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+              className="relative inline-flex size-[88px] items-center justify-center rounded-full"
+              style={{
+                background:
+                  isManualVerification
+                    ? "linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(255,251,235,0.96) 100%)"
+                    : "linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(240,253,244,0.96) 100%)",
+                border: `1px solid ${isManualVerification ? "#fcd34d" : SUCCESS_BORDER}`,
+                boxShadow:
+                  isManualVerification
+                    ? "0 22px 44px -20px rgba(217,119,6,0.26), inset 0 1px 0 rgba(255,255,255,0.9)"
+                    : "0 22px 44px -20px rgba(0,130,54,0.28), inset 0 1px 0 rgba(255,255,255,0.9)",
+                backdropFilter: "blur(10px)",
+              }}
+            >
+              <motion.div
+                className="absolute inset-0 rounded-full"
+                style={{
+                  border: `1.5px solid ${
+                    isManualVerification
+                      ? "rgba(217,119,6,0.28)"
+                      : "rgba(0,130,54,0.26)"
+                  }`,
+                }}
+                initial={{ scale: 0.88, opacity: 0 }}
+                animate={{ scale: [0.95, 1.22, 1.38], opacity: [0, 0.42, 0] }}
+                transition={{
+                  duration: 1.9,
+                  times: [0, 0.45, 1],
+                  repeat: Infinity,
+                  repeatDelay: 0.4,
+                }}
+              />
+              <motion.div
+                className="absolute inset-[10px] rounded-full"
+                style={{
+                  background:
+                    isManualVerification
+                      ? "radial-gradient(circle at 30% 30%, rgba(255,255,255,0.95) 0%, rgba(255,251,235,0.95) 42%, rgba(254,243,199,0.9) 100%)"
+                      : "radial-gradient(circle at 30% 30%, rgba(255,255,255,0.95) 0%, rgba(240,253,244,0.92) 42%, rgba(220,252,231,0.82) 100%)",
+                  border: `1px solid ${
+                    isManualVerification
+                      ? "rgba(252,211,77,0.95)"
+                      : "rgba(185,248,207,0.95)"
+                  }`,
+                }}
+                initial={{ scale: 0.92, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ delay: 0.08, duration: 0.45 }}
+              />
+              <motion.div
+                className="relative z-10 flex size-[62px] items-center justify-center"
+                initial={{ opacity: 0, scale: 0.88 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{
+                  delay: 0.16,
+                  duration: 0.4,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
+              >
+                {isManualVerification ? (
+                  <CircleAlert className="size-10" style={{ color: "#d97706" }} />
+                ) : (
+                  <Lottie
+                    animationData={successTickAnimation}
+                    loop={false}
+                    autoplay
+                    style={{ width: "100%", height: "100%" }}
+                  />
+                )}
+              </motion.div>
+            </motion.div>
+          </div>
+
           <h1
-            className="text-[34px] font-bold leading-[1.06] text-[#005656] sm:text-[48px] lg:text-[52px]"
+            className="mt-6 text-[34px] font-bold leading-[1.06] text-[#005656] sm:text-[48px] lg:text-[52px]"
             style={{ fontFamily: "var(--font-display)" }}
           >
-            Congratulations,
+            {isManualVerification
+              ? "Submitted for manual review,"
+              : "Submission successful,"}
             <br />
-            {firstName}! <span aria-hidden="true">🎉</span>
+            {firstName}! {!isManualVerification && <span aria-hidden="true">🎉</span>}
           </h1>
           <p
             className="mt-6 text-base leading-7 sm:text-lg"
             style={{ color: TEXT_2 }}
           >
-            Your Pine Labs merchant account has been successfully activated.
+            {isManualVerification
+              ? "We couldn't auto-verify your details because the verification service was unavailable. Your form is submitted and our team will review it manually."
+              : "Your Elevate One onboarding form has been submitted successfully."}
           </p>
 
-          <motion.aside
-            initial={{ opacity: 0, y: 18, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{
-              delay: 0.12,
-              duration: 0.6,
-              ease: [0.22, 1, 0.36, 1],
-            }}
-            className="mt-7 flex w-full lg:hidden"
-          >
-            <div
-              className="flex min-h-[320px] w-full items-center justify-center rounded-[22px] p-4 sm:min-h-[420px]"
-              style={{ background: "#F2F8EF" }}
+          <div className="mt-8 grid gap-4 sm:grid-cols-2">
+            <motion.div
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.18, duration: 0.45 }}
+              className="rounded-[16px] border p-5"
+              style={{ background: "#ffffff", borderColor: BORDER }}
             >
-              <div className="aspect-square w-full max-w-[500px] overflow-hidden rounded-[18px]">
-                <video
-                  ref={videoRef}
-                  src={congratulationVideo}
-                  autoPlay
-                  muted
-                  playsInline
-                  preload="auto"
-                  onTimeUpdate={handleVideoTimeUpdate}
-                  onLoadedMetadata={(event) => {
-                    event.currentTarget.currentTime = 0;
-                  }}
-                  className="h-full w-full object-cover"
-                  style={{ objectPosition: "center center" }}
-                  aria-label="Congratulations animation"
-                />
-              </div>
-            </div>
-          </motion.aside>
-
-          <motion.button
-            type="button"
-            onClick={() => setShowEmailTemplate(true)}
-            initial={{ opacity: 0, y: 18 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{
-              delay: 0.16,
-              duration: 0.5,
-              ease: [0.22, 1, 0.36, 1],
-            }}
-            className="mt-7 block w-full rounded-[16px] p-5 text-left transition hover:-translate-y-0.5 sm:p-6"
-            style={{
-              background: "linear-gradient(135deg, #005656 0%, #007f78 100%)",
-            }}
-          >
-            <div className="flex items-center gap-3 text-sm font-semibold text-white">
-              <Mail className="size-5" style={{ color: LIME }} />
-              Login Credentials Coming Soon
-            </div>
-
-            <div className="mt-5 grid grid-cols-[1fr_auto_1fr] items-center gap-3 sm:gap-6">
-              <div
-                className="rounded-[12px] px-4 py-4 text-center"
-                style={{ background: "rgba(255,255,255,0.16)" }}
-              >
-                <div
-                  className="text-[34px] font-black leading-none sm:text-[42px]"
-                  style={{ color: LIME }}
-                >
-                  {String(minutes).padStart(2, "0")}
-                </div>
-                <div className="mt-2 text-xs text-white/75">Minutes</div>
-              </div>
-              <div className="text-3xl font-bold" style={{ color: LIME }}>
-                :
+              <div className="text-xs font-bold uppercase tracking-[0.1em]" style={{ color: MUTED }}>
+                Application reference
               </div>
               <div
-                className="rounded-[12px] px-4 py-4 text-center"
-                style={{ background: "rgba(255,255,255,0.16)" }}
+                className="mt-3 text-2xl font-bold"
+                style={{ color: TEXT, fontFamily: "monospace" }}
               >
-                <div
-                  className="text-[34px] font-black leading-none sm:text-[42px]"
-                  style={{ color: LIME }}
-                >
-                  {String(seconds).padStart(2, "0")}
-                </div>
-                <div className="mt-2 text-xs text-white/75">Seconds</div>
+                {applicationRef}
               </div>
-            </div>
+              <p className="mt-3 text-sm leading-6" style={{ color: TEXT_2 }}>
+                Keep this reference handy if you need help from the onboarding team.
+              </p>
+            </motion.div>
 
-            <p className="mt-5 text-sm leading-6 text-white/90">
-              An email with your{" "}
-              <span className="font-bold" style={{ color: LIME }}>
-                self-serve portal
-              </span>{" "}
-              login credentials will be shared with you within the next 30
-              minutes.
-            </p>
-          </motion.button>
+            <motion.div
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.24, duration: 0.45 }}
+              className="rounded-[16px] border p-5"
+              style={{ background: "#ffffff", borderColor: BORDER }}
+            >
+              <div className="text-xs font-bold uppercase tracking-[0.1em]" style={{ color: MUTED }}>
+                {isManualVerification ? "Manual review timeline" : "Credential delivery"}
+              </div>
+              <div className="mt-3 text-xl font-bold" style={{ color: TEXT }}>
+                {isManualVerification ? "Within 24 to 48 hours" : "Within 1 to 2 hours"}
+              </div>
+              <p className="mt-3 text-sm leading-6" style={{ color: TEXT_2 }}>
+                {isManualVerification ? (
+                  <>
+                    We'll set up your Elevate One account after manual review and email the credentials to{" "}
+                    <span style={{ color: TEXT, fontWeight: 700 }}>{state.email}</span>.
+                  </>
+                ) : (
+                  <>
+                    Your Elevate One credentials will be emailed to{" "}
+                    <span style={{ color: TEXT, fontWeight: 700 }}>{state.email}</span>{" "}
+                    after final provisioning is complete.
+                  </>
+                )}
+              </p>
+            </motion.div>
+          </div>
 
           <motion.div
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{
-              delay: 0.28,
+              delay: 0.3,
+              duration: 0.45,
+              ease: [0.22, 1, 0.36, 1],
+            }}
+            className="mt-6 rounded-[16px] p-5"
+            style={{
+              background: "linear-gradient(135deg, #005656 0%, #007f78 100%)",
+              color: "#fff",
+            }}
+          >
+            <div className="flex items-start gap-3">
+              <Mail className="mt-0.5 size-5 shrink-0" style={{ color: LIME }} />
+              <div>
+                <div className="text-sm font-bold">What happens next?</div>
+                <p className="mt-2 text-sm leading-6 text-white/85">
+                  {isManualVerification
+                    ? "Our onboarding team will validate your uploaded documents and company details manually. Once approved, we'll provision your Elevate One workspace and email the sign-in instructions."
+                    : "We’re verifying the last setup steps for your Elevate One workspace. Once that is complete, we’ll email your username, temporary password, and sign-in instructions."}
+                </p>
+              </div>
+            </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{
+              delay: 0.36,
               duration: 0.45,
               ease: [0.22, 1, 0.36, 1],
             }}
@@ -5288,11 +5577,11 @@ export function ScreenSuccess({ state }: any) {
             <div className="flex items-start gap-3">
               <Sparkles className="mt-0.5 size-5 shrink-0" />
               <div>
-                <div className="text-sm font-bold">What happens next?</div>
+                <div className="text-sm font-bold">Support note</div>
                 <p className="mt-1 text-xs leading-5 sm:text-sm">
-                  Keep an eye on your inbox for the Pine Labs email. Use the
-                  credentials provided to access your self-serve dashboard and
-                  start managing your business.
+                  {isManualVerification
+                    ? "If you don’t receive an update within 48 hours, please reach out to your Pine Labs onboarding contact or reply to the confirmation email."
+                    : "If you don’t receive your Elevate One credentials within 2 hours, please reach out to your Pine Labs onboarding contact or reply to the confirmation email for help."}
                 </p>
               </div>
             </div>
@@ -5332,588 +5621,29 @@ export function ScreenSuccess({ state }: any) {
         </motion.aside>
       </div>
 
-      <AnimatePresence>
-        {showEmailTemplate && (
-          <motion.div
-            className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6"
-            style={{
-              background: "rgba(10,13,18,0.62)",
-              backdropFilter: "blur(8px)",
-            }}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <motion.div
-              className="flex max-h-[88vh] w-full max-w-2xl flex-col overflow-hidden rounded-[18px] bg-white"
-              style={{ boxShadow: "0 24px 70px rgba(10,13,18,0.28)" }}
-              initial={{ opacity: 0, y: 20, scale: 0.98 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 12, scale: 0.98 }}
-              transition={{ duration: 0.24, ease: "easeOut" }}
-            >
-              <div
-                className="flex items-center justify-between gap-3 border-b px-4 py-3 sm:px-5"
-                style={{ borderColor: BORDER }}
-              >
-                <div className="min-w-0">
-                  <div
-                    className="truncate text-sm sm:text-base"
-                    style={{ color: TEXT, fontWeight: 700 }}
-                  >
-                    Pine Labs Self-Serve
-                  </div>
-                  <div className="truncate text-xs" style={{ color: MUTED }}>
-                    Login credentials email preview
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setShowEmailTemplate(false)}
-                  className="inline-flex size-9 shrink-0 items-center justify-center rounded-lg"
-                  style={{ color: TEXT, background: BG_SOFT }}
-                  aria-label="Close email preview"
-                >
-                  <X className="size-5" />
-                </button>
-              </div>
-
-              <div className="min-h-0 overflow-y-auto px-4 py-5 sm:px-6 sm:py-6">
-                <div
-                  className="rounded-[14px] p-4 text-center sm:p-5"
-                  style={{
-                    background: `linear-gradient(135deg, ${PRIMARY} 0%, #007A7A 100%)`,
-                    color: "#fff",
-                  }}
-                >
-                  <Sparkles
-                    className="mx-auto mb-2 size-5"
-                    style={{ color: LIME }}
-                  />
-                  <div className="text-lg font-bold">
-                    Your self-serve portal is ready
-                  </div>
-                  <p className="mt-1 text-sm text-white/85">
-                    Use the credentials in this email to access QwikServe.
-                  </p>
-                </div>
-
-                <div
-                  className="mt-5 space-y-4 text-sm leading-6"
-                  style={{ color: TEXT_2 }}
-                >
-                  <p>Hi {firstName},</p>
-                  <p>
-                    Your Pine Labs merchant account has been activated. Your
-                    QwikServe self-serve portal login credentials are ready.
-                  </p>
-
-                  <div
-                    className="rounded-[12px] p-4"
-                    style={{
-                      background: BG_SOFT,
-                      border: `1px dashed ${BORDER_INPUT}`,
-                    }}
-                  >
-                    <div
-                      className="text-xs font-bold uppercase tracking-[0.08em]"
-                      style={{ color: MUTED }}
-                    >
-                      Login details
-                    </div>
-                    <div className="mt-3 space-y-2">
-                      <div className="flex justify-between gap-4">
-                        <span style={{ color: MUTED }}>Portal</span>
-                        <span
-                          className="font-semibold"
-                          style={{ color: PRIMARY }}
-                        >
-                          QwikServe
-                        </span>
-                      </div>
-                      <div className="flex justify-between gap-4">
-                        <span style={{ color: MUTED }}>Username</span>
-                        <span className="font-semibold">Shared by email</span>
-                      </div>
-                      <div className="flex justify-between gap-4">
-                        <span style={{ color: MUTED }}>Password</span>
-                        <span className="font-semibold">Shared by email</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      window.location.href = qwikServeRedirectUrl;
-                    }}
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-[10px] px-5 py-3 text-sm font-semibold"
-                    style={{ background: PRIMARY, color: "#fff" }}
-                  >
-                    Log in to QwikServe <ArrowRight className="size-4" />
-                  </button>
-
-                  <div
-                    className="flex items-start gap-2 rounded-[10px] p-3 text-xs"
-                    style={{
-                      background: "#FEF6E7",
-                      border: "1px solid #FCE7B3",
-                      color: "#7A4F01",
-                    }}
-                  >
-                    <Lock className="mt-0.5 size-4 shrink-0" />
-                    <span>
-                      For security, please change your temporary password on
-                      first login. Do not share these credentials.
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-  const successTickAnimation = useMemo(() => getRethemedSuccessTick(), []);
-  const [showQwikServe, setShowQwikServe] = useState(false);
-  const qwikServePrototypeUrl =
-    "https://www.figma.com/proto/5INxfo3oiLHKltD4Jc0Jqu/GC-Procurement_Corporate-Portal?node-id=671-67129&viewport=-6018%2C-1301%2C0.07&t=wRlZ2PtAWqnyJlMm-1&scaling=min-zoom&content-scaling=fixed&starting-point-node-id=671%3A67129&show-proto-sidebar=1&page-id=653%3A20540";
-  const qwikServeEmbedUrl = `https://www.figma.com/embed?embed_host=share&url=${encodeURIComponent(qwikServePrototypeUrl)}`;
-
-  return (
-    <div className="relative max-w-3xl mx-auto py-6 sm:py-8 md:py-12 px-4">
-      <Confetti />
-
-      <div className="relative text-center mb-6 sm:mb-8">
-        <motion.div
-          aria-hidden
-          className="absolute left-1/2 top-2 -translate-x-1/2 rounded-full"
-          style={{
-            width: 220,
-            height: 220,
-            background:
-              "radial-gradient(circle, rgba(208,242,85,0.22) 0%, rgba(208,242,85,0.1) 28%, rgba(208,242,85,0) 72%)",
-            filter: "blur(18px)",
-          }}
-          initial={{ opacity: 0, scale: 0.7 }}
-          animate={{ opacity: [0.45, 0.7, 0.5], scale: [0.92, 1.04, 1] }}
-          transition={{
-            duration: 2.6,
-            ease: "easeInOut",
-            repeat: Infinity,
-            repeatType: "mirror",
-          }}
-        />
-        <motion.div
-          initial={{ opacity: 0, scale: 0.72, y: 14 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-          className="inline-flex items-center justify-center size-[88px] sm:size-[108px] md:size-[124px] rounded-full mb-5 sm:mb-6 relative"
-          style={{
-            background:
-              "linear-gradient(180deg, rgba(255,255,255,0.98) 0%, rgba(240,253,244,0.96) 100%)",
-            border: `1px solid ${SUCCESS_BORDER}`,
-            boxShadow:
-              "0 22px 44px -20px rgba(0,130,54,0.28), inset 0 1px 0 rgba(255,255,255,0.9)",
-            backdropFilter: "blur(10px)",
-          }}
-        >
-          <motion.div
-            className="absolute inset-0 rounded-full"
-            style={{ border: `1.5px solid rgba(0,130,54,0.26)` }}
-            initial={{ scale: 0.88, opacity: 0 }}
-            animate={{ scale: [0.95, 1.22, 1.38], opacity: [0, 0.42, 0] }}
-            transition={{
-              duration: 1.9,
-              times: [0, 0.45, 1],
-              repeat: Infinity,
-              repeatDelay: 0.4,
-            }}
-          />
-          <motion.div
-            className="absolute inset-[10px] rounded-full"
-            style={{
-              background:
-                "radial-gradient(circle at 30% 30%, rgba(255,255,255,0.95) 0%, rgba(240,253,244,0.92) 42%, rgba(220,252,231,0.82) 100%)",
-              border: `1px solid rgba(185,248,207,0.95)`,
-            }}
-            initial={{ scale: 0.92, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.08, duration: 0.45 }}
-          />
-          <motion.div
-            className="relative z-10 size-[62px] sm:size-[76px] md:size-[86px]"
-            initial={{ opacity: 0, scale: 0.88 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{
-              delay: 0.16,
-              duration: 0.4,
-              ease: [0.22, 1, 0.36, 1],
-            }}
-          >
-            <Lottie
-              animationData={successTickAnimation}
-              loop={false}
-              autoplay
-              style={{ width: "100%", height: "100%" }}
-            />
-          </motion.div>
-          {[0, 1, 2].map((i) => (
-            <motion.span
-              key={i}
-              className="absolute rounded-full"
-              style={{
-                width: i === 1 ? 7 : 5,
-                height: i === 1 ? 7 : 5,
-                background: i === 1 ? LIME : "#A7F3C0",
-                top: i === 0 ? 18 : i === 1 ? 30 : 22,
-                right: i === 0 ? 16 : i === 1 ? 28 : 36,
-              }}
-              initial={{ opacity: 0, scale: 0 }}
-              animate={{
-                opacity: [0, 1, 0],
-                scale: [0.4, 1, 0.6],
-                y: [6, -4, -12],
-              }}
-              transition={{
-                delay: 0.78 + i * 0.1,
-                duration: 1.1,
-                repeat: Infinity,
-                repeatDelay: 1.8,
-              }}
-            />
-          ))}
-        </motion.div>
-
-        <motion.h1
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="text-xl sm:text-2xl md:text-4xl leading-7 sm:leading-8 md:leading-10 px-4"
-          style={{ fontWeight: 700, fontFamily: "var(--font-display)" }}
-        >
-          Congratulations, {firstName}!
-        </motion.h1>
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-          className="mt-2 sm:mt-3 text-xs sm:text-sm md:text-base max-w-xl mx-auto px-4"
-          style={{ color: MUTED }}
-        >
-          Your Pine Labs merchant account is activated. We've emailed your
-          QwikServe portal login credentials to{" "}
-          <span style={{ color: TEXT, fontWeight: 600 }}>{state.email}</span>.
-        </motion.p>
-      </div>
-
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.7 }}
-        className="relative rounded-[12px] sm:rounded-[16px] md:rounded-[20px] overflow-hidden"
-        style={{
-          background: "rgba(255,255,255,0.94)",
-          border: `1px solid ${BORDER}`,
-          boxShadow: "0px 18px 42px rgba(16,24,40,0.1)",
-          backdropFilter: "blur(10px)",
-        }}
+        transition={{ delay: 0.95, duration: 0.45 }}
+        className="fixed bottom-5 right-5 z-40 flex items-center gap-3 sm:bottom-8 sm:right-8"
       >
-        <div
-          className="px-3 sm:px-5 py-2 sm:py-3 flex items-center gap-2 border-b"
-          style={{ borderColor: BORDER, background: BG_SOFT }}
+        <span
+          className="hidden rounded-full px-3 py-1 text-[11px] font-semibold sm:inline-flex"
+          style={{ background: "#eef2ff", color: "#344054" }}
         >
-          <div className="flex gap-1 sm:gap-1.5">
-            <span
-              className="size-2 sm:size-3 rounded-full"
-              style={{ background: "#FF5F57" }}
-            />
-            <span
-              className="size-2 sm:size-3 rounded-full"
-              style={{ background: "#FEBC2E" }}
-            />
-            <span
-              className="size-2 sm:size-3 rounded-full"
-              style={{ background: "#28C840" }}
-            />
-          </div>
-          <div
-            className="flex-1 text-center text-[10px] sm:text-xs"
-            style={{ color: MUTED }}
-          >
-            <Mail className="inline size-3 sm:size-3.5 mr-1" /> Inbox ·
-            QwikServe
-          </div>
-        </div>
-
-        <div
-          className="px-4 sm:px-6 py-3 sm:py-5 border-b"
-          style={{ borderColor: BORDER }}
+          Demo CTA
+        </span>
+        <button
+          type="button"
+          onClick={() =>
+            window.open(qwikServePrototypeUrl, "_blank", "noopener,noreferrer")
+          }
+          className="inline-flex items-center gap-2 rounded-[12px] px-4 py-3 text-sm font-semibold text-white shadow-[0_18px_36px_rgba(0,86,86,0.24)]"
+          style={{ background: PRIMARY }}
         >
-          <div className="flex items-start justify-between gap-2 sm:gap-4 mb-2 sm:mb-3">
-            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-              <div
-                className="size-8 sm:size-10 rounded-full flex items-center justify-center shrink-0 text-xs sm:text-sm"
-                style={{ background: PRIMARY, color: LIME, fontWeight: 700 }}
-              >
-                PL
-              </div>
-              <div className="min-w-0">
-                <div
-                  className="text-xs sm:text-sm truncate"
-                  style={{ color: TEXT, fontWeight: 600 }}
-                >
-                  Pine Labs QwikServe
-                </div>
-                <div
-                  className="text-[10px] sm:text-xs truncate"
-                  style={{ color: MUTED }}
-                >
-                  noreply@pinelabs.com
-                </div>
-              </div>
-            </div>
-            <div
-              className="text-[10px] sm:text-xs shrink-0"
-              style={{ color: MUTED }}
-            >
-              just now
-            </div>
-          </div>
-          <div
-            className="text-xs sm:text-sm"
-            style={{ color: TEXT, fontWeight: 600 }}
-          >
-            Welcome to QwikServe — your login credentials inside
-          </div>
-          <div
-            className="text-[10px] sm:text-xs mt-0.5 truncate"
-            style={{ color: MUTED }}
-          >
-            To: {state.email}
-          </div>
-        </div>
-
-        <div className="px-4 sm:px-6 py-4 sm:py-6">
-          <div
-            className="rounded-[8px] sm:rounded-[12px] p-3 sm:p-5 mb-4 sm:mb-5 text-center"
-            style={{
-              background: `linear-gradient(135deg, ${PRIMARY} 0%, #007A7A 100%)`,
-              color: "#fff",
-              boxShadow: "0 18px 34px -22px rgba(0,86,86,0.55)",
-            }}
-          >
-            <Sparkles
-              className="inline size-4 sm:size-5 mb-1 sm:mb-2"
-              style={{ color: LIME }}
-            />
-            <div className="text-sm sm:text-lg" style={{ fontWeight: 700 }}>
-              You're all set, {firstName || "Merchant"}!
-            </div>
-            <div
-              className="text-[10px] sm:text-xs mt-0.5 sm:mt-1"
-              style={{ color: "rgba(255,255,255,0.85)" }}
-            >
-              Your QwikServe portal is ready to use
-            </div>
-          </div>
-
-          <p
-            className="text-xs sm:text-sm mb-3 sm:mb-4"
-            style={{ color: TEXT_2 }}
-          >
-            Hi {firstName},
-          </p>
-          <p
-            className="text-xs sm:text-sm mb-4 sm:mb-5"
-            style={{ color: TEXT_2 }}
-          >
-            Thank you for completing your merchant onboarding with Pine Labs.
-            Your account has been verified and activated. Use the credentials
-            below to log in to the QwikServe platform and start managing your
-            business.
-          </p>
-
-          <div
-            className="rounded-[8px] sm:rounded-[12px] p-3 sm:p-4 mb-4 sm:mb-5"
-            style={{
-              background: BG_SOFT,
-              border: `1px dashed ${BORDER_INPUT}`,
-            }}
-          >
-            <div
-              className="text-[10px] sm:text-xs mb-2 sm:mb-3"
-              style={{
-                color: MUTED,
-                fontWeight: 600,
-                textTransform: "uppercase",
-                letterSpacing: 0.4,
-              }}
-            >
-              Your login credentials
-            </div>
-            <div className="space-y-2 sm:space-y-2.5 text-xs sm:text-sm">
-              <div className="flex items-center justify-between gap-2 sm:gap-3">
-                <span style={{ color: MUTED }}>Merchant ID</span>
-                <span
-                  className="text-[11px] sm:text-sm truncate"
-                  style={{
-                    color: TEXT,
-                    fontWeight: 600,
-                    fontFamily: "monospace",
-                  }}
-                >
-                  {merchantId}
-                </span>
-              </div>
-              <div className="flex items-center justify-between gap-2 sm:gap-3">
-                <span style={{ color: MUTED }}>Username</span>
-                <span
-                  className="text-[11px] sm:text-sm truncate"
-                  style={{
-                    color: TEXT,
-                    fontWeight: 600,
-                    fontFamily: "monospace",
-                  }}
-                >
-                  {state.email}
-                </span>
-              </div>
-              <div className="flex items-center justify-between gap-2 sm:gap-3">
-                <span className="whitespace-nowrap" style={{ color: MUTED }}>
-                  Temporary password
-                </span>
-                <span
-                  className="text-[11px] sm:text-sm"
-                  style={{
-                    color: TEXT,
-                    fontWeight: 600,
-                    fontFamily: "monospace",
-                  }}
-                >
-                  {tempPassword}
-                </span>
-              </div>
-              <div className="flex items-center justify-between gap-2 sm:gap-3">
-                <span style={{ color: MUTED }}>Portal URL</span>
-                <span
-                  className="text-[11px] sm:text-sm truncate"
-                  style={{ color: PRIMARY, fontWeight: 600 }}
-                >
-                  qwikserve.pinelabs.com
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex justify-center mb-4 sm:mb-5">
-            <button
-              type="button"
-              onClick={() => setShowQwikServe(true)}
-              className="inline-flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-3 rounded-[8px] sm:rounded-[10px] text-xs sm:text-sm"
-              style={{ background: PRIMARY, color: "#fff", fontWeight: 600 }}
-            >
-              Log in to QwikServe <ArrowRight className="size-3.5 sm:size-4" />
-            </button>
-          </div>
-
-          <div
-            className="rounded-[8px] sm:rounded-[10px] p-2.5 sm:p-3 mb-4 sm:mb-5 flex items-start gap-2 text-[10px] sm:text-xs"
-            style={{
-              background: "#FEF6E7",
-              border: "1px solid #FCE7B3",
-              color: "#7A4F01",
-            }}
-          >
-            <Lock className="size-3.5 sm:size-4 shrink-0 mt-0.5" />
-            <span>
-              For security, please change your temporary password on first
-              login. This email contains sensitive credentials — do not share.
-            </span>
-          </div>
-
-          <p className="text-[10px] sm:text-xs" style={{ color: MUTED }}>
-            Need help? Reach our support team at{" "}
-            <span style={{ color: PRIMARY }}>support@pinelabs.com</span> or call
-            1800-419-0207.
-          </p>
-          <p
-            className="text-[10px] sm:text-xs mt-2 sm:mt-3"
-            style={{ color: MUTED }}
-          >
-            Cheers,
-            <br />
-            The Pine Labs Team
-          </p>
-        </div>
+          Open QwikServe demo <ArrowRight className="size-4" />
+        </button>
       </motion.div>
-
-      <motion.p
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.2 }}
-        className="text-center text-[10px] sm:text-xs mt-4 sm:mt-6 px-4"
-        style={{ color: MUTED }}
-      >
-        You can safely close this window. We'll see you on QwikServe!
-      </motion.p>
-
-      <AnimatePresence>
-        {showQwikServe && (
-          <motion.div
-            className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6"
-            style={{
-              background: "rgba(10,13,18,0.62)",
-              backdropFilter: "blur(8px)",
-            }}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <motion.div
-              className="flex h-[86vh] w-full max-w-6xl flex-col overflow-hidden rounded-[16px] bg-white"
-              style={{ boxShadow: "0 24px 70px rgba(10,13,18,0.35)" }}
-              initial={{ opacity: 0, y: 20, scale: 0.98 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 12, scale: 0.98 }}
-              transition={{ duration: 0.24, ease: "easeOut" }}
-            >
-              <div
-                className="flex items-center justify-between gap-3 border-b px-4 py-3 sm:px-5"
-                style={{ borderColor: BORDER }}
-              >
-                <div className="min-w-0">
-                  <div
-                    className="truncate text-sm sm:text-base"
-                    style={{ color: TEXT, fontWeight: 700 }}
-                  >
-                    QwikServe portal
-                  </div>
-                  <div className="truncate text-xs" style={{ color: MUTED }}>
-                    Embedded Figma prototype
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setShowQwikServe(false)}
-                  className="inline-flex size-9 shrink-0 items-center justify-center rounded-lg"
-                  style={{ color: TEXT, background: BG_SOFT }}
-                  aria-label="Close QwikServe prototype"
-                >
-                  <X className="size-5" />
-                </button>
-              </div>
-              <iframe
-                title="QwikServe portal prototype"
-                src={qwikServeEmbedUrl}
-                className="min-h-0 flex-1 border-0"
-                allowFullScreen
-              />
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }
@@ -5954,9 +5684,86 @@ export function ScreenOpeningSignZ({ onComplete }: { onComplete: () => void }) {
 export function ScreenAuthorisedSignoffPending({
   state,
   onOpenSignZFromEmail,
+  onEditSignatory,
+  onResend,
 }: any) {
   const firstName = state.fullName?.split(" ")[0] || "there";
   const [showEmailTemplate, setShowEmailTemplate] = useState(false);
+
+  if (state.signatoryRejected) {
+    return (
+      <div className="relative mx-auto w-full max-w-4xl px-2 py-8 sm:px-4 sm:py-12">
+        <motion.section
+          initial={{ opacity: 0, y: 18 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+          className="mx-auto rounded-[28px] border border-[#fedf89] bg-white/95 p-7 shadow-[0_25px_60px_-20px_rgba(181,71,8,0.22)] backdrop-blur sm:p-10"
+        >
+          <div className="mx-auto flex max-w-2xl flex-col items-center text-center">
+            <div className="inline-flex size-16 items-center justify-center rounded-full bg-[#fffaeb] text-[#b54708]">
+              <CircleAlert className="size-8" />
+            </div>
+            <h1
+              className="mt-6 text-[32px] font-bold leading-tight text-[#8a3b12] sm:text-[42px]"
+              style={{ fontFamily: "var(--font-display)" }}
+            >
+              Rejected by authorised signatory
+            </h1>
+            <p
+              className="mt-4 text-base leading-7 sm:text-lg"
+              style={{ color: TEXT_2 }}
+            >
+              {state.sigName || "The authorised signatory"} closed the signing
+              session before completing signoff. You can edit the signatory
+              details or resend the request when they’re ready.
+            </p>
+
+            <div className="mt-8 grid w-full gap-4 rounded-[20px] border border-[#fedf89] bg-[#fffbeb] p-5 text-left sm:grid-cols-2 sm:p-6">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.08em]" style={{ color: MUTED }}>
+                  Signatory
+                </p>
+                <p className="mt-2 text-base font-semibold" style={{ color: TEXT }}>
+                  {state.sigName || "Authorised signatory"}
+                </p>
+                <p className="mt-1 text-sm" style={{ color: TEXT_2 }}>
+                  {state.sigEmail || "Email will be shared with the signatory"}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.08em]" style={{ color: MUTED }}>
+                  Status
+                </p>
+                <div className="mt-2 inline-flex items-center gap-2 rounded-full bg-[#fef3f2] px-3 py-1.5 text-sm font-semibold text-[#b42318]">
+                  <CircleAlert className="size-4" />
+                  Rejected
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-8 flex w-full flex-col gap-3 sm:flex-row sm:justify-end">
+              <button
+                type="button"
+                onClick={onEditSignatory}
+                className="inline-flex items-center justify-center rounded-[12px] border px-5 py-3 text-sm font-semibold"
+                style={{ borderColor: BORDER_INPUT, color: TEXT, background: "#fff" }}
+              >
+                Edit signatory details
+              </button>
+              <button
+                type="button"
+                onClick={onResend}
+                className="inline-flex items-center justify-center gap-2 rounded-[12px] px-5 py-3 text-sm font-semibold text-white"
+                style={{ background: PRIMARY }}
+              >
+                Resend to authorised person <ArrowRight className="size-4" />
+              </button>
+            </div>
+          </div>
+        </motion.section>
+      </div>
+    );
+  }
 
   return (
     <div className="relative mx-auto w-full max-w-4xl px-2 py-8 sm:px-4 sm:py-12">
@@ -5981,20 +5788,6 @@ export function ScreenAuthorisedSignoffPending({
             authorised signatory for review. We’ll continue once they complete
             the signoff step.
           </p>
-
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-            <button
-              type="button"
-              onClick={() => setShowEmailTemplate(true)}
-              className="inline-flex items-center gap-2 rounded-[12px] px-5 py-3 text-sm font-semibold text-white"
-              style={{ background: PRIMARY }}
-            >
-              View the email <ArrowRight className="size-4" />
-            </button>
-            <span className="text-xs sm:text-sm" style={{ color: MUTED }}>
-              Demo CTA
-            </span>
-          </div>
 
           <div className="mt-8 grid w-full gap-4 rounded-[20px] border border-[#d5e7e4] bg-[#f7fbfa] p-5 text-left sm:grid-cols-2 sm:p-6">
             <div>
@@ -6031,6 +5824,20 @@ export function ScreenAuthorisedSignoffPending({
           </div>
         </div>
       </motion.section>
+
+      <div className="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-2">
+        <button
+          type="button"
+          onClick={() => setShowEmailTemplate(true)}
+          className="inline-flex items-center gap-2 rounded-[12px] px-5 py-3 text-sm font-semibold text-white shadow-[0_18px_38px_rgba(0,86,86,0.24)]"
+          style={{ background: PRIMARY }}
+        >
+          View the email <ArrowRight className="size-4" />
+        </button>
+        <span className="pr-1 text-xs sm:text-sm" style={{ color: MUTED }}>
+          Demo CTA
+        </span>
+      </div>
 
       <AnimatePresence>
         {showEmailTemplate && (
@@ -6194,19 +6001,22 @@ export function ScreenSignatoryHandoffComplete({
             onboarding view to continue the demo.
           </p>
 
-          <button
-            type="button"
-            onClick={onReturnToCorporate}
-            className="mt-8 inline-flex items-center gap-2 rounded-[12px] px-5 py-3 text-sm font-semibold text-white"
-            style={{ background: PRIMARY }}
-          >
-            Go back to Corporate onboarding <ArrowRight className="size-4" />
-          </button>
-          <p className="mt-3 text-xs sm:text-sm" style={{ color: MUTED }}>
-            Demo CTA
-          </p>
         </div>
       </motion.section>
+
+      <div className="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-2">
+        <button
+          type="button"
+          onClick={onReturnToCorporate}
+          className="inline-flex items-center gap-2 rounded-[12px] px-5 py-3 text-sm font-semibold text-white shadow-[0_18px_38px_rgba(0,86,86,0.24)]"
+          style={{ background: PRIMARY }}
+        >
+          Go back to Corporate onboarding <ArrowRight className="size-4" />
+        </button>
+        <span className="pr-1 text-xs sm:text-sm" style={{ color: MUTED }}>
+          Demo CTA
+        </span>
+      </div>
     </div>
   );
 }

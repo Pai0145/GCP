@@ -231,6 +231,10 @@ const initialOnboardingState = {
   actingAsAuthorisedSignatory: false,
   delegatedSignoffCompleted: false,
   signatoryReadyToReturn: false,
+  signatoryRejected: false,
+  manualVerification: false,
+  panDocumentScenario: "",
+  businessCategory: "",
   panNumber: "AABCP1234F",
   panName: "PINE LABS LIMITED",
   panVerified: true,
@@ -571,6 +575,7 @@ function OnboardingFlow() {
       screen !== 12 ||
       !state.awaitingAuthorisedSignoff ||
       !state.delegatedSignoffCompleted ||
+      state.signatoryRejected ||
       transitionContext
     ) {
       return;
@@ -585,6 +590,7 @@ function OnboardingFlow() {
     screen,
     state.awaitingAuthorisedSignoff,
     state.delegatedSignoffCompleted,
+    state.signatoryRejected,
     transitionContext,
   ]);
 
@@ -619,6 +625,36 @@ function OnboardingFlow() {
     navigate(ONBOARDING_PATHS[nextScreen] ?? "/onboarding/begin");
   };
 
+  const handleRejectSigningSession = () => {
+    const confirmed = window.confirm(
+      "Close this signing session? The corporate onboarding page will show this request as rejected.",
+    );
+
+    if (!confirmed) return;
+
+    setState((current) => ({
+      ...current,
+      awaitingAuthorisedSignoff: true,
+      actingAsAuthorisedSignatory: false,
+      delegatedSignoffCompleted: false,
+      signatoryReadyToReturn: false,
+      signatoryRejected: false,
+    }));
+    setTransitionContext(null);
+    go(12, { skipSigningTransition: true });
+
+    window.setTimeout(() => {
+      setState((current) => ({
+        ...current,
+        awaitingAuthorisedSignoff: true,
+        actingAsAuthorisedSignatory: false,
+        delegatedSignoffCompleted: false,
+        signatoryReadyToReturn: false,
+        signatoryRejected: true,
+      }));
+    }, 2000);
+  };
+
   const handleTransitionComplete = useCallback(() => {
     if (transitionContext === "documents") {
       setTransitionContext(null);
@@ -633,6 +669,7 @@ function OnboardingFlow() {
         delegatedSignoffCompleted: false,
         actingAsAuthorisedSignatory: false,
         signatoryReadyToReturn: false,
+        signatoryRejected: false,
       }));
       setTransitionContext(null);
       navigate(ONBOARDING_PATHS[12]);
@@ -668,6 +705,8 @@ function OnboardingFlow() {
     const isBasicDetails = transitionContext === "basicDetails";
     const isSigning = transitionContext === "signing";
     const isOpeningSignZ = transitionContext === "signz";
+    const isManualVerification =
+      transitionContext === "documents" && state.manualVerification;
 
     if (isOpeningSignZ) {
       return <ScreenOpeningSignZ onComplete={handleTransitionComplete} />;
@@ -677,20 +716,30 @@ function OnboardingFlow() {
       <AnalyzingTransition
         onComplete={handleTransitionComplete}
         successOnly={isBasicDetails}
-        successIcon={isBasicDetails ? "profile" : "check"}
+        successIcon={
+          isManualVerification ? "warning" : isBasicDetails ? "profile" : "check"
+        }
         stepOneText={
           isSigning
             ? "Applying your Aadhar eSign to all documents..."
+            : isManualVerification
+              ? "Trying to verify your uploaded documents..."
             : undefined
         }
         stepTwoText={
-          isSigning ? "Finalizing signed terms and conditions..." : undefined
+          isSigning
+            ? "Finalizing signed terms and conditions..."
+            : isManualVerification
+              ? "Auto-verification is unavailable right now..."
+              : undefined
         }
         successTitle={
           isBasicDetails
             ? `Welcome, ${state.fullName || "there"}`
             : isSigning
               ? "Signed successfully..."
+              : isManualVerification
+                ? "Manual review required"
               : undefined
         }
         successText={
@@ -698,6 +747,8 @@ function OnboardingFlow() {
             ? "Your account details are saved. Let's continue your onboarding."
             : isSigning
               ? "Your terms and conditions have been digitally signed."
+              : isManualVerification
+                ? "We couldn't auto-verify your details, so our team will review them manually."
               : undefined
         }
       />
@@ -832,6 +883,7 @@ function OnboardingFlow() {
             actingAsAuthorisedSignatory: false,
             delegatedSignoffCompleted: true,
             signatoryReadyToReturn: false,
+            signatoryRejected: false,
           });
         }}
       />
@@ -848,6 +900,7 @@ function OnboardingFlow() {
             actingAsAuthorisedSignatory: true,
             delegatedSignoffCompleted: false,
             signatoryReadyToReturn: false,
+            signatoryRejected: false,
             esignVerified: false,
             aadhaarOTP: "",
             aadhaarConsent: false,
@@ -855,6 +908,27 @@ function OnboardingFlow() {
           });
           setProgressScreen((current) => Math.max(current, 7));
           setTransitionContext("signz");
+        }}
+        onEditSignatory={() => {
+          setState({
+            ...state,
+            awaitingAuthorisedSignoff: false,
+            actingAsAuthorisedSignatory: false,
+            delegatedSignoffCompleted: false,
+            signatoryReadyToReturn: false,
+            signatoryRejected: false,
+          });
+          go(5, { skipSigningTransition: true });
+        }}
+        onResend={() => {
+          setState({
+            ...state,
+            awaitingAuthorisedSignoff: true,
+            actingAsAuthorisedSignatory: false,
+            delegatedSignoffCompleted: false,
+            signatoryReadyToReturn: false,
+            signatoryRejected: false,
+          });
         }}
       />
     );
@@ -873,6 +947,12 @@ function OnboardingFlow() {
       autosaveKey={`${screen}:${JSON.stringify(state)}`}
       progressPercent={progressPercent}
       steps={steps}
+      signzRejectEnabled={
+        isSignZFlowView &&
+        state.actingAsAuthorisedSignatory &&
+        !state.signatoryReadyToReturn
+      }
+      onSignzReject={handleRejectSigningSession}
     >
       {content}
     </PageShell>
