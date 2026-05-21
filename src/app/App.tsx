@@ -953,6 +953,7 @@ function OnboardingFlow() {
         !state.signatoryReadyToReturn
       }
       onSignzReject={handleRejectSigningSession}
+      hideAccountActions={isSignZFlowView}
     >
       {content}
     </PageShell>

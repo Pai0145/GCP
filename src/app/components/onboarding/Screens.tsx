@@ -2014,7 +2014,13 @@ export function ScreenBeforeYouBegin({ go, state, setState, progress }: any) {
       const canShowDetails =
         scenarioDoc === "gst" || scenarioDoc === "cin" || scenarioDoc === "pan";
 
-      setDocs({ ...docs, [scenarioDoc]: isReviewScenario ? doc.sample : null });
+      const keepsUploadedFile =
+        isReviewScenario || scenario === "pan_personal";
+
+      setDocs({
+        ...docs,
+        [scenarioDoc]: keepsUploadedFile ? doc.sample : null,
+      });
       setScanningDocs({ ...scanningDocs, [scenarioDoc]: false });
       setDocAlerts({
         ...docAlerts,
