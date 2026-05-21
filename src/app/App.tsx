@@ -35,7 +35,9 @@ import {
   ScreenBeforeYouBegin,
   ScreenBusinessIdentity,
   ScreenCompanyAddress,
+  ScreenOpeningSignZ,
   ScreenReviewSubmit,
+  ScreenSignatoryHandoffComplete,
   ScreenSignatory,
   ScreenSuccess,
   ScreenTermsPage1,
@@ -226,6 +228,9 @@ const initialOnboardingState = {
   aadhaarNumber: "",
   esignVerified: false,
   awaitingAuthorisedSignoff: false,
+  actingAsAuthorisedSignatory: false,
+  delegatedSignoffCompleted: false,
+  signatoryReadyToReturn: false,
   panNumber: "AABCP1234F",
   panName: "PINE LABS LIMITED",
   panVerified: true,
@@ -536,25 +541,57 @@ function OnboardingFlow() {
   const location = useLocation();
   const [state, setState] = useState(initialOnboardingState);
   const [transitionContext, setTransitionContext] = useState<
-    "documents" | "basicDetails" | "signing" | null
+    "documents" | "basicDetails" | "signing" | "signz" | null
   >(null);
   const screen = SCREEN_BY_PATH[location.pathname] ?? 1;
   const [progressScreen, setProgressScreen] = useState(screen);
-  const usesDelegatedSignoff = ["Admin Manager", "Other"].includes(
-    state.designation,
-  );
-  const steps = usesDelegatedSignoff
+  const normalizedOwnerEmail = (state.email || "").trim().toLowerCase();
+  const normalizedSignatoryEmail = (state.sigEmail || "").trim().toLowerCase();
+  const usesSameEmailSignatoryFlow =
+    Boolean(normalizedOwnerEmail) &&
+    normalizedOwnerEmail === normalizedSignatoryEmail;
+  const usesDelegatedEmailFlow =
+    Boolean(normalizedSignatoryEmail) &&
+    normalizedOwnerEmail !== normalizedSignatoryEmail;
+  const hideReviewSubs = screen === 6 && !state.actingAsAuthorisedSignatory;
+  const isSignZFlowView = screen >= 7 && screen <= 11;
+  const steps = hideReviewSubs
     ? STEPS.map((step) =>
         step.id === 5
           ? {
               ...step,
-              subs: [{ id: "terms", label: "Terms & Conditions" }],
+              subs: undefined,
             }
           : step,
       )
     : STEPS;
 
-  const go = (nextScreen: number) => {
+  useEffect(() => {
+    if (
+      screen !== 12 ||
+      !state.awaitingAuthorisedSignoff ||
+      !state.delegatedSignoffCompleted ||
+      transitionContext
+    ) {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      setTransitionContext("signing");
+    }, 2000);
+
+    return () => window.clearTimeout(timer);
+  }, [
+    screen,
+    state.awaitingAuthorisedSignoff,
+    state.delegatedSignoffCompleted,
+    transitionContext,
+  ]);
+
+  const go = (
+    nextScreen: number,
+    options?: { skipSigningTransition?: boolean },
+  ) => {
     if (nextScreen === screen) return;
 
     setProgressScreen((current) => Math.max(current, nextScreen));
@@ -569,7 +606,12 @@ function OnboardingFlow() {
       return;
     }
 
-    if (nextScreen === 12 && !usesDelegatedSignoff) {
+    if (
+      nextScreen === 12 &&
+      !options?.skipSigningTransition &&
+      !state.actingAsAuthorisedSignatory &&
+      !state.awaitingAuthorisedSignoff
+    ) {
       setTransitionContext("signing");
       return;
     }
@@ -585,8 +627,21 @@ function OnboardingFlow() {
     }
 
     if (transitionContext === "signing") {
+      setState((current) => ({
+        ...current,
+        awaitingAuthorisedSignoff: false,
+        delegatedSignoffCompleted: false,
+        actingAsAuthorisedSignatory: false,
+        signatoryReadyToReturn: false,
+      }));
       setTransitionContext(null);
       navigate(ONBOARDING_PATHS[12]);
+      return;
+    }
+
+    if (transitionContext === "signz") {
+      setTransitionContext(null);
+      navigate(ONBOARDING_PATHS[7]);
       return;
     }
 
@@ -602,8 +657,8 @@ function OnboardingFlow() {
     if (stepId === 3) go(subId === "address" ? 4 : 3);
     if (stepId === 4) go(5);
     if (stepId === 5) {
-      if (subId === "aadhaar" && !usesDelegatedSignoff) go(11);
-      else if (subId === "signature" && !usesDelegatedSignoff)
+      if (subId === "aadhaar") go(11);
+      else if (subId === "signature")
         go(state.esignVerified ? 7 : 11);
       else go(6);
     }
@@ -612,6 +667,11 @@ function OnboardingFlow() {
   if (transitionContext) {
     const isBasicDetails = transitionContext === "basicDetails";
     const isSigning = transitionContext === "signing";
+    const isOpeningSignZ = transitionContext === "signz";
+
+    if (isOpeningSignZ) {
+      return <ScreenOpeningSignZ onComplete={handleTransitionComplete} />;
+    }
 
     return (
       <AnalyzingTransition
@@ -644,7 +704,7 @@ function OnboardingFlow() {
     );
   }
 
-  const showSidebar = screen >= 1 && screen <= 10;
+  const showSidebar = screen >= 1 && screen <= 10 && !isSignZFlowView;
   const sidebarStep = SIDEBAR_STEP_FOR_SCREEN[screen] ?? 5;
   const completed = COMPLETED_FOR_SCREEN[screen] ?? [];
   const currentSub =
@@ -708,6 +768,10 @@ function OnboardingFlow() {
         go={go}
         state={state}
         setState={setState}
+        onOpenSignZ={() => {
+          setProgressScreen((current) => Math.max(current, 7));
+          setTransitionContext("signz");
+        }}
         progress={progressPercent}
       />
     );
@@ -757,8 +821,43 @@ function OnboardingFlow() {
       />
     );
   if (screen === 12) content = <ScreenSuccess state={state} />;
+  if (screen === 12 && state.signatoryReadyToReturn) {
+    content = (
+      <ScreenSignatoryHandoffComplete
+        state={state}
+        onReturnToCorporate={() => {
+          setState({
+            ...state,
+            awaitingAuthorisedSignoff: true,
+            actingAsAuthorisedSignatory: false,
+            delegatedSignoffCompleted: true,
+            signatoryReadyToReturn: false,
+          });
+        }}
+      />
+    );
+  }
   if (screen === 12 && state.awaitingAuthorisedSignoff) {
-    content = <ScreenAuthorisedSignoffPending state={state} />;
+    content = (
+      <ScreenAuthorisedSignoffPending
+        state={state}
+        onOpenSignZFromEmail={() => {
+          setState({
+            ...state,
+            awaitingAuthorisedSignoff: false,
+            actingAsAuthorisedSignatory: true,
+            delegatedSignoffCompleted: false,
+            signatoryReadyToReturn: false,
+            esignVerified: false,
+            aadhaarOTP: "",
+            aadhaarConsent: false,
+            aadhaarNumber: "",
+          });
+          setProgressScreen((current) => Math.max(current, 7));
+          setTransitionContext("signz");
+        }}
+      />
+    );
   }
 
   return (
@@ -768,6 +867,7 @@ function OnboardingFlow() {
       currentSub={currentSub}
       completedSubs={completedSubs}
       showSidebar={showSidebar}
+      animatedBackground={!isSignZFlowView}
       onSaveExit={() => navigate("/")}
       onStepClick={handleStepClick}
       autosaveKey={`${screen}:${JSON.stringify(state)}`}

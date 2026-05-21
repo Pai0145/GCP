@@ -656,6 +656,7 @@ export function PageShell({
   currentSub,
   completedSubs,
   showSidebar = true,
+  animatedBackground = true,
   children,
   onSaveExit,
   onStepClick,
@@ -668,6 +669,7 @@ export function PageShell({
   currentSub?: string;
   completedSubs?: string[];
   showSidebar?: boolean;
+  animatedBackground?: boolean;
   children: React.ReactNode;
   onSaveExit?: () => void;
   onStepClick?: (step: number, subId?: string) => void;
@@ -687,37 +689,39 @@ export function PageShell({
         backgroundColor: "#FFFFFF",
       }}
     >
-      <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
-        <div
-          className="absolute inset-0"
-          style={{
-            background:
-              "linear-gradient(180deg, rgba(255,255,255,0.96) 0%, rgba(250,255,255,0.88) 48%, rgba(255,255,255,0.98) 100%)",
-          }}
-        />
-        <div className="absolute inset-0 min-h-full opacity-90">
-          <LiquidEther
-            colors={["#FFFFF0", "#FAFFD6", "#F0F9AE", "#DBEF78", "#D0F255"]}
-            mouseForce={8}
-            cursorSize={220}
-            resolution={0.5}
-            isViscous={false}
-            iterationsPoisson={24}
-            autoDemo
-            autoSpeed={0.62}
-            autoIntensity={1.5}
-            autoResumeDelay={1200}
-            autoRampDuration={0.45}
+      {animatedBackground && (
+        <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                "linear-gradient(180deg, rgba(255,255,255,0.96) 0%, rgba(250,255,255,0.88) 48%, rgba(255,255,255,0.98) 100%)",
+            }}
+          />
+          <div className="absolute inset-0 min-h-full opacity-90">
+            <LiquidEther
+              colors={["#FFFFF0", "#FAFFD6", "#F0F9AE", "#DBEF78", "#D0F255"]}
+              mouseForce={8}
+              cursorSize={220}
+              resolution={0.5}
+              isViscous={false}
+              iterationsPoisson={24}
+              autoDemo
+              autoSpeed={0.62}
+              autoIntensity={1.5}
+              autoResumeDelay={1200}
+              autoRampDuration={0.45}
+            />
+          </div>
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                "linear-gradient(180deg, rgba(255,255,255,0.56) 0%, rgba(255,255,247,0.7) 48%, rgba(255,255,247,0.92) 100%)",
+            }}
           />
         </div>
-        <div
-          className="absolute inset-0"
-          style={{
-            background:
-              "linear-gradient(180deg, rgba(255,255,255,0.56) 0%, rgba(255,255,247,0.7) 48%, rgba(255,255,247,0.92) 100%)",
-          }}
-        />
-      </div>
+      )}
 
       <div className="relative z-10 flex flex-col flex-1 w-full">
         <TopNav onSaveExit={onSaveExit} autosaveKey={autosaveKey} />
@@ -775,19 +779,25 @@ export function FormCard({
   title,
   subtitle,
   progress,
+  maxWidth = 1040,
+  hideHeader = false,
+  bodyClassName = "",
   children,
 }: {
   eyebrow?: string;
   title: string;
   subtitle?: string;
   progress?: number;
+  maxWidth?: number;
+  hideHeader?: boolean;
+  bodyClassName?: string;
   children: React.ReactNode;
 }) {
   return (
     <motion.div
       className="mx-auto rounded-[16px] sm:rounded-[20px] md:rounded-[24px] overflow-hidden w-full"
       style={{
-        maxWidth: 1040,
+        maxWidth,
         background: "rgba(255,255,255,0.85)",
         boxShadow: "0 25px 50px -12px rgba(16,24,40,0.1)",
         backdropFilter: "blur(8px)",
@@ -798,58 +808,60 @@ export function FormCard({
       exit={{ opacity: 0, y: 8 }}
       transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
     >
-      <motion.div
-        className="px-5 sm:px-8 md:px-10 py-5 sm:py-6"
-        style={{ background: HEADER_GRADIENT }}
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.08, duration: 0.34, ease: [0.22, 1, 0.36, 1] }}
-      >
-        <div className="flex flex-col sm:flex-row items-start justify-between gap-4 sm:gap-6">
-          <div className="flex-1 min-w-0">
-            {eyebrow && (
-              <div
-                className="inline-flex items-center justify-center rounded-full px-2.5 py-1 uppercase sm:px-3"
+      {!hideHeader && (
+        <motion.div
+          className="px-5 sm:px-8 md:px-10 py-5 sm:py-6"
+          style={{ background: HEADER_GRADIENT }}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.08, duration: 0.34, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <div className="flex flex-col sm:flex-row items-start justify-between gap-4 sm:gap-6">
+            <div className="flex-1 min-w-0">
+              {eyebrow && (
+                <div
+                  className="inline-flex items-center justify-center rounded-full px-2.5 py-1 uppercase sm:px-3"
+                  style={{
+                    background: "rgba(255,255,255,0.15)",
+                    color: "rgba(255,255,255,0.9)",
+                    fontSize: 9,
+                    fontWeight: 700,
+                    letterSpacing: "0.11em",
+                  }}
+                >
+                  {eyebrow}
+                </div>
+              )}
+              <h1
+                className={eyebrow ? "mt-2.5 sm:mt-3" : ""}
                 style={{
-                  background: "rgba(255,255,255,0.15)",
-                  color: "rgba(255,255,255,0.9)",
-                  fontSize: 9,
-                  fontWeight: 700,
-                  letterSpacing: "0.11em",
+                  color: "#fff",
+                  fontFamily: "var(--font-display)",
+                  fontSize: 22,
+                  fontWeight: 600,
+                  lineHeight: "30px",
                 }}
               >
-                {eyebrow}
-              </div>
-            )}
-            <h1
-              className={eyebrow ? "mt-2.5 sm:mt-3" : ""}
-              style={{
-                color: "#fff",
-                fontFamily: "var(--font-display)",
-                fontSize: 22,
-                fontWeight: 600,
-                lineHeight: "30px",
-              }}
-            >
-              {title}
-            </h1>
-            {subtitle && (
-              <p
-                className="mt-1.5 text-sm sm:text-base"
-                style={{
-                  color: "rgba(255,255,255,0.85)",
-                  fontSize: 13,
-                  lineHeight: "20px",
-                }}
-              >
-                {subtitle}
-              </p>
-            )}
+                {title}
+              </h1>
+              {subtitle && (
+                <p
+                  className="mt-1.5 text-sm sm:text-base"
+                  style={{
+                    color: "rgba(255,255,255,0.85)",
+                    fontSize: 13,
+                    lineHeight: "20px",
+                  }}
+                >
+                  {subtitle}
+                </p>
+              )}
+            </div>
           </div>
-        </div>
-      </motion.div>
+        </motion.div>
+      )}
       <motion.div
-        className="px-5 sm:px-8 md:px-10 pt-5 sm:pt-6 pb-6 sm:pb-8 md:pb-10"
+        className={`${hideHeader ? "px-3 py-3 sm:px-4 sm:py-4 md:px-5 md:py-5" : "px-5 sm:px-8 md:px-10 pt-5 sm:pt-6 pb-6 sm:pb-8 md:pb-10"} ${bodyClassName}`}
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.14, duration: 0.36, ease: [0.22, 1, 0.36, 1] }}

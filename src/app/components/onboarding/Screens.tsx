@@ -13,10 +13,13 @@ import mapPointWaveIcon from "../../../imports/Map Point Wave.svg";
 import plateIcon from "../../../imports/Plate.svg";
 import uploadMinimalisticIcon from "../../../imports/Upload Minimalistic.svg";
 import penNewSquareIcon from "../../../imports/Pen New Square.png";
-import termsAndConditionsPageOneImg from "../../../imports/Terms and Conditions-1.png";
 import pineLabsLogoImg from "../../../../pinelabs logo.png";
 import congratulationVideo from "../../../imports/congratulation video.mp4";
 import signatureImg from "../../../imports/Screenshot 2026-04-17 at 12.33.38 PM 1.png";
+import signzTermsPage1Img from "../../../imports/signz-terms/page-1.png";
+import signzTermsPage2Img from "../../../imports/signz-terms/page-2.png";
+import signzTermsPage3Img from "../../../imports/signz-terms/page-3.png";
+import signzTermsPage4Img from "../../../imports/signz-terms/page-4.png";
 
 function AnimatedPercent({
   value,
@@ -99,8 +102,16 @@ const SPEND_OPTIONS = [
   "Above 1 Crore",
 ];
 
-function usesDelegatedSignoffFlow(state: any) {
-  return ["Admin Manager", "Other"].includes(state.designation);
+function usesSameEmailSignatoryFlow(state: any) {
+  const ownerEmail = (state.email || "").trim().toLowerCase();
+  const signatoryEmail = (state.sigEmail || "").trim().toLowerCase();
+  return Boolean(ownerEmail) && ownerEmail === signatoryEmail;
+}
+
+function usesDelegatedEmailHandoff(state: any) {
+  const ownerEmail = (state.email || "").trim().toLowerCase();
+  const signatoryEmail = (state.sigEmail || "").trim().toLowerCase();
+  return Boolean(signatoryEmail) && ownerEmail !== signatoryEmail;
 }
 
 function getRethemedSuccessTick() {
@@ -561,6 +572,8 @@ function FormCard({
   children,
   maxWidth = 960,
   animateIn = true,
+  hideHeader = false,
+  bodyClassName = "",
 }: any) {
   return (
     <motion.div
@@ -575,14 +588,15 @@ function FormCard({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
     >
-      <div
-        className="px-5 py-4 sm:px-10 sm:py-6 relative"
-        style={{
-          background: HEADER_GRADIENT,
-          boxShadow:
-            "inset 0 1px 0 rgba(255,255,255,0.12), 0 4px 12px rgba(0,86,86,0.18)",
-        }}
-      >
+      {!hideHeader && (
+        <div
+          className="px-5 py-4 sm:px-10 sm:py-6 relative"
+          style={{
+            background: HEADER_GRADIENT,
+            boxShadow:
+              "inset 0 1px 0 rgba(255,255,255,0.12), 0 4px 12px rgba(0,86,86,0.18)",
+          }}
+        >
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-6">
           <div className="flex-1 min-w-0">
             {eyebrow && (
@@ -920,9 +934,10 @@ function FormCard({
             </motion.div>
           </motion.div>
         )}
-      </div>
+        </div>
+      )}
       <motion.div
-        className="px-5 pt-5 pb-8 sm:px-10 sm:pt-6 sm:pb-10"
+        className={`${hideHeader ? "px-0 py-0" : "px-5 pt-5 pb-8 sm:px-10 sm:pt-6 sm:pb-10"} ${bodyClassName}`}
         initial="hidden"
         animate="visible"
         variants={{
@@ -1313,7 +1328,11 @@ type UploadScenario =
   | "gst_inactive"
   | "cin_existing"
   | "pan_personal";
-type ContinueScenario = "success" | "gst_inactive" | "legal_name_mismatch";
+type ContinueScenario =
+  | "success"
+  | "gst_inactive"
+  | "legal_name_mismatch"
+  | "api_unavailable";
 type FetchedDocKey = Extract<DocKey, "gst" | "cin" | "pan">;
 type FetchedDetail = { label: string; value: string };
 type DocAlertTone = "error" | "warning";
@@ -1826,11 +1845,13 @@ export function ScreenBeforeYouBegin({ go, state, setState, progress }: any) {
   const [gstPresent, setGstPresent] = useState(true);
   const [parsing, setParsing] = useState(false);
   const [showContinueScenario, setShowContinueScenario] = useState(false);
+  const [beginErrorMessage, setBeginErrorMessage] = useState<string | null>(null);
 
   const allUploaded =
     !!docs.cin && !!docs.pan && (gstPresent ? !!docs.gst : !!docs.address);
 
   const proceedToNextStep = () => {
+    setBeginErrorMessage(null);
     setParsing(true);
     setTimeout(() => {
       setParsing(false);
@@ -1840,6 +1861,7 @@ export function ScreenBeforeYouBegin({ go, state, setState, progress }: any) {
   };
 
   const handleContinue = () => {
+    setBeginErrorMessage(null);
     if (isHappyFlow) {
       proceedToNextStep();
       return;
@@ -1864,6 +1886,13 @@ export function ScreenBeforeYouBegin({ go, state, setState, progress }: any) {
             "Your GST registration appears to be inactive. Please reactivate with the GST department, or continue via the non-GST path.",
         },
       }));
+      return;
+    }
+
+    if (scenario === "api_unavailable") {
+      setBeginErrorMessage(
+        "We’re unable to continue right now due to a network or server issue. Please try again after 1–2 minutes.",
+      );
       return;
     }
 
@@ -1942,11 +1971,7 @@ export function ScreenBeforeYouBegin({ go, state, setState, progress }: any) {
     if (scenario === "success") {
       startSuccessfulUpload(scenarioDoc, doc.sample);
     } else {
-      const isReviewScenario =
-        scenario === "ocr_unreadable" ||
-        scenario === "gst_inactive" ||
-        scenario === "cin_existing" ||
-        scenario === "pan_personal";
+      const isReviewScenario = scenario === "ocr_unreadable";
       const canShowDetails =
         scenarioDoc === "gst" || scenarioDoc === "cin" || scenarioDoc === "pan";
 
@@ -2037,6 +2062,33 @@ export function ScreenBeforeYouBegin({ go, state, setState, progress }: any) {
           progress={progress}
         >
           <div className="space-y-6">
+            {beginErrorMessage && (
+              <Card
+                className="p-4 sm:p-5"
+                style={{ background: "#fff7f7", borderColor: "#fecaca" } as any}
+              >
+                <div className="flex items-start gap-3">
+                  <CircleAlert
+                    className="mt-0.5 size-5 shrink-0"
+                    style={{ color: "#dc2626" }}
+                  />
+                  <div>
+                    <div
+                      className="text-sm"
+                      style={{ color: TEXT, fontWeight: 700 }}
+                    >
+                      Something went wrong while continuing
+                    </div>
+                    <p
+                      className="mt-1 text-sm"
+                      style={{ color: MUTED, lineHeight: "20px" }}
+                    >
+                      {beginErrorMessage}
+                    </p>
+                  </div>
+                </div>
+              </Card>
+            )}
             <section>
               <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="[&>div]:mb-0">
@@ -2215,17 +2267,17 @@ export function ScreenBeforeYouBegin({ go, state, setState, progress }: any) {
                               lineHeight: "16px",
                             }}
 	                          >
-	                            {scanning
-	                              ? "Reading document details..."
-	                              : file && hasDetails && isSaved
-	                                ? "Details saved"
-	                              : file && hasDetails
-	                                ? "Review extracted details"
-	                              : file
-	                                ? `${file.ext} - ${file.size} - Uploaded`
-	                              : alert
-	                                ? alert.message
-	                                : hint}
+                            {scanning
+                              ? "Reading document details..."
+                              : alert && !hasDetails
+                                ? alert.message
+                              : file && hasDetails && isSaved
+                                ? "Details saved"
+                              : file && hasDetails
+                                ? "Review extracted details"
+                              : file
+                                ? `${file.ext} - ${file.size} - Uploaded`
+                              : hint}
                           </div>
                         </div>
                         <button
@@ -3822,15 +3874,22 @@ export function ScreenDocuments({ go }: { go: Nav }) {
 }
 
 // ============== SCREEN 6 ==============
-export function ScreenReviewSubmit({ go, state, setState, progress }: any) {
-  const delegatedSignoff = usesDelegatedSignoffFlow(state);
+export function ScreenReviewSubmit({
+  go,
+  state,
+  setState,
+  onOpenSignZ,
+  progress,
+}: any) {
+  const sameEmailSignatory = usesSameEmailSignatoryFlow(state);
+  const delegatedEmailHandoff = usesDelegatedEmailHandoff(state);
 
   return (
     <div className="pb-2 px-2 sm:px-0">
       <FormCard
         title="Review and Submit"
         subtitle={
-          delegatedSignoff
+          delegatedEmailHandoff
             ? "Verify your information before sending the terms to the authorised signatory"
             : "Verify your information before proceeding to terms & conditions"
         }
@@ -3898,7 +3957,7 @@ export function ScreenReviewSubmit({ go, state, setState, progress }: any) {
                 className="text-sm"
                 style={{ color: TEXT, fontWeight: 600 }}
               >
-                {delegatedSignoff
+                {delegatedEmailHandoff
                   ? "I confirm that the information provided is accurate and is ready to be shared with the authorised signatory for review and signoff."
                   : "I confirm that the information provided is accurate and I'm ready to proceed with terms review and digital signature."}
               </span>
@@ -3911,15 +3970,32 @@ export function ScreenReviewSubmit({ go, state, setState, progress }: any) {
         <PrimaryButton
           disabled={!state.declaration}
           onClick={() => {
-            if (delegatedSignoff) {
-              setState({ ...state, awaitingAuthorisedSignoff: true });
-              go(12);
+            if (delegatedEmailHandoff) {
+              setState({
+                ...state,
+                awaitingAuthorisedSignoff: true,
+                actingAsAuthorisedSignatory: false,
+                delegatedSignoffCompleted: false,
+                signatoryReadyToReturn: false,
+              });
+              go(12, { skipSigningTransition: true });
+              return;
+            }
+            if (sameEmailSignatory) {
+              setState({
+                ...state,
+                awaitingAuthorisedSignoff: false,
+                actingAsAuthorisedSignatory: false,
+                delegatedSignoffCompleted: false,
+                signatoryReadyToReturn: false,
+              });
+              onOpenSignZ?.();
               return;
             }
             go(7);
           }}
         >
-          {delegatedSignoff
+          {delegatedEmailHandoff
             ? "Send to Authorised Person"
             : "Review terms & sign"}
         </PrimaryButton>
@@ -4102,8 +4178,9 @@ function TermsFormPage({ page, progress, children }: any) {
           : "Please review the terms before proceeding"
       }
       progress={progress}
-      maxWidth={1040}
-      animateIn={false}
+      maxWidth={1280}
+      hideHeader
+      bodyClassName="px-0 py-0"
     >
       {children}
     </FormCard>
@@ -4339,21 +4416,27 @@ function TermsProcurementFormContent({
   );
 }
 
-export function ScreenTermsPage1({ go, state, progress }: any) {
-  const delegatedSignoff = usesDelegatedSignoffFlow(state);
+function TermsImagePage({ src, alt }: { src: string; alt: string }) {
+  return (
+    <div className="flex w-full justify-center overflow-hidden">
+      <img
+        src={src}
+        alt={alt}
+        className="h-auto w-full max-w-none rounded-[10px] object-contain shadow-sm"
+        draggable={false}
+      />
+    </div>
+  );
+}
 
+export function ScreenTermsPage1({ go, state, progress }: any) {
   return (
     <div className="pb-2 px-2 sm:px-0">
       <TermsFormPage page={1} progress={progress}>
-        <TermsDocument
-          page={1}
-          title="Gift Voucher Procurement (Corporate) Form"
-        >
-          <TermsProcurementFormContent
-            signed={state.esignVerified}
-            showSignatureSection={!delegatedSignoff}
-          />
-        </TermsDocument>
+        <TermsImagePage
+          src={signzTermsPage1Img}
+          alt="Terms and Conditions page 1"
+        />
       </TermsFormPage>
 
       <ActionBar>
@@ -4367,14 +4450,10 @@ export function ScreenTermsPage2({ go, state, progress }: any) {
   return (
     <div className="pb-2 px-2 sm:px-0">
       <TermsFormPage page={2} progress={progress}>
-        <div className="flex w-full justify-center overflow-hidden px-0 py-2 sm:px-3 sm:py-4 lg:px-6">
-          <img
-            src={termsAndConditionsPageOneImg}
-            alt="Terms and Conditions page 2"
-            className="h-auto w-full max-w-[900px] rounded-[10px] object-contain shadow-sm"
-            draggable={false}
-          />
-        </div>
+        <TermsImagePage
+          src={signzTermsPage2Img}
+          alt="Terms and Conditions page 2"
+        />
       </TermsFormPage>
 
       <ActionBar>
@@ -4388,51 +4467,9 @@ export function ScreenTermsPage3({ go, state, progress }: any) {
   return (
     <div className="pb-2 px-2 sm:px-0">
       <TermsFormPage page={3} progress={progress}>
-        <TermsDocument
-          page={3}
-          framed={false}
-          signed={state.esignVerified}
-          left={
-            <>
-              <TermsParagraph title="Data Privacy and Security">
-                9.1 Pine Labs collects and processes Company data in accordance
-                with its Privacy Policy and applicable data protection laws.
-                <br />
-                <br />
-                9.2 The Company consents to the collection, use, and storage of
-                information necessary for Portal operations.
-              </TermsParagraph>
-              <TermsParagraph title="Intellectual Property">
-                10.1 All content on the Portal, including logos, trademarks, and
-                software, is the property of Pine Labs or its licensors.
-                <br />
-                <br />
-                10.2 The Company is granted a limited, non-exclusive,
-                non-transferable license to use the Portal.
-              </TermsParagraph>
-            </>
-          }
-          right={
-            <>
-              <TermsParagraph title="Limitation of Liability">
-                11.1 Pine Labs' total liability under this Agreement shall not
-                exceed the amount paid by the Company in the preceding 12
-                months.
-                <br />
-                <br />
-                11.2 Pine Labs is not liable for indirect, incidental, or
-                consequential damages.
-              </TermsParagraph>
-              <TermsParagraph title="Force Majeure">
-                12.1 Neither party shall be liable for failure to perform
-                obligations due to circumstances beyond reasonable control.
-                <br />
-                <br />
-                12.2 The affected party must notify the other party promptly and
-                make reasonable efforts to resume performance.
-              </TermsParagraph>
-            </>
-          }
+        <TermsImagePage
+          src={signzTermsPage3Img}
+          alt="Terms and Conditions page 3"
         />
       </TermsFormPage>
 
@@ -4444,111 +4481,65 @@ export function ScreenTermsPage3({ go, state, progress }: any) {
 }
 
 export function ScreenTermsPage4({ go, state, setState, progress }: any) {
-  const delegatedSignoff = usesDelegatedSignoffFlow(state);
+  const delegatedEmailHandoff = usesDelegatedEmailHandoff(state);
 
   return (
     <div className="pb-2 px-2 sm:px-0">
       <TermsFormPage page={4} progress={progress}>
-        <TermsDocument
-          page={4}
-          framed={false}
-          signed={state.esignVerified}
-          left={
-            <>
-              <TermsParagraph title="Termination">
-                13.1 Either party may terminate this Agreement with 30 days'
-                written notice.
-                <br />
-                <br />
-                13.2 Pine Labs may terminate immediately if the Company breaches
-                any material term of this Agreement.
-              </TermsParagraph>
-              <TermsParagraph title="Indemnification">
-                14.1 The Company agrees to indemnify Pine Labs against claims
-                arising from breach of these Terms, violation of laws, misuse of
-                Gift Cards, or unauthorised access by users.
-              </TermsParagraph>
-              <TermsParagraph title="Dispute Resolution">
-                15.1 Any disputes shall first be attempted to be resolved
-                through good-faith negotiation.
-                <br />
-                <br />
-                15.2 If negotiation fails, disputes shall be resolved through
-                arbitration in accordance with applicable Indian law.
-              </TermsParagraph>
-            </>
-          }
-          right={
-            <>
-              <TermsParagraph title="Governing Law">
-                16.1 This Agreement shall be governed by the laws of India.
-                <br />
-                <br />
-                16.2 The courts of Gurugram, Haryana shall have exclusive
-                jurisdiction over matters not subject to arbitration.
-              </TermsParagraph>
-              <TermsParagraph title="Amendments">
-                17.1 Pine Labs may amend these Terms with 15 days' notice to
-                Customers.
-                <br />
-                <br />
-                17.2 Continued use of the Portal after amendments constitutes
-                acceptance of the revised Terms.
-              </TermsParagraph>
-              <TermsParagraph title="Miscellaneous">
-                18.1 This Agreement constitutes the entire agreement between the
-                parties.
-                <br />
-                <br />
-                18.2 If any provision is found invalid, the remaining provisions
-                remain in effect.
-              </TermsParagraph>
-            </>
-          }
-          notice={
-            <Card
-              className="p-5"
-              style={{ background: "#FFFAEB", borderColor: "#FEDF89" } as any}
-            >
-              <div className="flex items-start gap-3">
-                <Info
-                  className="size-5 shrink-0 mt-0.5"
-                  style={{ color: "#F79009" }}
-                />
-                <div>
-                  <div
-                    className="text-sm mb-1"
-                    style={{ color: TEXT, fontWeight: 600 }}
-                  >
-                    Final acceptance required
-                  </div>
-                  <p className="text-sm" style={{ color: MUTED }}>
-                    {delegatedSignoff
-                      ? "By sending this package forward, you confirm these details are ready for the authorised signatory to review and sign on behalf of your organization."
-                      : "By proceeding to the next step, you confirm that you have read, understood, and accept all 4 pages of these Terms & Conditions on behalf of your organization."}
-                  </p>
+        <div className="space-y-5">
+          <TermsImagePage
+            src={signzTermsPage4Img}
+            alt="Terms and Conditions page 4"
+          />
+          <Card
+            className="p-5"
+            style={{ background: "#FFFAEB", borderColor: "#FEDF89" } as any}
+          >
+            <div className="flex items-start gap-3">
+              <Info
+                className="size-5 shrink-0 mt-0.5"
+                style={{ color: "#F79009" }}
+              />
+              <div>
+                <div
+                  className="text-sm mb-1"
+                  style={{ color: TEXT, fontWeight: 600 }}
+                >
+                  Final acceptance required
                 </div>
+                <p className="text-sm" style={{ color: MUTED }}>
+                  {delegatedEmailHandoff && !state.actingAsAuthorisedSignatory
+                    ? "By sending this package forward, you confirm these details are ready for the authorised signatory to review and sign on behalf of your organization."
+                    : "By proceeding to the next step, you confirm that you have read, understood, and accept all 4 pages of these Terms & Conditions on behalf of your organization."}
+                </p>
               </div>
-            </Card>
-          }
-        />
+            </div>
+          </Card>
+        </div>
       </TermsFormPage>
 
       <ActionBar>
         <PrimaryButton
           onClick={() => {
-            if (delegatedSignoff) {
+            if (state.actingAsAuthorisedSignatory && state.esignVerified) {
+              setState({ ...state, signatoryReadyToReturn: true });
+              go(12, { skipSigningTransition: true });
+              return;
+            }
+            if (delegatedEmailHandoff && !state.actingAsAuthorisedSignatory) {
               setState({ ...state, awaitingAuthorisedSignoff: true });
-              go(12);
+              go(12, { skipSigningTransition: true });
               return;
             }
             state.esignVerified ? go(12) : go(11);
           }}
         >
-          {delegatedSignoff
+          {delegatedEmailHandoff && !state.actingAsAuthorisedSignatory
             ? "Send to Authorised Person"
             : state.esignVerified
-              ? "Sign"
+              ? state.actingAsAuthorisedSignatory
+                ? "Sign off & continue"
+                : "Sign"
               : "Accept & proceed to eSign"}
         </PrimaryButton>
       </ActionBar>
@@ -5048,6 +5039,27 @@ function ContinueScenarioModal({
             >
               Form-entered legal name does not match the document or API
               record.
+            </span>
+          </button>
+          <button
+            type="button"
+            onClick={() => onChoose("api_unavailable")}
+            className="rounded-[14px] border px-4 py-4 text-left transition hover:-translate-y-0.5"
+            style={{ borderColor: "#fecaca", background: "#fff7f7" }}
+          >
+            <CircleAlert className="mb-3 size-5 text-[#dc2626]" />
+            <span
+              className="block text-sm"
+              style={{ color: TEXT, fontWeight: 700 }}
+            >
+              API failed due to network or server issue
+            </span>
+            <span
+              className="mt-1 block text-xs"
+              style={{ color: MUTED, lineHeight: "18px" }}
+            >
+              Return to the begin page and ask the user to try again after 1–2
+              minutes.
             </span>
           </button>
         </div>
@@ -5906,8 +5918,45 @@ export function ScreenSuccess({ state }: any) {
   );
 }
 
-export function ScreenAuthorisedSignoffPending({ state }: any) {
+export function ScreenOpeningSignZ({ onComplete }: { onComplete: () => void }) {
+  useEffect(() => {
+    const timer = window.setTimeout(onComplete, 1800);
+    return () => window.clearTimeout(timer);
+  }, [onComplete]);
+
+  return (
+    <div className="min-h-screen flex items-center justify-center px-4 py-10">
+      <motion.div
+        initial={{ opacity: 0, y: 18, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        className="w-full max-w-xl rounded-[28px] border border-[#d5e7e4] bg-white/90 p-8 text-center shadow-[0_30px_80px_-28px_rgba(0,86,86,0.28)] backdrop-blur sm:p-10"
+      >
+        <div className="mx-auto inline-flex size-16 items-center justify-center rounded-full bg-[#eefdf4] text-[#027a48]">
+          <Loader2 className="size-8 animate-spin" />
+        </div>
+        <p className="mt-5 text-xs font-bold uppercase tracking-[0.16em]" style={{ color: PRIMARY }}>
+          SignZ
+        </p>
+        <h1
+          className="mt-3 text-[28px] font-bold leading-tight text-[#005656] sm:text-[36px]"
+          style={{ fontFamily: "var(--font-display)" }}
+        >
+          Opening SignZ Terms & Condition eSign
+        </h1>
+        <p className="mt-4 text-sm leading-7 sm:text-base" style={{ color: TEXT_2 }}>
+          Preparing the 4-page review and Aadhaar eSign journey for the authorised signatory.
+        </p>
+      </motion.div>
+    </div>
+  );
+}
+
+export function ScreenAuthorisedSignoffPending({
+  state,
+  onOpenSignZFromEmail,
+}: any) {
   const firstName = state.fullName?.split(" ")[0] || "there";
+  const [showEmailTemplate, setShowEmailTemplate] = useState(false);
 
   return (
     <div className="relative mx-auto w-full max-w-4xl px-2 py-8 sm:px-4 sm:py-12">
@@ -5932,6 +5981,20 @@ export function ScreenAuthorisedSignoffPending({ state }: any) {
             authorised signatory for review. We’ll continue once they complete
             the signoff step.
           </p>
+
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+            <button
+              type="button"
+              onClick={() => setShowEmailTemplate(true)}
+              className="inline-flex items-center gap-2 rounded-[12px] px-5 py-3 text-sm font-semibold text-white"
+              style={{ background: PRIMARY }}
+            >
+              View the email <ArrowRight className="size-4" />
+            </button>
+            <span className="text-xs sm:text-sm" style={{ color: MUTED }}>
+              Demo CTA
+            </span>
+          </div>
 
           <div className="mt-8 grid w-full gap-4 rounded-[20px] border border-[#d5e7e4] bg-[#f7fbfa] p-5 text-left sm:grid-cols-2 sm:p-6">
             <div>
@@ -5966,6 +6029,182 @@ export function ScreenAuthorisedSignoffPending({ state }: any) {
               organization.
             </p>
           </div>
+        </div>
+      </motion.section>
+
+      <AnimatePresence>
+        {showEmailTemplate && (
+          <motion.div
+            className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6"
+            style={{
+              background: "rgba(10,13,18,0.62)",
+              backdropFilter: "blur(8px)",
+            }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className="flex max-h-[88vh] w-full max-w-2xl flex-col overflow-hidden rounded-[18px] bg-white"
+              style={{ boxShadow: "0 24px 70px rgba(10,13,18,0.28)" }}
+              initial={{ opacity: 0, y: 20, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 12, scale: 0.98 }}
+              transition={{ duration: 0.24, ease: "easeOut" }}
+            >
+              <div
+                className="flex items-center justify-between gap-3 border-b px-4 py-3 sm:px-5"
+                style={{ borderColor: BORDER }}
+              >
+                <div className="min-w-0">
+                  <div
+                    className="truncate text-sm sm:text-base"
+                    style={{ color: TEXT, fontWeight: 700 }}
+                  >
+                    Pine Labs Corporate Onboarding
+                  </div>
+                  <div className="truncate text-xs" style={{ color: MUTED }}>
+                    Authorised signatory email preview
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowEmailTemplate(false)}
+                  className="inline-flex size-9 shrink-0 items-center justify-center rounded-lg"
+                  style={{ color: TEXT, background: BG_SOFT }}
+                  aria-label="Close email preview"
+                >
+                  <X className="size-5" />
+                </button>
+              </div>
+
+              <div className="min-h-0 overflow-y-auto px-4 py-5 sm:px-6 sm:py-6">
+                <div
+                  className="rounded-[14px] p-4 text-center sm:p-5"
+                  style={{
+                    background: `linear-gradient(135deg, ${PRIMARY} 0%, #007A7A 100%)`,
+                    color: "#fff",
+                  }}
+                >
+                  <Mail className="mx-auto mb-2 size-5" style={{ color: LIME }} />
+                  <div className="text-lg font-bold">
+                    Action required: Review and sign onboarding terms
+                  </div>
+                  <p className="mt-1 text-sm text-white/85">
+                    Please review the corporate onboarding terms and complete Aadhaar eSign.
+                  </p>
+                </div>
+
+                <div className="mt-5 space-y-4 text-sm leading-6" style={{ color: TEXT_2 }}>
+                  <p>Hi {state.sigName || "Authorised Signatory"},</p>
+                  <p>
+                    {state.fullName || "Your team member"} has submitted the
+                    company onboarding details and requested your approval as
+                    the authorised signatory.
+                  </p>
+                  <div
+                    className="rounded-[12px] p-4"
+                    style={{
+                      background: BG_SOFT,
+                      border: `1px dashed ${BORDER_INPUT}`,
+                    }}
+                  >
+                    <div
+                      className="text-xs font-bold uppercase tracking-[0.08em]"
+                      style={{ color: MUTED }}
+                    >
+                      Review summary
+                    </div>
+                    <div className="mt-3 space-y-2">
+                      <div className="flex justify-between gap-4">
+                        <span style={{ color: MUTED }}>Company</span>
+                        <span className="font-semibold">Pine Labs Private Limited</span>
+                      </div>
+                      <div className="flex justify-between gap-4">
+                        <span style={{ color: MUTED }}>Submitted by</span>
+                        <span className="font-semibold">{state.email}</span>
+                      </div>
+                      <div className="flex justify-between gap-4">
+                        <span style={{ color: MUTED }}>Required action</span>
+                        <span className="font-semibold">Review terms and Aadhaar eSign</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowEmailTemplate(false);
+                      onOpenSignZFromEmail?.();
+                    }}
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-[10px] px-5 py-3 text-sm font-semibold"
+                    style={{ background: PRIMARY, color: "#fff" }}
+                  >
+                    Review documents & eSign <ArrowRight className="size-4" />
+                  </button>
+
+                  <div
+                    className="flex items-start gap-2 rounded-[10px] p-3 text-xs"
+                    style={{
+                      background: "#FEF6E7",
+                      border: "1px solid #FCE7B3",
+                      color: "#7A4F01",
+                    }}
+                  >
+                    <Lock className="mt-0.5 size-4 shrink-0" />
+                    <span>
+                      This is a demo email preview of what the authorised signatory would receive.
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+export function ScreenSignatoryHandoffComplete({
+  state,
+  onReturnToCorporate,
+}: any) {
+  return (
+    <div className="relative mx-auto w-full max-w-4xl px-2 py-8 sm:px-4 sm:py-12">
+      <motion.section
+        initial={{ opacity: 0, y: 18 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+        className="mx-auto rounded-[28px] border border-[#d5efe8] bg-white/90 p-7 shadow-[0_25px_60px_-20px_rgba(0,86,86,0.22)] backdrop-blur sm:p-10"
+      >
+        <div className="mx-auto flex max-w-2xl flex-col items-center text-center">
+          <div className="inline-flex size-16 items-center justify-center rounded-full bg-[#ecfdf3] text-[#027a48]">
+            <CheckCircle2 className="size-8" />
+          </div>
+          <h1
+            className="mt-6 text-[32px] font-bold leading-tight text-[#005656] sm:text-[42px]"
+            style={{ fontFamily: "var(--font-display)" }}
+          >
+            Signoff completed
+          </h1>
+          <p className="mt-4 text-base leading-7 sm:text-lg" style={{ color: TEXT_2 }}>
+            {state.sigName || "The authorised signatory"} has reviewed the
+            terms and completed Aadhaar eSign. Return to the corporate
+            onboarding view to continue the demo.
+          </p>
+
+          <button
+            type="button"
+            onClick={onReturnToCorporate}
+            className="mt-8 inline-flex items-center gap-2 rounded-[12px] px-5 py-3 text-sm font-semibold text-white"
+            style={{ background: PRIMARY }}
+          >
+            Go back to Corporate onboarding <ArrowRight className="size-4" />
+          </button>
+          <p className="mt-3 text-xs sm:text-sm" style={{ color: MUTED }}>
+            Demo CTA
+          </p>
         </div>
       </motion.section>
     </div>
