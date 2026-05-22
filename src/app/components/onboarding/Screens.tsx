@@ -1573,7 +1573,7 @@ function UploadScenarioModal({
             className="mt-2 text-lg"
             style={{ color: TEXT, fontWeight: 700, lineHeight: "28px" }}
           >
-            Choose a Scenario
+            Choose a Scenario (specifically for engg team)
           </h3>
         </div>
         <div className="mt-5 grid gap-3 sm:grid-cols-2">
@@ -2137,7 +2137,7 @@ export function ScreenBeforeYouBegin({ go, state, setState, progress }: any) {
             <section>
               <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="[&>div]:mb-0">
-                  <SectionHeading>Required Documents</SectionHeading>
+                  <SectionHeading>Required documents</SectionHeading>
                 </div>
                 <div className="flex items-center gap-3">
                   <div
@@ -2943,7 +2943,7 @@ export function ScreenBusinessIdentity({ go, state, setState, progress }: any) {
   return (
     <div className="pb-2 px-2 sm:px-0">
       <FormCard
-        title="Organisation Details"
+        title="Organisation details"
         subtitle="Verify your company's legal information"
         progress={progress}
       >
@@ -3223,7 +3223,7 @@ export function ScreenCompanyAddress({ go, state, setState, progress }: any) {
   return (
     <div className="pb-2 px-2 sm:px-0">
       <FormCard
-        title="Organisation Details"
+        title="Organisation details"
         subtitle="Confirm your registered and billing addresses"
         progress={progress}
       >
@@ -3727,7 +3727,7 @@ function SignatoryScenarioModal({
             className="mt-2 text-lg"
             style={{ color: TEXT, fontWeight: 700, lineHeight: "28px" }}
           >
-            Choose a Scenario
+            Choose a Scenario (specifically for engg team)
           </h3>
         </div>
         <div className="mt-5 grid gap-3 sm:grid-cols-2">
@@ -3891,7 +3891,7 @@ export function ScreenSignatory({ go, state, setState, progress }: any) {
                   />
                 </div>
                 <div>
-                  <FieldLabel required>Mobile number</FieldLabel>
+                  <FieldLabel required>Mobile Number</FieldLabel>
                   <TextInput
                     value={state.sigMobile}
                     placeholder="+91 9876543210"
@@ -4085,7 +4085,7 @@ export function ScreenReviewSubmit({
   go,
   state,
   setState,
-  onOpenSignZ,
+  onOpenSingzy,
   progress,
 }: any) {
   const sameEmailSignatory = usesSameEmailSignatoryFlow(state);
@@ -4094,7 +4094,7 @@ export function ScreenReviewSubmit({
   return (
     <div className="pb-2 px-2 sm:px-0">
       <FormCard
-        title="Review and Submit"
+        title="Review and submit"
         subtitle={
           delegatedEmailHandoff
             ? "Verify your information before sending the terms to the authorised signatory"
@@ -4110,7 +4110,7 @@ export function ScreenReviewSubmit({
               rows={[
                 ["Name", state.fullName],
                 ["Email", state.email],
-                ["Mobile number", state.mobile],
+                ["Mobile Number", state.mobile],
               ]}
             />
 
@@ -4135,7 +4135,7 @@ export function ScreenReviewSubmit({
               rows={[
                 ["Name", state.sigName],
                 ["Email", state.sigEmail],
-                ["Mobile number", state.sigMobile],
+                ["Mobile Number", state.sigMobile],
                 ["Designation", state.designation],
               ]}
             />
@@ -4196,7 +4196,7 @@ export function ScreenReviewSubmit({
                 delegatedSignoffCompleted: false,
                 signatoryReadyToReturn: false,
               });
-              onOpenSignZ?.();
+              onOpenSingzy?.();
               return;
             }
             go(7);
@@ -5618,7 +5618,7 @@ export function ScreenSuccess({ state }: any) {
   );
 }
 
-export function ScreenOpeningSignZ({ onComplete }: { onComplete: () => void }) {
+export function ScreenOpeningSingzy({ onComplete }: { onComplete: () => void }) {
   useEffect(() => {
     const timer = window.setTimeout(onComplete, 1800);
     return () => window.clearTimeout(timer);
@@ -5635,13 +5635,13 @@ export function ScreenOpeningSignZ({ onComplete }: { onComplete: () => void }) {
           <Loader2 className="size-8 animate-spin" />
         </div>
         <p className="mt-5 text-xs font-bold uppercase tracking-[0.16em]" style={{ color: PRIMARY }}>
-          SignZ
+          Singzy
         </p>
         <h1
           className="mt-3 text-[28px] font-bold leading-tight text-[#005656] sm:text-[36px]"
           style={{ fontFamily: "var(--font-display)" }}
         >
-          Opening SignZ Terms & Condition eSign
+          Opening Singzy Terms & Condition eSign
         </h1>
         <p className="mt-4 text-sm leading-7 sm:text-base" style={{ color: TEXT_2 }}>
           Preparing the 4-page review and Aadhaar eSign journey for the authorised signatory.
@@ -5653,7 +5653,7 @@ export function ScreenOpeningSignZ({ onComplete }: { onComplete: () => void }) {
 
 export function ScreenAuthorisedSignoffPending({
   state,
-  onOpenSignZFromEmail,
+  onOpenSingzyFromEmail,
   onEditSignatory,
   onResend,
 }: any) {
@@ -5912,7 +5912,7 @@ export function ScreenAuthorisedSignoffPending({
                     type="button"
                     onClick={() => {
                       setShowEmailTemplate(false);
-                      onOpenSignZFromEmail?.();
+                      onOpenSingzyFromEmail?.();
                     }}
                     className="inline-flex w-full items-center justify-center gap-2 rounded-[10px] px-5 py-3 text-sm font-semibold"
                     style={{ background: PRIMARY, color: "#fff" }}

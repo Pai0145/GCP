@@ -35,7 +35,7 @@ import {
   ScreenBeforeYouBegin,
   ScreenBusinessIdentity,
   ScreenCompanyAddress,
-  ScreenOpeningSignZ,
+  ScreenOpeningSingzy,
   ScreenReviewSubmit,
   ScreenSignatoryHandoffComplete,
   ScreenSignatory,
@@ -558,7 +558,7 @@ function OnboardingFlow() {
     Boolean(normalizedSignatoryEmail) &&
     normalizedOwnerEmail !== normalizedSignatoryEmail;
   const hideReviewSubs = screen === 6 && !state.actingAsAuthorisedSignatory;
-  const isSignZFlowView = screen >= 7 && screen <= 11;
+  const isSingzyFlowView = screen >= 7 && screen <= 11;
   const steps = hideReviewSubs
     ? STEPS.map((step) =>
         step.id === 5
@@ -704,12 +704,12 @@ function OnboardingFlow() {
   if (transitionContext) {
     const isBasicDetails = transitionContext === "basicDetails";
     const isSigning = transitionContext === "signing";
-    const isOpeningSignZ = transitionContext === "signz";
+    const isOpeningSingzy = transitionContext === "signz";
     const isManualVerification =
       transitionContext === "documents" && state.manualVerification;
 
-    if (isOpeningSignZ) {
-      return <ScreenOpeningSignZ onComplete={handleTransitionComplete} />;
+    if (isOpeningSingzy) {
+      return <ScreenOpeningSingzy onComplete={handleTransitionComplete} />;
     }
 
     return (
@@ -733,6 +733,11 @@ function OnboardingFlow() {
               ? "Auto-verification is unavailable right now..."
               : undefined
         }
+        stepThreeText={
+          transitionContext === "documents"
+            ? "Verifying your PAN details..."
+            : undefined
+        }
         successTitle={
           isBasicDetails
             ? `Welcome, ${state.fullName || "there"}`
@@ -755,7 +760,7 @@ function OnboardingFlow() {
     );
   }
 
-  const showSidebar = screen >= 1 && screen <= 10 && !isSignZFlowView;
+  const showSidebar = screen >= 1 && screen <= 10 && !isSingzyFlowView;
   const sidebarStep = SIDEBAR_STEP_FOR_SCREEN[screen] ?? 5;
   const completed = COMPLETED_FOR_SCREEN[screen] ?? [];
   const currentSub =
@@ -819,7 +824,7 @@ function OnboardingFlow() {
         go={go}
         state={state}
         setState={setState}
-        onOpenSignZ={() => {
+        onOpenSingzy={() => {
           setProgressScreen((current) => Math.max(current, 7));
           setTransitionContext("signz");
         }}
@@ -893,7 +898,7 @@ function OnboardingFlow() {
     content = (
       <ScreenAuthorisedSignoffPending
         state={state}
-        onOpenSignZFromEmail={() => {
+        onOpenSingzyFromEmail={() => {
           setState({
             ...state,
             awaitingAuthorisedSignoff: false,
@@ -941,19 +946,19 @@ function OnboardingFlow() {
       currentSub={currentSub}
       completedSubs={completedSubs}
       showSidebar={showSidebar}
-      animatedBackground={!isSignZFlowView}
+      animatedBackground={!isSingzyFlowView}
       onSaveExit={() => navigate("/")}
       onStepClick={handleStepClick}
       autosaveKey={`${screen}:${JSON.stringify(state)}`}
       progressPercent={progressPercent}
       steps={steps}
       signzRejectEnabled={
-        isSignZFlowView &&
+        isSingzyFlowView &&
         state.actingAsAuthorisedSignatory &&
         !state.signatoryReadyToReturn
       }
       onSignzReject={handleRejectSigningSession}
-      hideAccountActions={isSignZFlowView}
+      hideAccountActions={isSingzyFlowView}
     >
       {content}
     </PageShell>

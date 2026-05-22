@@ -243,7 +243,7 @@ function Container17() {
     >
       <div className="bg-clip-padding border-0 border-[transparent] border-solid overflow-clip relative rounded-[inherit] size-full">
         <p className="absolute font-['Lato:SemiBold',sans-serif] leading-[19.5px] left-0 not-italic text-[#364153] text-[13px] top-0 tracking-[-0.0762px] whitespace-nowrap">
-          Organisation Details
+          Organisation details
         </p>
       </div>
     </div>
@@ -371,7 +371,7 @@ function Container25() {
     >
       <div className="bg-clip-padding border-0 border-[transparent] border-solid overflow-clip relative rounded-[inherit] size-full">
         <p className="absolute font-['Lato:SemiBold',sans-serif] leading-[19.5px] left-0 not-italic text-[#364153] text-[13px] top-0 tracking-[-0.0762px] whitespace-nowrap">
-          Review and Submit
+          Review and submit
         </p>
       </div>
     </div>

@@ -244,7 +244,7 @@ function Text1() {
     >
       <div className="bg-clip-padding border-0 border-[transparent] border-solid relative size-full">
         <p className="absolute font-['Lato:SemiBold',sans-serif] leading-[19.5px] left-0 not-italic text-[16px] text-white top-[-0.5px] whitespace-nowrap">
-          Organisation Details
+          Organisation details
         </p>
       </div>
     </div>
@@ -437,7 +437,7 @@ function Text2() {
     >
       <div className="bg-clip-padding border-0 border-[transparent] border-solid relative size-full">
         <p className="absolute font-['Lato:SemiBold',sans-serif] leading-[19.5px] left-0 not-italic text-[#364153] text-[16px] top-[-0.5px] whitespace-nowrap">
-          Review and Submit
+          Review and submit
         </p>
       </div>
     </div>
@@ -520,7 +520,7 @@ function Frame11() {
   return (
     <div className="content-stretch flex flex-col items-start not-italic relative shrink-0 w-full">
       <p className="font-['PP_Telegraf:SemiBold',sans-serif] leading-[38px] relative shrink-0 text-[30px] text-white w-full">
-        Organisation Details
+        Organisation details
       </p>
       <p className="font-['Lato:Regular',sans-serif] leading-[21px] relative shrink-0 text-[14px] text-[rgba(255,255,255,0.8)] w-full">{`Verify your company's legal information`}</p>
     </div>

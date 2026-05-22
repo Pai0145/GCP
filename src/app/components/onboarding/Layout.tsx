@@ -43,7 +43,7 @@ export const STEPS: SetupStep[] = [
   { id: 2, label: "Basic details" },
   {
     id: 3,
-    label: "Organisation Details",
+    label: "Organisation details",
     subs: [
       { id: "identity", label: "Business identity" },
       { id: "address", label: "Registered address" },
@@ -52,7 +52,7 @@ export const STEPS: SetupStep[] = [
   { id: 4, label: "Authorised signatory" },
   {
     id: 5,
-    label: "Review and Submit",
+    label: "Review and submit",
     subs: [
       { id: "terms", label: "Terms & Conditions" },
       { id: "aadhaar", label: "Aadhaar eSign" },

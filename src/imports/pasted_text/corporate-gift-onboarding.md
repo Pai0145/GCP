@@ -91,7 +91,7 @@ Fields:
 
 - Full name
 - Email
-- Mobile number
+- Mobile Number
 - Expected annual gift card spend, optional dropdown
 
 Dropdown values:
@@ -111,7 +111,7 @@ Secondary link:
 “Save and continue later”
 
 Validation:
-Continue button stays disabled until Full name, Email, and Mobile number are filled.
+Continue button stays disabled until Full name, Email, and Mobile Number are filled.
 Show green check icon when email and mobile are valid.
 Use sample values:
 Full name: John Doe
@@ -229,13 +229,13 @@ If checked, auto-fill:
 
 - Full name
 - Email
-- Mobile number
+- Mobile Number
 
 Fields:
 
 - Full name
 - Email
-- Mobile number
+- Mobile Number
 - Designation dropdown
 
 Designation dropdown values:
@@ -312,7 +312,7 @@ Card 1: Account owner
 
 - Name
 - Email
-- Mobile number
+- Mobile Number
   Edit link
 
 Card 2: Company details
@@ -328,7 +328,7 @@ Card 3: Authorised signatory
 
 - Name
 - Email
-- Mobile number
+- Mobile Number
 - Designation
   Edit link
 
@@ -431,7 +431,7 @@ Fields:
 
 - Full name
 - Email
-- Mobile number
+- Mobile Number
 - Role dropdown
 
 Role values:

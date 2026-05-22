@@ -6,6 +6,7 @@ interface AnalyzingTransitionProps {
   onComplete: () => void;
   stepOneText?: string;
   stepTwoText?: string;
+  stepThreeText?: string;
   successTitle?: string;
   successText?: string;
   successOnly?: boolean;
@@ -16,17 +17,18 @@ export function AnalyzingTransition({
   onComplete,
   stepOneText = "Verifying your GST details...",
   stepTwoText = "Verifying your CIN details...",
+  stepThreeText = "Verifying your PAN details...",
   successTitle = "Congratulations",
   successText = "All your details have been verified...",
   successOnly = false,
   successIcon = "check",
 }: AnalyzingTransitionProps) {
-  const [currentStep, setCurrentStep] = useState(successOnly ? 3 : 0);
+  const [currentStep, setCurrentStep] = useState(successOnly ? 4 : 0);
   const isWarning = successIcon === "warning";
 
   useEffect(() => {
     if (successOnly) {
-      setCurrentStep(3);
+      setCurrentStep(4);
       const timer = setTimeout(() => onComplete(), 2600);
       return () => clearTimeout(timer);
     }
@@ -35,16 +37,19 @@ export function AnalyzingTransition({
     const timer1 = setTimeout(() => setCurrentStep(1), 100);
     // Switch to second subtext after 2s
     const timer2 = setTimeout(() => setCurrentStep(2), 2000);
-    // Show final status after 4s
+    // Switch to third subtext after 4s
     const timer3 = setTimeout(() => setCurrentStep(3), 4000);
-    // Complete after 6.5s
-    const timer4 = setTimeout(() => onComplete(), 6500);
+    // Show final status after 6s
+    const timer4 = setTimeout(() => setCurrentStep(4), 6000);
+    // Complete after 8.5s
+    const timer5 = setTimeout(() => onComplete(), 8500);
 
     return () => {
       clearTimeout(timer1);
       clearTimeout(timer2);
       clearTimeout(timer3);
       clearTimeout(timer4);
+      clearTimeout(timer5);
     };
   }, [onComplete, successOnly]);
 
@@ -134,9 +139,9 @@ export function AnalyzingTransition({
 
       {/* Content */}
       <div className="relative z-10 flex flex-col items-center justify-center">
-        {/* Final status mark - shows only on step 3 */}
+        {/* Final status mark - shows only on the final congratulations step */}
         <AnimatePresence mode="wait">
-          {currentStep === 3 && (
+          {currentStep === 4 && (
             <motion.div
               key={`success-${successIcon}`}
               initial={{ scale: 0, rotate: -180 }}
@@ -274,8 +279,8 @@ export function AnalyzingTransition({
           )}
         </AnimatePresence>
 
-        {/* 4 Bouncing Dots Loader - More Dramatic - only show on steps 1 and 2 */}
-        {currentStep < 3 && (
+        {/* 4 Bouncing Dots Loader - More Dramatic - only show on steps 1-3 */}
+        {currentStep < 4 && (
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -429,6 +434,22 @@ export function AnalyzingTransition({
               </motion.p>
             )}
             {currentStep === 3 && (
+              <motion.p
+                key="pan"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.5 }}
+                className="text-center text-base sm:text-lg whitespace-nowrap"
+                style={{
+                  color: "rgba(255, 255, 255, 0.8)",
+                  fontFamily: "Lato, sans-serif",
+                }}
+              >
+                {stepThreeText}
+              </motion.p>
+            )}
+            {currentStep === 4 && (
               <motion.div
                 key={isWarning ? "manual-review" : "congratulations"}
                 initial={{ opacity: 0, scale: 0.8, y: 30 }}
