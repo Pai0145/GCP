@@ -32,7 +32,7 @@ function Container4() {
       data-name="Container"
     >
       <p className="absolute font-['Lato:Bold',sans-serif] leading-[14px] left-0 not-italic text-[#005656] text-[9px] top-[0.5px] tracking-[0.72px] uppercase whitespace-nowrap">
-        Corporate Onboarding
+        Onboarding
       </p>
     </div>
   );

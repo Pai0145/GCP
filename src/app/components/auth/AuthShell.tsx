@@ -164,7 +164,7 @@ export function AuthShell({
                   lineHeight: "14px",
                 }}
               >
-                Corporate Onboarding
+                Onboarding
               </div>
               <div
                 className="truncate hidden sm:block"
@@ -176,7 +176,7 @@ export function AuthShell({
                   lineHeight: "18px",
                 }}
               >
-                Elevate One
+                Gift Card Procurement
               </div>
             </div>
           </div>

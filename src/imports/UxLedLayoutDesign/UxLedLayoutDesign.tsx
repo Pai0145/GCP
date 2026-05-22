@@ -32,7 +32,7 @@ function Container4() {
   return (
     <div className="h-[15px] relative shrink-0 w-full" data-name="Container">
       <p className="absolute font-['Lato:Bold',sans-serif] leading-[15px] left-0 not-italic text-[#005656] text-[10px] top-0 tracking-[1.1172px] uppercase whitespace-nowrap">
-        Corporate Onboarding
+        Onboarding
       </p>
     </div>
   );

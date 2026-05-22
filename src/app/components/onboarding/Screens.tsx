@@ -15,8 +15,8 @@ import plateIcon from "../../../imports/Plate.svg";
 import uploadMinimalisticIcon from "../../../imports/Upload Minimalistic.svg";
 import penNewSquareIcon from "../../../imports/Pen New Square.png";
 import pineLabsLogoImg from "../../../../pinelabs logo.png";
-import congratulationVideo from "../../../imports/congratulation video.mp4";
 import signatureImg from "../../../imports/Screenshot 2026-04-17 at 12.33.38 PM 1.png";
+import successImg from "../../../imports/success.png";
 import signzTermsPage1Img from "../../../imports/signz-terms/page-1.png";
 import signzTermsPage2Img from "../../../imports/signz-terms/page-2.png";
 import signzTermsPage3Img from "../../../imports/signz-terms/page-3.png";
@@ -3785,8 +3785,7 @@ export function ScreenSignatory({ go, state, setState, progress }: any) {
     state.sigName &&
     state.sigEmail &&
     state.sigMobile &&
-    state.designation &&
-    state.sigConfirm;
+    state.designation;
 
   const handleScenario = (scenario: SignatoryScenario) => {
     setShowScenario(false);
@@ -3957,20 +3956,6 @@ export function ScreenSignatory({ go, state, setState, progress }: any) {
                 )}
               </AnimatePresence>
 
-              <label className="flex items-start gap-2.5 cursor-pointer pt-2">
-                <input
-                  type="checkbox"
-                  checked={state.sigConfirm}
-                  onChange={(e) =>
-                    setState({ ...state, sigConfirm: e.target.checked })
-                  }
-                  className="size-4 mt-0.5 accent-[#005656]"
-                />
-                <span className="text-sm" style={{ color: TEXT }}>
-                  I confirm that I am authorised to act on behalf of this
-                  organisation.
-                </span>
-              </label>
             </div>
           </section>
         </div>
@@ -4324,7 +4309,7 @@ function SignatureStamp() {
 
 function TermsDocument({
   page,
-  title = "Terms and Conditions for Elevate One",
+  title = "Terms and Conditions for Gift Card Procurement",
   left,
   right,
   children,
@@ -5347,19 +5332,8 @@ export function ScreenSuccess({ state }: any) {
   const applicationRef =
     "EO-" + Math.floor(100000 + Math.random() * 900000);
   const successTickAnimation = useMemo(() => getRethemedSuccessTick(), []);
-  const videoRef = useRef<HTMLVideoElement | null>(null);
   const qwikServePrototypeUrl =
     "https://www.figma.com/proto/5INxfo3oiLHKltD4Jc0Jqu/GC-Procurement_Corporate-Portal?node-id=671-67129&viewport=-6018%2C-1301%2C0.07&t=wRlZ2PtAWqnyJlMm-1&scaling=min-zoom&content-scaling=fixed&starting-point-node-id=671%3A67129&show-proto-sidebar=1&page-id=653%3A20540";
-
-  const handleVideoTimeUpdate = (
-    event: React.SyntheticEvent<HTMLVideoElement>,
-  ) => {
-    const video = event.currentTarget;
-    if (!video || video.currentTime < 7) return;
-
-    video.currentTime = 7;
-    video.pause();
-  };
 
   return (
     <div className="relative mx-auto w-full max-w-7xl px-2 py-6 sm:px-4 sm:py-8 lg:py-10">
@@ -5473,9 +5447,8 @@ export function ScreenSuccess({ state }: any) {
           >
             {isManualVerification
               ? "Submitted for manual review,"
-              : "Submission successful,"}
-            <br />
-            {firstName}! {!isManualVerification && <span aria-hidden="true">🎉</span>}
+              : "All done!"}
+         
           </h1>
           <p
             className="mt-6 text-base leading-7 sm:text-lg"
@@ -5483,7 +5456,7 @@ export function ScreenSuccess({ state }: any) {
           >
             {isManualVerification
               ? "We couldn't auto-verify your details because the verification service was unavailable. Your form is submitted and our team will review it manually."
-              : "Your Elevate One onboarding form has been submitted successfully."}
+              : "Your business details has been submitted successfully."}
           </p>
 
           <div className="mt-8 grid gap-4 sm:grid-cols-2">
@@ -5519,17 +5492,17 @@ export function ScreenSuccess({ state }: any) {
                 {isManualVerification ? "Manual review timeline" : "Credential delivery"}
               </div>
               <div className="mt-3 text-xl font-bold" style={{ color: TEXT }}>
-                {isManualVerification ? "Within 24 to 48 hours" : "Within 1 to 2 hours"}
+                {isManualVerification ? "Within 24 to 48 hours" : "Within 1 hour"}
               </div>
               <p className="mt-3 text-sm leading-6" style={{ color: TEXT_2 }}>
                 {isManualVerification ? (
                   <>
-                    We'll set up your Elevate One account after manual review and email the credentials to{" "}
+                    We'll set up your Gift Card Procurement account after manual review and email the credentials to{" "}
                     <span style={{ color: TEXT, fontWeight: 700 }}>{state.email}</span>.
                   </>
                 ) : (
                   <>
-                    Your Elevate One credentials will be emailed to{" "}
+                    Your Gift Card Procurement credentials will be emailed to{" "}
                     <span style={{ color: TEXT, fontWeight: 700 }}>{state.email}</span>{" "}
                     after final provisioning is complete.
                   </>
@@ -5558,8 +5531,8 @@ export function ScreenSuccess({ state }: any) {
                 <div className="text-sm font-bold">What happens next?</div>
                 <p className="mt-2 text-sm leading-6 text-white/85">
                   {isManualVerification
-                    ? "Our onboarding team will validate your uploaded documents and company details manually. Once approved, we'll provision your Elevate One workspace and email the sign-in instructions."
-                    : "We’re verifying the last setup steps for your Elevate One workspace. Once that is complete, we’ll email your username, temporary password, and sign-in instructions."}
+                    ? "Our onboarding team will validate your uploaded documents and company details manually. Once approved, we'll provision your Gift Card Procurement workspace and email the sign-in instructions."
+                    : "We’re verifying the last setup steps for your Gift Card Procurement workspace. Once that is complete, we’ll email your username, temporary password, and sign-in instructions."}
                 </p>
               </div>
             </div>
@@ -5586,8 +5559,8 @@ export function ScreenSuccess({ state }: any) {
                 <div className="text-sm font-bold">Support note</div>
                 <p className="mt-1 text-xs leading-5 sm:text-sm">
                   {isManualVerification
-                    ? "If you don’t receive an update within 48 hours, please reach out to your Pine Labs onboarding contact or reply to the confirmation email."
-                    : "If you don’t receive your Elevate One credentials within 2 hours, please reach out to your Pine Labs onboarding contact or reply to the confirmation email for help."}
+                    ? "If you don’t receive an update within 48 hours, please reach out to Pine Labs onboarding contact : +91 9876543210 or email : support@pinelabs.com."
+                    : "If you don’t receive your Gift Card Procurement credentials within 1 hour, please reach out to Pine Labs onboarding contact : +91 9876543210 or email : support@pinelabs.com."}
                 </p>
               </div>
             </div>
@@ -5607,20 +5580,11 @@ export function ScreenSuccess({ state }: any) {
             }}
           >
             <div className="aspect-square w-full max-w-[500px] overflow-hidden rounded-[18px]">
-              <video
-                ref={videoRef}
-                src={congratulationVideo}
-                autoPlay
-                muted
-                playsInline
-                preload="auto"
-                onTimeUpdate={handleVideoTimeUpdate}
-                onLoadedMetadata={(event) => {
-                  event.currentTarget.currentTime = 0;
-                }}
+              <img
+                src={successImg}
+                alt="Congratulations illustration"
                 className="h-full w-full object-cover"
                 style={{ objectPosition: "center center" }}
-                aria-label="Congratulations animation"
               />
             </div>
           </div>
@@ -5874,7 +5838,7 @@ export function ScreenAuthorisedSignoffPending({
                     className="truncate text-sm sm:text-base"
                     style={{ color: TEXT, fontWeight: 700 }}
                   >
-                    Pine Labs Corporate Onboarding
+                    Pine Labs Onboarding
                   </div>
                   <div className="truncate text-xs" style={{ color: MUTED }}>
                     Authorised signatory email preview

@@ -126,7 +126,7 @@ export function TopNav({
                 lineHeight: "14px",
               }}
             >
-              Corporate Onboarding
+              Onboarding
             </div>
             <div
               className="truncate hidden sm:block"
@@ -137,7 +137,7 @@ export function TopNav({
                 lineHeight: "18px",
               }}
             >
-              Elevate One
+              Gift Card Procurement
             </div>
           </div>
         </div>
