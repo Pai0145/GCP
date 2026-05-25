@@ -97,6 +97,8 @@ const BG_SOFT = "#f9fafb";
 const REQUIRED = "#fb2c36";
 const HEADER_GRADIENT =
   "linear-gradient(90deg, #005656 0%, #006565 50%, #007A7A 100%)";
+const GIFT_CARD_PROCUREMENT_DEMO_URL =
+  "https://www.figma.com/proto/5INxfo3oiLHKltD4Jc0Jqu/GC-Procurement_Corporate-Portal?node-id=671-67129&viewport=-6018%2C-1301%2C0.07&t=wRlZ2PtAWqnyJlMm-1&scaling=min-zoom&content-scaling=fixed&starting-point-node-id=671%3A67129&show-proto-sidebar=1&page-id=653%3A20540";
 
 const SUCCESS_TICK_GREEN = [0, 130 / 255, 54 / 255, 1];
 const SUCCESS_TICK_TEAL = [0, 86 / 255, 86 / 255, 0.16];
@@ -5326,14 +5328,18 @@ function Confetti() {
   );
 }
 
-export function ScreenSuccess({ state }: any) {
+export function ScreenSuccess({
+  state,
+  onOpenDemoPreview,
+}: {
+  state: any;
+  onOpenDemoPreview: () => void;
+}) {
   const firstName = state.fullName?.split(" ")[0] || "there";
   const isManualVerification = Boolean(state.manualVerification);
   const applicationRef =
     "EO-" + Math.floor(100000 + Math.random() * 900000);
   const successTickAnimation = useMemo(() => getRethemedSuccessTick(), []);
-  const qwikServePrototypeUrl =
-    "https://www.figma.com/proto/5INxfo3oiLHKltD4Jc0Jqu/GC-Procurement_Corporate-Portal?node-id=671-67129&viewport=-6018%2C-1301%2C0.07&t=wRlZ2PtAWqnyJlMm-1&scaling=min-zoom&content-scaling=fixed&starting-point-node-id=671%3A67129&show-proto-sidebar=1&page-id=653%3A20540";
 
   return (
     <div className="relative mx-auto w-full max-w-7xl px-2 py-6 sm:px-4 sm:py-8 lg:py-10">
@@ -5605,14 +5611,159 @@ export function ScreenSuccess({ state }: any) {
         </span>
         <button
           type="button"
-          onClick={() =>
-            window.open(qwikServePrototypeUrl, "_blank", "noopener,noreferrer")
-          }
+          onClick={onOpenDemoPreview}
           className="inline-flex items-center gap-2 rounded-[12px] px-4 py-3 text-sm font-semibold text-white shadow-[0_18px_36px_rgba(0,86,86,0.24)]"
           style={{ background: PRIMARY }}
         >
-          Open QwikServe demo <ArrowRight className="size-4" />
+          Open Qwikserve Demo <ArrowRight className="size-4" />
         </button>
+      </motion.div>
+    </div>
+  );
+}
+
+export function ScreenSuccessEmailPreview({
+  state,
+  onBack,
+}: {
+  state: any;
+  onBack: () => void;
+}) {
+  const userName = state.fullName?.trim() || "{{userName}}";
+  const userEmail = state.email?.trim() || "{{userEmail}}";
+  const temporaryPassword =
+    state.temporaryPassword?.trim() || "Qwik@2026!";
+
+  return (
+    <div className="mx-auto w-full max-w-6xl px-2 py-6 sm:px-4 sm:py-8 lg:py-10">
+      <motion.div
+        initial={{ opacity: 0, y: 18 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        className="mx-auto w-full max-w-5xl"
+      >
+        <div className="rounded-[28px] border border-[#d9e6df] bg-white/75 p-3 shadow-[0_28px_80px_-32px_rgba(0,86,86,0.26)] backdrop-blur sm:p-5">
+          <div className="rounded-[24px] border border-[#dde6e2] bg-[#eef5f1] p-4 sm:p-6">
+            <div className="overflow-hidden rounded-[22px] border border-[#dce7e3] bg-white shadow-[0_20px_40px_-24px_rgba(16,24,40,0.18)]">
+              <div className="border-b border-[#e5ece8] bg-[#fbfcfb] px-5 py-4 sm:px-8">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="rounded-full bg-[#e6f6ef] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-[#007a55]">
+                    Subject
+                  </span>
+                  <span className="text-sm font-semibold text-[#103b39] sm:text-base">
+                    Your Gift Card Procurement Service Is Activated
+                  </span>
+                </div>
+                <div className="mt-4 grid gap-2 text-sm text-[#4a5565] sm:grid-cols-[90px_1fr]">
+                  <span className="font-semibold text-[#344054]">From</span>
+                  <span>Qwikserve Activation Team</span>
+                  <span className="font-semibold text-[#344054]">To</span>
+                  <span>{userEmail}</span>
+                </div>
+              </div>
+
+              <div className="px-5 py-6 sm:px-8 sm:py-8">
+                <div className="rounded-[22px] bg-[linear-gradient(135deg,#005656_0%,#0a7b74_100%)] px-5 py-6 text-white sm:px-7">
+                  <div className="inline-flex items-center gap-2 rounded-full bg-white/12 px-3 py-1 text-xs font-semibold">
+                    <CheckCircle2 className="size-4 text-[#d0f255]" />
+                    Service activated
+                  </div>
+                  <h2
+                    className="mt-4 text-[28px] font-semibold leading-tight sm:text-[34px]"
+                    style={{ fontFamily: "var(--font-display)" }}
+                  >
+                    Your Gift Card Procurement Service is now active
+                  </h2>
+                  <p className="mt-3 max-w-2xl text-sm leading-6 text-white/85 sm:text-base">
+                    Enterprise access has been provisioned and your workspace is
+                    ready for first-time sign-in.
+                  </p>
+                </div>
+
+                <div className="mt-8 space-y-5 text-[15px] leading-7 text-[#364153]">
+                  <p>Hi {userName},</p>
+                  <p>
+                    Your Gift Card Procurement service has been successfully
+                    activated.
+                  </p>
+                  <p>
+                    You can now access the platform using the credentials
+                    below:
+                  </p>
+                </div>
+
+                <div className="mt-6 rounded-[20px] border border-[#cfe2db] bg-[#f7fbf9] p-5 sm:p-6">
+                  <div className="flex items-center gap-2 text-sm font-semibold text-[#005656]">
+                    <Mail className="size-4" />
+                    Access credentials
+                  </div>
+                  <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                    <div className="rounded-[16px] border border-[#dde8e4] bg-white p-4">
+                      <div className="text-xs font-bold uppercase tracking-[0.12em] text-[#667085]">
+                        Login Email
+                      </div>
+                      <div className="mt-2 break-all text-base font-semibold text-[#101828]">
+                        {userEmail}
+                      </div>
+                    </div>
+                    <div className="rounded-[16px] border border-[#dde8e4] bg-white p-4">
+                      <div className="text-xs font-bold uppercase tracking-[0.12em] text-[#667085]">
+                        Temporary Password
+                      </div>
+                      <div className="mt-2 text-base font-semibold text-[#101828]">
+                        {temporaryPassword}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-4 flex items-start gap-3 rounded-[16px] border border-[#f4e2a7] bg-[#fff8e7] px-4 py-3 text-sm text-[#824b00]">
+                    <RefreshCw className="mt-0.5 size-4 shrink-0" />
+                    <p>
+                      For security, please change your password after your
+                      first login.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-8 space-y-5 text-[15px] leading-7 text-[#364153]">
+                  <p>
+                    Click the button below to open your Gift Card Procurement
+                    dashboard and begin managing your procurement requests.
+                  </p>
+                </div>
+
+                <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      window.open(
+                        GIFT_CARD_PROCUREMENT_DEMO_URL,
+                        "_blank",
+                        "noopener,noreferrer",
+                      )
+                    }
+                    className="inline-flex items-center justify-center gap-2 rounded-[14px] px-5 py-3.5 text-sm font-semibold text-white shadow-[0_18px_36px_rgba(0,86,86,0.18)]"
+                    style={{ background: PRIMARY }}
+                  >
+                    Open Gift Card Procurement
+                    <ArrowRight className="size-4" />
+                  </button>
+                  {/* <button
+                    type="button"
+                    onClick={onBack}
+                    className="inline-flex items-center justify-center rounded-[14px] border border-[#d5d7da] bg-white px-5 py-3.5 text-sm font-semibold text-[#344054]"
+                  >
+                    Back to Onboarding Success
+                  </button> */}
+                </div>
+
+                <div className="mt-10 border-t border-[#eaecf0] pt-5 text-sm leading-6 text-[#667085]">
+                  Need help? Contact your account support team or Qwikserve
+                  support for assistance.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </motion.div>
     </div>
   );
@@ -5658,7 +5809,6 @@ export function ScreenAuthorisedSignoffPending({
   onResend,
 }: any) {
   const firstName = state.fullName?.split(" ")[0] || "there";
-  const [showEmailTemplate, setShowEmailTemplate] = useState(false);
 
   if (state.signatoryRejected) {
     return (
@@ -5736,209 +5886,157 @@ export function ScreenAuthorisedSignoffPending({
   }
 
   return (
-    <div className="relative mx-auto w-full max-w-4xl px-2 py-8 sm:px-4 sm:py-12">
-      <motion.section
+    <div className="mx-auto w-full max-w-6xl px-2 py-6 sm:px-4 sm:py-8 lg:py-10">
+      <motion.div
         initial={{ opacity: 0, y: 18 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-        className="mx-auto rounded-[28px] border border-[#d5efe8] bg-white/90 p-7 shadow-[0_25px_60px_-20px_rgba(0,86,86,0.22)] backdrop-blur sm:p-10"
+        className="mx-auto w-full max-w-5xl"
       >
-        <div className="mx-auto flex max-w-2xl flex-col items-center text-center">
-          <div className="inline-flex size-16 items-center justify-center rounded-full bg-[#ecfdf3] text-[#027a48]">
-            <Mail className="size-8" />
-          </div>
-          <h1
-            className="mt-6 text-[32px] font-bold leading-tight text-[#005656] sm:text-[42px]"
-            style={{ fontFamily: "var(--font-display)" }}
-          >
-            Waiting for the authorised signatory to sign off
-          </h1>
-          <p className="mt-4 text-base leading-7 sm:text-lg" style={{ color: TEXT_2 }}>
-            {firstName}, the terms and company details have been sent to the
-            authorised signatory for review. We’ll continue once they complete
-            the signoff step.
-          </p>
-
-          <div className="mt-8 grid w-full gap-4 rounded-[20px] border border-[#d5e7e4] bg-[#f7fbfa] p-5 text-left sm:grid-cols-2 sm:p-6">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-[0.08em]" style={{ color: MUTED }}>
-                Signatory
-              </p>
-              <p className="mt-2 text-base font-semibold" style={{ color: TEXT }}>
-                {state.sigName || "Authorised signatory"}
-              </p>
-              <p className="mt-1 text-sm" style={{ color: TEXT_2 }}>
-                {state.sigEmail || "Email will be shared with the signatory"}
-              </p>
-            </div>
-            <div>
-              <p className="text-xs font-bold uppercase tracking-[0.08em]" style={{ color: MUTED }}>
-                Status
-              </p>
-              <div className="mt-2 inline-flex items-center gap-2 rounded-full bg-[#fff7e8] px-3 py-1.5 text-sm font-semibold text-[#b54708]">
-                <CircleAlert className="size-4" />
-                Awaiting signoff
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-8 w-full rounded-[20px] border border-[#d5efe8] bg-[linear-gradient(135deg,_rgba(208,242,85,0.18),_rgba(0,86,86,0.06))] p-5 text-left sm:p-6">
-            <p className="text-sm font-semibold" style={{ color: TEXT }}>
-              What happens next
-            </p>
-            <p className="mt-2 text-sm leading-6" style={{ color: TEXT_2 }}>
-              The authorised signatory will review the terms, complete the
-              signoff, and finish the final approval steps on behalf of your
-              organization.
-            </p>
-          </div>
-        </div>
-      </motion.section>
-
-      <div className="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-2">
-        <button
-          type="button"
-          onClick={() => setShowEmailTemplate(true)}
-          className="inline-flex items-center gap-2 rounded-[12px] px-5 py-3 text-sm font-semibold text-white shadow-[0_18px_38px_rgba(0,86,86,0.24)]"
-          style={{ background: PRIMARY }}
-        >
-          View the email <ArrowRight className="size-4" />
-        </button>
-        <span className="pr-1 text-xs sm:text-sm" style={{ color: MUTED }}>
-          Demo CTA
-        </span>
-      </div>
-
-      <AnimatePresence>
-        {showEmailTemplate && (
-          <motion.div
-            className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6"
-            style={{
-              background: "rgba(10,13,18,0.62)",
-              backdropFilter: "blur(8px)",
-            }}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <motion.div
-              className="flex max-h-[88vh] w-full max-w-2xl flex-col overflow-hidden rounded-[18px] bg-white"
-              style={{ boxShadow: "0 24px 70px rgba(10,13,18,0.28)" }}
-              initial={{ opacity: 0, y: 20, scale: 0.98 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 12, scale: 0.98 }}
-              transition={{ duration: 0.24, ease: "easeOut" }}
-            >
-              <div
-                className="flex items-center justify-between gap-3 border-b px-4 py-3 sm:px-5"
-                style={{ borderColor: BORDER }}
-              >
-                <div className="min-w-0">
-                  <div
-                    className="truncate text-sm sm:text-base"
-                    style={{ color: TEXT, fontWeight: 700 }}
-                  >
-                    Pine Labs Onboarding
-                  </div>
-                  <div className="truncate text-xs" style={{ color: MUTED }}>
-                    Authorised signatory email preview
-                  </div>
+        <div className="rounded-[28px] border border-[#d9e6df] bg-white/80 p-3 shadow-[0_28px_80px_-32px_rgba(0,86,86,0.22)] backdrop-blur sm:p-5">
+          <div className="rounded-[24px] border border-[#dde6e2] bg-[#eef5f1] p-4 sm:p-6">
+            <div className="overflow-hidden rounded-[22px] border border-[#dce7e3] bg-white shadow-[0_20px_40px_-24px_rgba(16,24,40,0.18)]">
+              <div className="border-b border-[#e5ece8] bg-[#fbfcfb] px-5 py-4 sm:px-8">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="rounded-full bg-[#fff7e8] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-[#b54708]">
+                    Awaiting signoff
+                  </span>
+                  <span className="text-sm font-semibold text-[#103b39] sm:text-base">
+                    Authorised Signatory Email Preview
+                  </span>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setShowEmailTemplate(false)}
-                  className="inline-flex size-9 shrink-0 items-center justify-center rounded-lg"
-                  style={{ color: TEXT, background: BG_SOFT }}
-                  aria-label="Close email preview"
-                >
-                  <X className="size-5" />
-                </button>
+                <div className="mt-4 grid gap-2 text-sm text-[#4a5565] sm:grid-cols-[90px_1fr]">
+                  <span className="font-semibold text-[#344054]">From</span>
+                  <span>Qwikserve Onboarding</span>
+                  <span className="font-semibold text-[#344054]">To</span>
+                  <span>{state.sigEmail || "authorised.signatory@company.com"}</span>
+                </div>
               </div>
 
-              <div className="min-h-0 overflow-y-auto px-4 py-5 sm:px-6 sm:py-6">
-                <div
-                  className="rounded-[14px] p-4 text-center sm:p-5"
-                  style={{
-                    background: `linear-gradient(135deg, ${PRIMARY} 0%, #007A7A 100%)`,
-                    color: "#fff",
-                  }}
-                >
-                  <Mail className="mx-auto mb-2 size-5" style={{ color: LIME }} />
-                  <div className="text-lg font-bold">
-                    Action required: Review and sign onboarding terms
+              <div className="px-5 py-6 sm:px-8 sm:py-8">
+                <div className="rounded-[22px] bg-[linear-gradient(135deg,#005656_0%,#0a7b74_100%)] px-5 py-6 text-white sm:px-7">
+                  <div className="inline-flex items-center gap-2 rounded-full bg-white/12 px-3 py-1 text-xs font-semibold">
+                    <Mail className="size-4 text-[#d0f255]" />
+                    Action required
                   </div>
-                  <p className="mt-1 text-sm text-white/85">
-                    Please review the corporate onboarding terms and complete Aadhaar eSign.
+                  <h1
+                    className="mt-4 text-[28px] font-semibold leading-tight sm:text-[34px]"
+                    style={{ fontFamily: "var(--font-display)" }}
+                  >
+                    Review and sign the Gift Card Procurement onboarding request
+                  </h1>
+                  <p className="mt-3 max-w-2xl text-sm leading-6 text-white/85 sm:text-base">
+                    {firstName}, the authorised signatory email has been prepared
+                    and sent for final review and Aadhaar eSign.
                   </p>
                 </div>
 
-                <div className="mt-5 space-y-4 text-sm leading-6" style={{ color: TEXT_2 }}>
+                <div className="mt-8 space-y-5 text-[15px] leading-7 text-[#364153]">
                   <p>Hi {state.sigName || "Authorised Signatory"},</p>
                   <p>
                     {state.fullName || "Your team member"} has submitted the
                     company onboarding details and requested your approval as
                     the authorised signatory.
                   </p>
-                  <div
-                    className="rounded-[12px] p-4"
-                    style={{
-                      background: BG_SOFT,
-                      border: `1px dashed ${BORDER_INPUT}`,
-                    }}
-                  >
-                    <div
-                      className="text-xs font-bold uppercase tracking-[0.08em]"
-                      style={{ color: MUTED }}
-                    >
-                      Review summary
+                  <p>
+                    Please review the shared details below and complete the
+                    signoff flow to activate the Gift Card Procurement service.
+                  </p>
+                </div>
+
+                <div className="mt-6 rounded-[20px] border border-[#cfe2db] bg-[#f7fbf9] p-5 sm:p-6">
+                  <div className="flex items-center gap-2 text-sm font-semibold text-[#005656]">
+                    <FileText className="size-4" />
+                    Review summary
+                  </div>
+                  <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                    <div className="rounded-[16px] border border-[#dde8e4] bg-white p-4">
+                      <div className="text-xs font-bold uppercase tracking-[0.12em] text-[#667085]">
+                        Company
+                      </div>
+                      <div className="mt-2 text-base font-semibold text-[#101828]">
+                        Pine Labs Private Limited
+                      </div>
                     </div>
-                    <div className="mt-3 space-y-2">
-                      <div className="flex justify-between gap-4">
-                        <span style={{ color: MUTED }}>Company</span>
-                        <span className="font-semibold">Pine Labs Private Limited</span>
+                    <div className="rounded-[16px] border border-[#dde8e4] bg-white p-4">
+                      <div className="text-xs font-bold uppercase tracking-[0.12em] text-[#667085]">
+                        Submitted By
                       </div>
-                      <div className="flex justify-between gap-4">
-                        <span style={{ color: MUTED }}>Submitted by</span>
-                        <span className="font-semibold">{state.email}</span>
+                      <div className="mt-2 break-all text-base font-semibold text-[#101828]">
+                        {state.email || "{{userEmail}}"}
                       </div>
-                      <div className="flex justify-between gap-4">
-                        <span style={{ color: MUTED }}>Required action</span>
-                        <span className="font-semibold">Review terms and Aadhaar eSign</span>
+                    </div>
+                    <div className="rounded-[16px] border border-[#dde8e4] bg-white p-4">
+                      <div className="text-xs font-bold uppercase tracking-[0.12em] text-[#667085]">
+                        Signatory
+                      </div>
+                      <div className="mt-2 text-base font-semibold text-[#101828]">
+                        {state.sigName || "Authorised Signatory"}
+                      </div>
+                      <div className="mt-1 break-all text-sm text-[#667085]">
+                        {state.sigEmail || "Email will be shared with the signatory"}
+                      </div>
+                    </div>
+                    <div className="rounded-[16px] border border-[#dde8e4] bg-white p-4">
+                      <div className="text-xs font-bold uppercase tracking-[0.12em] text-[#667085]">
+                        Required Action
+                      </div>
+                      <div className="mt-2 text-base font-semibold text-[#101828]">
+                        Review terms and complete Aadhaar eSign
                       </div>
                     </div>
                   </div>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowEmailTemplate(false);
-                      onOpenSingzyFromEmail?.();
-                    }}
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-[10px] px-5 py-3 text-sm font-semibold"
-                    style={{ background: PRIMARY, color: "#fff" }}
-                  >
-                    Review documents & eSign <ArrowRight className="size-4" />
-                  </button>
-
-                  <div
-                    className="flex items-start gap-2 rounded-[10px] p-3 text-xs"
-                    style={{
-                      background: "#FEF6E7",
-                      border: "1px solid #FCE7B3",
-                      color: "#7A4F01",
-                    }}
-                  >
+                  <div className="mt-4 flex items-start gap-3 rounded-[16px] border border-[#f4e2a7] bg-[#fff8e7] px-4 py-3 text-sm text-[#824b00]">
                     <Lock className="mt-0.5 size-4 shrink-0" />
-                    <span>
-                      This is a demo email preview of what the authorised signatory would receive.
-                    </span>
+                    <p>
+                      This is a demo preview of the exact email the authorised
+                      signatory would receive.
+                    </p>
                   </div>
                 </div>
+
+                <div className="mt-8 space-y-5 text-[15px] leading-7 text-[#364153]">
+                  <p>
+                    Use the button below to open the signoff flow and complete
+                    the final approval steps on behalf of your organization.
+                  </p>
+                </div>
+
+                <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                  <button
+                    type="button"
+                    onClick={() => onOpenSingzyFromEmail?.()}
+                    className="inline-flex items-center justify-center gap-2 rounded-[14px] px-5 py-3.5 text-sm font-semibold text-white shadow-[0_18px_36px_rgba(0,86,86,0.18)]"
+                    style={{ background: PRIMARY }}
+                  >
+                    Review Documents & eSign
+                    <ArrowRight className="size-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={onEditSignatory}
+                    className="inline-flex items-center justify-center rounded-[14px] border border-[#d5d7da] bg-white px-5 py-3.5 text-sm font-semibold text-[#344054]"
+                  >
+                    Edit Signatory Details
+                  </button>
+                  <button
+                    type="button"
+                    onClick={onResend}
+                    className="inline-flex items-center justify-center rounded-[14px] border border-[#d5d7da] bg-white px-5 py-3.5 text-sm font-semibold text-[#344054]"
+                  >
+                    Resend Email
+                  </button>
+                </div>
+
+                <div className="mt-10 border-t border-[#eaecf0] pt-5 text-sm leading-6 text-[#667085]">
+                  Need help? Contact your account support team or Qwikserve
+                  support for assistance.
+                </div>
               </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            </div>
+          </div>
+        </div>
+      </motion.div>
     </div>
   );
 }

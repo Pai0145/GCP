@@ -40,6 +40,7 @@ import {
   ScreenSignatoryHandoffComplete,
   ScreenSignatory,
   ScreenSuccess,
+  ScreenSuccessEmailPreview,
   ScreenTermsPage1,
   ScreenTermsPage2,
   ScreenTermsPage3,
@@ -118,6 +119,7 @@ const SCREEN_BY_PATH: Record<string, number> = {
   "/onboarding/terms/4": 10,
   "/onboarding/esign": 11,
   "/onboarding/success": 12,
+  "/onboarding/success/preview": 12,
 };
 
 const SIDEBAR_STEP_FOR_SCREEN: Record<number, number> = {
@@ -559,6 +561,9 @@ function OnboardingFlow() {
     normalizedOwnerEmail !== normalizedSignatoryEmail;
   const hideReviewSubs = screen === 6 && !state.actingAsAuthorisedSignatory;
   const isSingzyFlowView = screen >= 7 && screen <= 11;
+  const isEmailTemplateScreen =
+    location.pathname === "/onboarding/success/preview" ||
+    state.awaitingAuthorisedSignoff;
   const steps = hideReviewSubs
     ? STEPS.map((step) =>
         step.id === 5
@@ -876,7 +881,21 @@ function OnboardingFlow() {
         progress={progressPercent}
       />
     );
-  if (screen === 12) content = <ScreenSuccess state={state} />;
+  if (screen === 12 && location.pathname === "/onboarding/success/preview") {
+    content = (
+      <ScreenSuccessEmailPreview
+        state={state}
+        onBack={() => navigate("/onboarding/success")}
+      />
+    );
+  } else if (screen === 12) {
+    content = (
+      <ScreenSuccess
+        state={state}
+        onOpenDemoPreview={() => navigate("/onboarding/success/preview")}
+      />
+    );
+  }
   if (screen === 12 && state.signatoryReadyToReturn) {
     content = (
       <ScreenSignatoryHandoffComplete
@@ -946,7 +965,7 @@ function OnboardingFlow() {
       currentSub={currentSub}
       completedSubs={completedSubs}
       showSidebar={showSidebar}
-      animatedBackground={!isSingzyFlowView}
+      animatedBackground={!isSingzyFlowView && !isEmailTemplateScreen}
       onSaveExit={() => navigate("/")}
       onStepClick={handleStepClick}
       autosaveKey={`${screen}:${JSON.stringify(state)}`}
