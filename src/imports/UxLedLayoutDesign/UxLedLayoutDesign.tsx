@@ -662,7 +662,7 @@ function Heading() {
     <div className="h-[21px] relative shrink-0 w-full" data-name="Heading 3">
       <Container42 />
       <p className="absolute font-['Lato:Bold',sans-serif] leading-[21px] left-[14px] not-italic text-[#101828] text-[14px] top-0 tracking-[-0.1504px] whitespace-nowrap">
-        Required Information
+        Required Details
       </p>
     </div>
   );

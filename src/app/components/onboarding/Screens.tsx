@@ -110,12 +110,15 @@ const SPEND_OPTIONS = [
 ];
 
 const BUSINESS_CATEGORY_OPTIONS = [
-  "Automobiles",
-  "Auto Finance",
-  "Transport",
-  "Retail Jewellery",
+  "Retail",
+  "Food & Beverage",
+  "Travel & Hospitality",
+  "Healthcare",
   "Education",
-  "Construction",
+  "Financial Services",
+  "Technology",
+  "Manufacturing",
+  "E-commerce",
   "Others",
 ];
 
@@ -1139,18 +1142,25 @@ export function ScreenAccountOwner({ go, state, setState, progress }: any) {
     });
 
   const emailValid = state.email.includes("@") && state.email.includes(".");
-  const valid = firstName && lastName && emailValid;
+  const businessCategoryValid =
+    Boolean(state.businessCategory) &&
+    (state.businessCategory !== "Others" ||
+      Boolean(state.businessCategoryOther?.trim()));
+  const tanNumber = state.tanNumber || "";
+  const tanValid = !tanNumber || /^[A-Z]{4}[0-9]{5}[A-Z]$/.test(tanNumber);
+  const valid =
+    firstName && lastName && emailValid && businessCategoryValid && tanValid;
 
   return (
     <div className="pb-2 px-2 sm:px-0">
       <FormCard
-        title="Basic Details"
-        subtitle="Please provide your information to get started"
+        title="Required Details"
+        subtitle="Please provide the Required Details to get started"
         progress={progress}
       >
         <div className="space-y-6 sm:space-y-7">
           <section>
-            <SectionHeading>Required information</SectionHeading>
+            <SectionHeading>Personal Details</SectionHeading>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
@@ -1214,7 +1224,7 @@ export function ScreenAccountOwner({ go, state, setState, progress }: any) {
                   className="text-xs mt-1.5 flex items-center gap-1"
                   style={{ color: SUCCESS }}
                 >
-                  <CheckCircle2 className="size-3" /> Fetched from Company PAN
+                  <CheckCircle2 className="size-3" /> Fetched from GST Certificate
                 </motion.p>
               </motion.div>
               <motion.div
@@ -1279,7 +1289,7 @@ export function ScreenAccountOwner({ go, state, setState, progress }: any) {
                   className="text-xs mt-1.5 flex items-center gap-1"
                   style={{ color: SUCCESS }}
                 >
-                  <CheckCircle2 className="size-3" /> Fetched from Company PAN
+                  <CheckCircle2 className="size-3" /> Fetched from GST Certificate
                 </motion.p>
               </motion.div>
             </div>
@@ -1314,21 +1324,87 @@ export function ScreenAccountOwner({ go, state, setState, progress }: any) {
           </section>
 
           <section>
-            {/* <SectionHeading>Business information</SectionHeading> */}
-            <FieldLabel>Expected Annual Gift Card Spend</FieldLabel>
-            <SpendChipGroup
-              value={state.spend}
-              onChange={(v: string) => setState({ ...state, spend: v })}
-            />
-            <p className="text-xs mt-1.5" style={{ color: MUTED }}>
-              Optional. This helps us recommend the right setup later.
-            </p>
+            <SectionHeading>Organisation Details</SectionHeading>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div>
+                <FieldLabel required>Business Category</FieldLabel>
+                <Select
+                  value={state.businessCategory || ""}
+                  onChange={(value: string) =>
+                    setState({
+                      ...state,
+                      businessCategory: value,
+                      businessCategoryOther:
+                        value === "Others" ? state.businessCategoryOther : "",
+                    })
+                  }
+                  options={BUSINESS_CATEGORY_OPTIONS}
+                  placeholder="Select business category"
+                />
+              </div>
+              <div>
+                <FieldLabel optional>TAN Number</FieldLabel>
+                <TextInput
+                  value={tanNumber}
+                  placeholder="Enter TAN number"
+                  onChange={(e: any) =>
+                    setState({
+                      ...state,
+                      tanNumber: e.target.value.toUpperCase(),
+                    })
+                  }
+                />
+                <p
+                  className="text-xs mt-1.5"
+                  style={{ color: tanValid ? MUTED : REQUIRED }}
+                >
+                  {tanValid
+                    ? "Optional. Add this if your organisation has a TAN."
+                    : "Please enter a valid TAN number."}
+                </p>
+              </div>
+              <AnimatePresence initial={false}>
+                {state.businessCategory === "Others" && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -6 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <FieldLabel required>
+                      Please specify business category
+                    </FieldLabel>
+                    <TextInput
+                      value={state.businessCategoryOther || ""}
+                      placeholder="Enter business category"
+                      onChange={(e: any) =>
+                        setState({
+                          ...state,
+                          businessCategoryOther: e.target.value,
+                        })
+                      }
+                    />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            <div className="mt-4">
+              <FieldLabel>Expected Annual Gift Card Spend</FieldLabel>
+              <SpendChipGroup
+                value={state.spend}
+                onChange={(v: string) => setState({ ...state, spend: v })}
+              />
+              <p className="text-xs mt-1.5" style={{ color: MUTED }}>
+                Optional. This helps us recommend the right setup later.
+              </p>
+            </div>
           </section>
         </div>
       </FormCard>
 
       <ActionBar>
-        <PrimaryButton disabled={!valid} onClick={() => go(3)}>
+        <PrimaryButton disabled={!valid} onClick={() => go(4)}>
           Save & next
         </PrimaryButton>
       </ActionBar>
@@ -1510,8 +1586,8 @@ const AUTOFETCHED_DETAILS: Record<FetchedDocKey, FetchedDetail[]> = {
   ],
   cin: [
     { label: "CIN/LLPIN", value: "U72900DL1998PTC096693" },
+    { label: "Entity Type", value: "Private Limited Company" },
     { label: "Legal company name", value: "Pine Labs Private Limited" },
-    { label: "Incorporation date", value: "18 May 1998" },
     { label: "Registered office", value: "Delhi" },
   ],
   pan: [
@@ -3222,10 +3298,37 @@ function GstUnavailableConfirm({ open, onCancel, onConfirm }: any) {
 
 // ============== Registered address ==============
 export function ScreenCompanyAddress({ go, state, setState, progress }: any) {
+  const billingAddressComplete =
+    state.billingSame ||
+    (state.billingAddressLine1?.trim() &&
+      state.billingCity?.trim() &&
+      state.billingState?.trim() &&
+      state.billingPinCode?.trim() &&
+      state.billingCountry?.trim() &&
+      state.billingGstCertificate);
+
+  const setBillingSame = (checked: boolean) => {
+    setState({
+      ...state,
+      billingSame: checked,
+      billingAddressLine1: checked
+        ? state.registeredAddressLine1
+        : state.billingAddressLine1,
+      billingAddressLine2: checked
+        ? state.registeredAddressLine2
+        : state.billingAddressLine2,
+      billingCity: checked ? state.registeredCity : state.billingCity,
+      billingState: checked ? state.registeredState : state.billingState,
+      billingPinCode: checked ? state.registeredPinCode : state.billingPinCode,
+      billingCountry: checked ? state.registeredCountry : state.billingCountry,
+      billingGstCertificate: checked ? null : state.billingGstCertificate,
+    });
+  };
+
   return (
     <div className="pb-2 px-2 sm:px-0">
       <FormCard
-        title="Organisation details"
+        title="Organisation Address"
         subtitle="Confirm your registered and billing addresses"
         progress={progress}
       >
@@ -3235,19 +3338,36 @@ export function ScreenCompanyAddress({ go, state, setState, progress }: any) {
             <div className="space-y-4">
               <Prefilled
                 index={0}
-                label="Address line 1"
-                value="4th Floor, Tower B, Building 9, DLF Cyber City"
+                label="Registered Address Line 1"
+                value={state.registeredAddressLine1}
                 source="Fetched from GST certificate"
               />
-              <div>
-                <FieldLabel optional>Address line 2</FieldLabel>
-                <TextInput readOnly value="" placeholder="Not available" />
-              </div>
+              {/* <div>
+                <FieldLabel optional>Registered Address Line 2</FieldLabel>
+                <TextInput
+                  readOnly
+                  value={state.registeredAddressLine2 || ""}
+                  placeholder="Not available"
+                />
+              </div> */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <Prefilled index={1} label="PIN code" value="122002" />
-                <Prefilled index={2} label="City" value="Gurugram" />
-                <Prefilled index={3} label="State" value="Haryana" />
+                <Prefilled
+                  index={1}
+                  label="PIN Code"
+                  value={state.registeredPinCode}
+                />
+                <Prefilled index={2} label="City" value={state.registeredCity} />
+                <Prefilled index={3} label="State" value={state.registeredState} />
               </div>
+              <Prefilled
+                index={4}
+                label="Country"
+                value={state.registeredCountry}
+              />
+              <p className="text-xs sm:text-sm" style={{ color: MUTED }}>
+                Registered address details are mapped from the documents already
+                captured during onboarding.
+              </p>
             </div>
           </section>
 
@@ -3260,18 +3380,31 @@ export function ScreenCompanyAddress({ go, state, setState, progress }: any) {
               <input
                 type="checkbox"
                 checked={state.billingSame}
-                onChange={(e) =>
-                  setState({ ...state, billingSame: e.target.checked })
-                }
+                onChange={(e) => setBillingSame(e.target.checked)}
                 className="size-4 accent-[#005656]"
               />
               <span
                 className="text-sm"
                 style={{ color: TEXT, fontWeight: 600 }}
               >
-                Billing address is same as registered address
+                Billing address is same as Registered Address
               </span>
             </label>
+
+            {state.billingSame && (
+              <div
+                className="mt-4 rounded-[12px] border p-4 text-sm leading-6"
+                style={{
+                  borderColor: SUCCESS_BORDER,
+                  background: SUCCESS_BG,
+                  color: TEXT_2,
+                }}
+              >
+                Billing address will use the registered address above. No GST
+                Certificate upload is required.
+              </div>
+            )}
+
             <AnimatePresence>
               {!state.billingSame && (
                 <motion.div
@@ -3282,25 +3415,142 @@ export function ScreenCompanyAddress({ go, state, setState, progress }: any) {
                   transition={{ duration: 0.3 }}
                 >
                   <div>
-                    <FieldLabel required>Billing address line 1</FieldLabel>
-                    <TextInput placeholder="Street address" />
+                    <FieldLabel required>Billing Address Line 1</FieldLabel>
+                    <TextInput
+                      value={state.billingAddressLine1 || ""}
+                      placeholder="Street address"
+                      onChange={(e: any) =>
+                        setState({
+                          ...state,
+                          billingAddressLine1: e.target.value,
+                        })
+                      }
+                    />
                   </div>
                   <div>
-                    <FieldLabel optional>Address line 2</FieldLabel>
-                    <TextInput placeholder="Apartment, suite, etc." />
+                    <FieldLabel optional>Billing Address Line 2</FieldLabel>
+                    <TextInput
+                      value={state.billingAddressLine2 || ""}
+                      placeholder="Apartment, suite, etc."
+                      onChange={(e: any) =>
+                        setState({
+                          ...state,
+                          billingAddressLine2: e.target.value,
+                        })
+                      }
+                    />
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
-                      <FieldLabel required>PIN code</FieldLabel>
-                      <TextInput />
+                      <FieldLabel required>PIN Code</FieldLabel>
+                      <TextInput
+                        value={state.billingPinCode || ""}
+                        placeholder="122002"
+                        onChange={(e: any) =>
+                          setState({
+                            ...state,
+                            billingPinCode: e.target.value,
+                          })
+                        }
+                      />
                     </div>
                     <div>
                       <FieldLabel required>City</FieldLabel>
-                      <TextInput />
+                      <TextInput
+                        value={state.billingCity || ""}
+                        placeholder="Gurugram"
+                        onChange={(e: any) =>
+                          setState({ ...state, billingCity: e.target.value })
+                        }
+                      />
                     </div>
                     <div>
                       <FieldLabel required>State</FieldLabel>
-                      <TextInput />
+                      <TextInput
+                        value={state.billingState || ""}
+                        placeholder="Haryana"
+                        onChange={(e: any) =>
+                          setState({ ...state, billingState: e.target.value })
+                        }
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <FieldLabel required>Country</FieldLabel>
+                    <TextInput
+                      value={state.billingCountry || ""}
+                      placeholder="India"
+                      onChange={(e: any) =>
+                        setState({ ...state, billingCountry: e.target.value })
+                      }
+                    />
+                  </div>
+
+                  <div
+                    className="rounded-[14px] border-2 border-dashed p-4"
+                    style={{
+                      borderColor: state.billingGstCertificate
+                        ? SUCCESS_BORDER
+                        : BORDER_INPUT,
+                      background: state.billingGstCertificate
+                        ? SUCCESS_BG
+                        : BG_SOFT,
+                    }}
+                  >
+                    <div className="flex items-start gap-3">
+                      <Upload
+                        className="mt-0.5 size-5 shrink-0"
+                        style={{ color: PRIMARY }}
+                      />
+                      <div className="min-w-0 flex-1">
+                        <FieldLabel required>GST Certificate</FieldLabel>
+                        <p className="mb-3 text-xs leading-5" style={{ color: MUTED }}>
+                          Upload the GST Certificate linked to the Billing
+                          Address entered above. Accepted formats: PDF, JPG,
+                          PNG. Max file size: 5 MB.
+                        </p>
+                        {state.billingGstCertificate ? (
+                          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                            <div className="min-w-0">
+                              <div
+                                className="truncate text-sm font-semibold"
+                                style={{ color: TEXT }}
+                              >
+                                {state.billingGstCertificate.name}
+                              </div>
+                              <div className="text-xs" style={{ color: MUTED }}>
+                                {state.billingGstCertificate.ext} ·{" "}
+                                {state.billingGstCertificate.size}
+                              </div>
+                            </div>
+                            <SecondaryButton
+                              onClick={() =>
+                                setState({
+                                  ...state,
+                                  billingGstCertificate: null,
+                                })
+                              }
+                            >
+                              Remove
+                            </SecondaryButton>
+                          </div>
+                        ) : (
+                          <SecondaryButton
+                            onClick={() =>
+                              setState({
+                                ...state,
+                                billingGstCertificate: {
+                                  name: "Billing GST Certificate.pdf",
+                                  ext: "PDF",
+                                  size: "312 KB",
+                                },
+                              })
+                            }
+                          >
+                            Upload GST Certificate
+                          </SecondaryButton>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </motion.div>
@@ -3311,7 +3561,9 @@ export function ScreenCompanyAddress({ go, state, setState, progress }: any) {
       </FormCard>
 
       <ActionBar>
-        <PrimaryButton onClick={() => go(5)}>Save & continue</PrimaryButton>
+        <PrimaryButton disabled={!billingAddressComplete} onClick={() => go(5)}>
+          Save & continue
+        </PrimaryButton>
       </ActionBar>
     </div>
   );
@@ -3866,7 +4118,7 @@ export function ScreenSignatory({ go, state, setState, progress }: any) {
                 className="text-sm"
                 style={{ color: TEXT, fontWeight: 600 }}
               >
-                Same as basic details
+                Same as Personal Details
               </span>
             </label>
 
@@ -4092,6 +4344,28 @@ export function ScreenReviewSubmit({
 }: any) {
   const sameEmailSignatory = usesSameEmailSignatoryFlow(state);
   const delegatedEmailHandoff = usesDelegatedEmailHandoff(state);
+  const registeredAddress = [
+    state.registeredAddressLine1,
+    state.registeredAddressLine2,
+    state.registeredCity,
+    state.registeredState,
+    state.registeredPinCode,
+    state.registeredCountry,
+  ]
+    .filter(Boolean)
+    .join(", ");
+  const billingAddress = state.billingSame
+    ? "Same as Registered Address"
+    : [
+        state.billingAddressLine1,
+        state.billingAddressLine2,
+        state.billingCity,
+        state.billingState,
+        state.billingPinCode,
+        state.billingCountry,
+      ]
+        .filter(Boolean)
+        .join(", ");
 
   return (
     <div className="pb-2 px-2 sm:px-0">
@@ -4107,45 +4381,64 @@ export function ScreenReviewSubmit({
         <div className="space-y-7">
           <section>
             <SummaryCard
-              title="Account owner"
-              onEdit={() => go(2)}
+              title="Documents"
+              onEdit={() => go(1)}
               rows={[
-                ["Name", state.fullName],
-                ["Email", state.email],
-                ["Mobile Number", state.mobile],
-              ]}
-            />
-
-            <SummaryCard
-              title="Company details"
-              onEdit={() => go(3)}
-              rows={[
-                ["Legal name", "Pine Labs Private Limited"],
-                ["Entity type", "Private Limited Company"],
-                ["PAN", "AABCP1234F"],
+                ["CIN Certificate", ""],
+                ["CIN Number", "U31900DL1991PLC043974"],
+                ["Company Legal Name", "PINE LABS LIMITED"],
+                ["Entity Type", "Private Limited Company"],
+                // ["Date of Incorporation", "18 May 1998"],
+                ["Registration Status", "Active"],
+                ["Document Status", "Fetched / Verified"],
+                ["GST Certificate", ""],
                 ["GSTIN", "29AABCP1234F1Z5"],
+                ["Registered Business Name", "PINE LABS LIMITED"],
+                ["Registered Address", registeredAddress],
+                ...(!state.billingSame
+                  ? ([["Billing Address", billingAddress]] as [string, any][])
+                  : []),
+                ["Document Status", "Fetched / Verified"],
+                ["Company PAN", ""],
+                ["PAN Number", state.panNumber || "AABCP1234F"],
                 [
-                  "Registered address",
-                  "4th Floor, Tower B, DLF Cyber City, Gurugram, 122002",
+                  "Document Status",
+                  state.panVerified ? "Verified" : "Pending",
                 ],
               ]}
             />
 
             <SummaryCard
-              title="Authorised signatory"
-              onEdit={() => go(5)}
+              title="Basic Details"
+              onEdit={() => go(2)}
               rows={[
-                ["Name", state.sigName],
-                ["Email", state.sigEmail],
-                ["Mobile Number", state.sigMobile],
-                ["Designation", state.designation],
+                ["Required Details", ""],
+                ["Name", state.fullName],
+                ["Email", state.email],
+                ["Mobile Number", state.mobile || "--"],
+                [
+                  "Business Category",
+                  state.businessCategory === "Others"
+                    ? state.businessCategoryOther
+                    : state.businessCategory,
+                ],
+                ["TAN Number", state.tanNumber || "--"],
+                ["Expected Annual Gift Card Spend", state.spend || "--"],
+                ["Organisation Address", ""],
+                ["Registered Address", registeredAddress],
+                ["Billing Address", billingAddress],
               ]}
             />
 
             <SummaryCard
-              title="Documents"
-              onEdit={() => go(1)}
-              rows={[["Status", "No documents required"]]}
+              title="Authorised Signatory"
+              onEdit={() => go(5)}
+              rows={[
+                ["Name", state.sigName],
+                ["Email", state.sigEmail],
+                ["Mobile Number", state.sigMobile || "--"],
+                ["Designation", state.designation || "--"],
+              ]}
             />
           </section>
 
@@ -4242,19 +4535,34 @@ function SummaryCard({ title, rows, onEdit }: any) {
           <EditIcon className="size-3 sm:size-3.5" /> Edit
         </motion.button>
       </div>
-      <div className="space-y-2 sm:space-y-2.5">
-        {rows.map(([k, v]: any) => (
+      <div className="space-y-2.5 sm:space-y-3">
+        {rows.map(([k, v]: any, index: number) => (
           <div
-            key={k}
-            className="flex flex-col sm:flex-row text-xs sm:text-sm gap-1 sm:gap-0"
+            key={`${k}-${index}`}
+            className={
+              v
+                ? "flex flex-col sm:flex-row text-xs sm:text-sm gap-1 sm:gap-0"
+                : "pt-4 first:pt-0"
+            }
           >
-            <div
-              className="sm:w-44 shrink-0"
-              style={{ color: MUTED, fontWeight: 600 }}
-            >
-              {k}
-            </div>
-            <div style={{ color: TEXT, fontWeight: 500 }}>{v || "—"}</div>
+            {v ? (
+              <>
+                <div
+                  className="sm:w-44 shrink-0"
+                  style={{ color: MUTED, fontWeight: 600 }}
+                >
+                  {k}
+                </div>
+                <div style={{ color: TEXT, fontWeight: 500 }}>{v}</div>
+              </>
+            ) : (
+              <div
+                className="border-t pt-4 text-xs font-bold uppercase tracking-[0.08em]"
+                style={{ borderColor: BORDER, color: PRIMARY }}
+              >
+                {k}
+              </div>
+            )}
           </div>
         ))}
       </div>
@@ -6043,7 +6351,7 @@ export function ScreenAuthorisedSignoffPending({
 
 export function ScreenSignatoryHandoffComplete({
   state,
-  onReturnToCorporate,
+  onOpenEmailPreview,
 }: any) {
   return (
     <div className="relative mx-auto w-full max-w-4xl px-2 py-8 sm:px-4 sm:py-12">
@@ -6061,12 +6369,11 @@ export function ScreenSignatoryHandoffComplete({
             className="mt-6 text-[32px] font-bold leading-tight text-[#005656] sm:text-[42px]"
             style={{ fontFamily: "var(--font-display)" }}
           >
-            Signoff completed
+            Documents signed successfully
           </h1>
           <p className="mt-4 text-base leading-7 sm:text-lg" style={{ color: TEXT_2 }}>
-            {state.sigName || "The authorised signatory"} has reviewed the
-            terms and completed Aadhaar eSign. Return to the corporate
-            onboarding view to continue the demo.
+            Thank you. The required documents have been signed successfully.
+            The user can now continue with their onboarding journey.
           </p>
 
         </div>
@@ -6075,16 +6382,162 @@ export function ScreenSignatoryHandoffComplete({
       <div className="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-2">
         <button
           type="button"
-          onClick={onReturnToCorporate}
+          onClick={onOpenEmailPreview}
           className="inline-flex items-center gap-2 rounded-[12px] px-5 py-3 text-sm font-semibold text-white shadow-[0_18px_38px_rgba(0,86,86,0.24)]"
           style={{ background: PRIMARY }}
         >
-          Go back to Corporate onboarding <ArrowRight className="size-4" />
+          Back to Onboarding <ArrowRight className="size-4" />
         </button>
         <span className="pr-1 text-xs sm:text-sm" style={{ color: MUTED }}>
           Demo CTA
         </span>
       </div>
+    </div>
+  );
+}
+
+export function ScreenSignedDocumentsEmailPreview({
+  state,
+  onContinueOnboarding,
+}: {
+  state: any;
+  onContinueOnboarding: () => void;
+}) {
+  const userName = state.fullName?.trim() || "{{userName}}";
+  const authorisedPersonName =
+    state.sigName?.trim() || "{{authorisedPersonName}}";
+
+  return (
+    <div className="mx-auto w-full max-w-6xl px-2 py-6 sm:px-4 sm:py-8 lg:py-10">
+      <motion.div
+        initial={{ opacity: 0, y: 18 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        className="mx-auto w-full max-w-5xl"
+      >
+        <div className="rounded-[28px] border border-[#d9e6df] bg-white/75 p-3 shadow-[0_28px_80px_-32px_rgba(0,86,86,0.26)] backdrop-blur sm:p-5">
+          <div className="rounded-[24px] border border-[#dde6e2] bg-[#eef5f1] p-4 sm:p-6">
+            <div className="overflow-hidden rounded-[22px] border border-[#dce7e3] bg-white shadow-[0_20px_40px_-24px_rgba(16,24,40,0.18)]">
+              <div className="border-b border-[#e5ece8] bg-[#fbfcfb] px-5 py-4 sm:px-8">
+                <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <img
+                    src={pineLabsLogoImg}
+                    alt="Pine Labs"
+                    className="h-8 w-fit object-contain"
+                  />
+                  <div className="text-left sm:text-right">
+                    <div className="text-sm font-semibold text-[#005656]">
+                      Qwikserve
+                    </div>
+                    <div className="text-xs text-[#667085]">
+                      Gift Card Procurement
+                    </div>
+                  </div>
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="rounded-full bg-[#e6f6ef] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-[#007a55]">
+                    Subject
+                  </span>
+                  <span className="text-sm font-semibold text-[#103b39] sm:text-base">
+                    Documents Signed — Continue Your Onboarding
+                  </span>
+                </div>
+                <div className="mt-4 grid gap-2 text-sm text-[#4a5565] sm:grid-cols-[90px_1fr]">
+                  <span className="font-semibold text-[#344054]">From</span>
+                  <span>Qwikserve Onboarding</span>
+                  <span className="font-semibold text-[#344054]">To</span>
+                  <span>{state.email || "{{userEmail}}"}</span>
+                </div>
+              </div>
+
+              <div className="px-5 py-6 sm:px-8 sm:py-8">
+                <div className="rounded-[22px] bg-[linear-gradient(135deg,#005656_0%,#0a7b74_100%)] px-5 py-6 text-white sm:px-7">
+                  <div className="inline-flex items-center gap-2 rounded-full bg-white/12 px-3 py-1 text-xs font-semibold">
+                    <CheckCircle2 className="size-4 text-[#d0f255]" />
+                    Documents signed
+                  </div>
+                  <h1
+                    className="mt-4 text-[28px] font-semibold leading-tight sm:text-[34px]"
+                    style={{ fontFamily: "var(--font-display)" }}
+                  >
+                    Your documents have been signed
+                  </h1>
+                  <p className="mt-3 max-w-2xl text-sm leading-6 text-white/85 sm:text-base">
+                    The authorised person has completed eSign, and onboarding
+                    is ready to continue.
+                  </p>
+                </div>
+
+                <div className="mt-8 space-y-5 text-[15px] leading-7 text-[#364153]">
+                  <p>Hi {userName},</p>
+                  <p>
+                    Good news — {authorisedPersonName} has successfully signed
+                    the required documents for your onboarding.
+                  </p>
+                  <p>
+                    You can now continue your onboarding journey and complete
+                    the remaining steps.
+                  </p>
+                  <p>
+                    Click the button below to return to onboarding and move
+                    forward with your setup.
+                  </p>
+                </div>
+
+                <div className="mt-6 rounded-[20px] border border-[#cfe2db] bg-[#f7fbf9] p-5 sm:p-6">
+                  <div className="flex items-center gap-2 text-sm font-semibold text-[#005656]">
+                    <FileText className="size-4" />
+                    Signed document summary
+                  </div>
+                  <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                    <div className="rounded-[16px] border border-[#dde8e4] bg-white p-4">
+                      <div className="text-xs font-bold uppercase tracking-[0.12em] text-[#667085]">
+                        Authorised Person
+                      </div>
+                      <div className="mt-2 text-base font-semibold text-[#101828]">
+                        {authorisedPersonName}
+                      </div>
+                    </div>
+                    <div className="rounded-[16px] border border-[#dde8e4] bg-white p-4">
+                      <div className="text-xs font-bold uppercase tracking-[0.12em] text-[#667085]">
+                        Status
+                      </div>
+                      <div className="mt-2 inline-flex items-center gap-2 rounded-full bg-[#ecfdf3] px-3 py-1.5 text-sm font-semibold text-[#027a48]">
+                        <CheckCircle2 className="size-4" />
+                        Signed successfully
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                  <button
+                    type="button"
+                    onClick={onContinueOnboarding}
+                    className="inline-flex items-center justify-center gap-2 rounded-[14px] px-5 py-3.5 text-sm font-semibold text-white shadow-[0_18px_36px_rgba(0,86,86,0.18)]"
+                    style={{ background: PRIMARY }}
+                  >
+                    Continue Onboarding
+                    <ArrowRight className="size-4" />
+                  </button>
+                  <a
+                    href="#/onboarding/terms/1"
+                    target="_self"
+                    className="inline-flex items-center justify-center rounded-[14px] border border-[#d5d7da] bg-white px-5 py-3.5 text-sm font-semibold text-[#344054]"
+                  >
+                    View Signed Documents
+                  </a>
+                </div>
+
+                <div className="mt-10 border-t border-[#eaecf0] pt-5 text-sm leading-6 text-[#667085]">
+                  If you have any questions or need help, please contact your
+                  account support team.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </motion.div>
     </div>
   );
 }

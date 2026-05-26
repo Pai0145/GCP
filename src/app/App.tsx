@@ -38,6 +38,7 @@ import {
   ScreenOpeningSingzy,
   ScreenReviewSubmit,
   ScreenSignatoryHandoffComplete,
+  ScreenSignedDocumentsEmailPreview,
   ScreenSignatory,
   ScreenSuccess,
   ScreenSuccessEmailPreview,
@@ -120,60 +121,55 @@ const SCREEN_BY_PATH: Record<string, number> = {
   "/onboarding/esign": 11,
   "/onboarding/success": 12,
   "/onboarding/success/preview": 12,
+  "/onboarding/signed-documents/preview": 12,
 };
 
 const SIDEBAR_STEP_FOR_SCREEN: Record<number, number> = {
   1: 1,
   2: 2,
-  3: 3,
-  4: 3,
-  5: 4,
-  6: 5,
-  7: 5,
-  8: 5,
-  9: 5,
-  10: 5,
-  11: 5,
-  12: 5,
+  3: 2,
+  4: 2,
+  5: 3,
+  6: 4,
+  7: 4,
+  8: 4,
+  9: 4,
+  10: 4,
+  11: 4,
+  12: 4,
 };
 
 const SUB_FOR_SCREEN: Record<number, string | undefined> = {
-  3: "identity",
-  4: "address",
-  6: "terms",
-  7: "terms",
-  8: "terms",
-  9: "terms",
-  10: "terms",
-  11: "aadhaar",
-  12: "signature",
+  2: "required-info",
+  3: "required-info",
+  4: "organisation-address",
 };
 
 const COMPLETED_SUBS_FOR_SCREEN: Record<number, string[]> = {
-  4: ["identity"],
-  5: ["identity", "address"],
-  6: [],
-  7: [],
-  8: [],
-  9: [],
-  10: [],
-  11: ["terms"],
-  12: ["terms", "aadhaar"],
+  4: ["required-info"],
+  5: ["required-info", "organisation-address"],
+  6: ["required-info", "organisation-address"],
+  7: ["required-info", "organisation-address"],
+  8: ["required-info", "organisation-address"],
+  9: ["required-info", "organisation-address"],
+  10: ["required-info", "organisation-address"],
+  11: ["required-info", "organisation-address"],
+  12: ["required-info", "organisation-address"],
 };
 
 const COMPLETED_FOR_SCREEN: Record<number, number[]> = {
   1: [],
   2: [1],
-  3: [1, 2],
-  4: [1, 2],
-  5: [1, 2, 3],
-  6: [1, 2, 3, 4],
-  7: [1, 2, 3, 4],
-  8: [1, 2, 3, 4],
-  9: [1, 2, 3, 4],
-  10: [1, 2, 3, 4],
-  11: [1, 2, 3, 4],
-  12: [1, 2, 3, 4, 5],
+  3: [1],
+  4: [1],
+  5: [1, 2],
+  6: [1, 2, 3],
+  7: [1, 2, 3],
+  8: [1, 2, 3],
+  9: [1, 2, 3],
+  10: [1, 2, 3],
+  11: [1, 2, 3],
+  12: [1, 2, 3, 4],
 };
 
 const PROGRESS_WEIGHTS_BY_CLICK: Record<number, number> = {
@@ -237,6 +233,21 @@ const initialOnboardingState = {
   manualVerification: false,
   panDocumentScenario: "",
   businessCategory: "",
+  businessCategoryOther: "",
+  tanNumber: "",
+  registeredAddressLine1: "4th Floor, Tower B, Building 9, DLF Cyber City",
+  registeredAddressLine2: "",
+  registeredCity: "Gurugram",
+  registeredState: "Haryana",
+  registeredPinCode: "122002",
+  registeredCountry: "India",
+  billingAddressLine1: "",
+  billingAddressLine2: "",
+  billingCity: "",
+  billingState: "",
+  billingPinCode: "",
+  billingCountry: "India",
+  billingGstCertificate: null as null | { name: string; ext: string; size: string },
   panNumber: "AABCP1234F",
   panName: "PINE LABS LIMITED",
   panVerified: true,
@@ -563,6 +574,7 @@ function OnboardingFlow() {
   const isSingzyFlowView = screen >= 7 && screen <= 11;
   const isEmailTemplateScreen =
     location.pathname === "/onboarding/success/preview" ||
+    location.pathname === "/onboarding/signed-documents/preview" ||
     state.awaitingAuthorisedSignoff;
   const steps = hideReviewSubs
     ? STEPS.map((step) =>
@@ -695,15 +707,9 @@ function OnboardingFlow() {
 
   const handleStepClick = (stepId: number, subId?: string) => {
     if (stepId === 1) go(1);
-    if (stepId === 2) go(2);
-    if (stepId === 3) go(subId === "address" ? 4 : 3);
-    if (stepId === 4) go(5);
-    if (stepId === 5) {
-      if (subId === "aadhaar") go(11);
-      else if (subId === "signature")
-        go(state.esignVerified ? 7 : 11);
-      else go(6);
-    }
+    if (stepId === 2) go(subId === "organisation-address" ? 4 : 2);
+    if (stepId === 3) go(5);
+    if (stepId === 4) go(6);
   };
 
   if (transitionContext) {
@@ -798,7 +804,7 @@ function OnboardingFlow() {
     );
   if (screen === 3)
     content = (
-      <ScreenBusinessIdentity
+      <ScreenAccountOwner
         go={go}
         state={state}
         setState={setState}
@@ -896,11 +902,15 @@ function OnboardingFlow() {
       />
     );
   }
-  if (screen === 12 && state.signatoryReadyToReturn) {
+  if (
+    screen === 12 &&
+    state.signatoryReadyToReturn &&
+    location.pathname === "/onboarding/signed-documents/preview"
+  ) {
     content = (
-      <ScreenSignatoryHandoffComplete
+      <ScreenSignedDocumentsEmailPreview
         state={state}
-        onReturnToCorporate={() => {
+        onContinueOnboarding={() => {
           setState({
             ...state,
             awaitingAuthorisedSignoff: true,
@@ -909,7 +919,15 @@ function OnboardingFlow() {
             signatoryReadyToReturn: false,
             signatoryRejected: false,
           });
+          navigate("/onboarding/success");
         }}
+      />
+    );
+  } else if (screen === 12 && state.signatoryReadyToReturn) {
+    content = (
+      <ScreenSignatoryHandoffComplete
+        state={state}
+        onOpenEmailPreview={() => navigate("/onboarding/signed-documents/preview")}
       />
     );
   }

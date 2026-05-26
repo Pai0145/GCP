@@ -39,26 +39,17 @@ export type SetupStep = {
 };
 
 export const STEPS: SetupStep[] = [
-  { id: 1, label: "Document upload" },
-  { id: 2, label: "Basic details" },
+  { id: 1, label: "Document Upload" },
   {
-    id: 3,
-    label: "Organisation details",
+    id: 2,
+    label: "Basic Details",
     subs: [
-      { id: "identity", label: "Business identity" },
-      { id: "address", label: "Registered address" },
+      { id: "required-info", label: "Required Details" },
+      { id: "organisation-address", label: "Organisation Address" },
     ],
   },
-  { id: 4, label: "Authorised signatory" },
-  {
-    id: 5,
-    label: "Review and submit",
-    subs: [
-      { id: "terms", label: "Terms & Conditions" },
-      { id: "aadhaar", label: "Aadhaar eSign" },
-      { id: "signature", label: "Signature" },
-    ],
-  },
+  { id: 3, label: "Authorised Signatory" },
+  { id: 4, label: "Review & Submit" },
 ];
 
 export function TopNav({

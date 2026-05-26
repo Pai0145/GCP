@@ -34,7 +34,7 @@ Design an end-to-end onboarding journey with the following simplified flow:
 
 Important UX principle:
 Do not show every field at once. Use progressive disclosure.
-Ask only the minimum required information upfront.
+Ask only the minimum Required Details upfront.
 Move operational setup like maker-checker, add users, and sales POC to post-approval setup.
 
 Prototype screens:
@@ -223,7 +223,7 @@ Subtitle:
 “This person will accept terms and complete business verification.”
 
 At top, show checkbox:
-“Same as basic details”
+“Same as Personal Details”
 
 If checked, auto-fill:
 
