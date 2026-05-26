@@ -342,7 +342,7 @@ function FieldLabel({ children, optional, required }: any) {
       className="block mb-2"
       style={{
         color: TEXT_2,
-        fontWeight: 600,
+        fontWeight: 500,
         fontSize: 14,
         lineHeight: "20px",
       }}
@@ -378,6 +378,7 @@ function TextInput({ valid, ...props }: any) {
           color: props.value ? TEXT : MUTED,
           background: isReadOnly ? BG_SOFT : "#fff",
           fontSize: 14,
+          fontWeight: 500,
           lineHeight: "21px",
           cursor: isReadOnly ? "not-allowed" : "text",
         }}
@@ -426,6 +427,7 @@ function Select({ value, onChange, options, placeholder }: any) {
           border: `1px solid ${BORDER_INPUT}`,
           color: value ? TEXT : MUTED_2,
           fontSize: 14,
+          fontWeight: 500,
           lineHeight: "21px",
           minHeight: 44,
         }}
@@ -1188,7 +1190,12 @@ export function ScreenAccountOwner({ go, state, setState, progress }: any) {
                     placeholder="John"
                     onChange={(e: any) => setNames(e.target.value, lastName)}
                     className="flex-1 bg-transparent border-none outline-none"
-                    style={{ color: TEXT, fontSize: 14, lineHeight: "21px" }}
+                    style={{
+                      color: TEXT,
+                      fontSize: 14,
+                      fontWeight: 500,
+                      lineHeight: "21px",
+                    }}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.08 * 0 + 0.15 }}
@@ -1253,7 +1260,12 @@ export function ScreenAccountOwner({ go, state, setState, progress }: any) {
                     placeholder="Mandal"
                     onChange={(e: any) => setNames(firstName, e.target.value)}
                     className="flex-1 bg-transparent border-none outline-none"
-                    style={{ color: TEXT, fontSize: 14, lineHeight: "21px" }}
+                    style={{
+                      color: TEXT,
+                      fontSize: 14,
+                      fontWeight: 500,
+                      lineHeight: "21px",
+                    }}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.08 * 1 + 0.15 }}
@@ -1588,7 +1600,7 @@ const AUTOFETCHED_DETAILS: Record<FetchedDocKey, FetchedDetail[]> = {
     { label: "CIN/LLPIN", value: "U72900DL1998PTC096693" },
     { label: "Entity Type", value: "Private Limited Company" },
     { label: "Legal company name", value: "Pine Labs Private Limited" },
-    { label: "Registered office", value: "Delhi" },
+    // { label: "Registered office", value: "Delhi" },
   ],
   pan: [
     { label: "Company PAN", value: "AABCP1234F" },
@@ -2257,10 +2269,28 @@ export function ScreenBeforeYouBegin({ go, state, setState, progress }: any) {
 	                    const hasDetails =
 	                      (key === "gst" || key === "cin" || key === "pan") &&
 	                      fetchedDocs.includes(key);
-	                    const isSaved =
+                    const isSaved =
 	                      key === "gst" || key === "cin" || key === "pan"
 	                        ? (savedDocs[key] ?? false)
 	                        : false;
+                    const isExpanded =
+                      key === "gst" || key === "cin" || key === "pan"
+                        ? (expandedDocs[key] ?? false)
+                        : false;
+                    const reviewSubtitle =
+                      scanning
+                        ? "Reading document details..."
+                        : alert && !hasDetails
+                          ? alert.message
+                          : hasDetails && isWarning
+                            ? "We couldn't read some details clearly. Review, edit, or enter the missing details manually."
+                          : hasDetails && (fetchedDetails[key]?.length ?? 0) === 0
+                            ? "Enter the details manually to continue, or upload a clearer document."
+                          : hasDetails
+                            ? "Review and confirm the extracted details."
+                          : file
+                            ? `${file.ext} - ${file.size} - Uploaded`
+                          : hint;
 	
 	                    return (
 	                      <motion.div
@@ -2342,19 +2372,12 @@ export function ScreenBeforeYouBegin({ go, state, setState, progress }: any) {
                           className="relative z-10 size-9 rounded-[10px] flex items-center justify-center shrink-0"
                           style={{ background: file ? "#fff" : BG_SOFT }}
                         >
-                          {file ? (
-                            <CheckCircle2
-                              className="size-5"
-                              style={{ color: SUCCESS }}
-                            />
-                          ) : (
-                            <img
-                              src={iconSrc}
-                              alt=""
-                              className="size-6"
-                              draggable={false}
-                            />
-                          )}
+                          <img
+                            src={iconSrc}
+                            alt=""
+                            className="size-6"
+                            draggable={false}
+                          />
                         </div>
                         <div className="relative z-10 flex-1 min-w-0">
 	                          <div
@@ -2365,19 +2388,13 @@ export function ScreenBeforeYouBegin({ go, state, setState, progress }: any) {
 	                              lineHeight: "20px",
 	                            }}
 	                          >
-	                            <span className="truncate">{file ? title : title}</span>
-	                            {alert && (
-	                              <span
-	                                className="rounded-[6px] px-2 py-0.5 text-[11px]"
-	                                style={{
-	                                  background: isWarning ? "#fef3c7" : "#fee2e2",
-	                                  color: isWarning ? "#b45309" : "#b91c1c",
-	                                  fontWeight: 700,
-	                                }}
-	                              >
-	                                {isWarning ? "Needs review" : "Upload failed"}
-	                              </span>
-	                            )}
+	                            <span className="truncate">{title}</span>
+                              {file && !alert && (
+                                <CheckCircle2
+                                  className="size-4 shrink-0"
+                                  style={{ color: SUCCESS }}
+                                />
+                              )}
 	                          </div>
                           <div
                             className="text-xs mt-0.5"
@@ -2390,106 +2407,115 @@ export function ScreenBeforeYouBegin({ go, state, setState, progress }: any) {
                               lineHeight: "16px",
                             }}
 	                          >
-                            {scanning
-                              ? "Reading document details..."
-                              : alert && !hasDetails
-                                ? alert.message
-                              : file && hasDetails && isSaved
-                                ? "Details saved"
-                              : file && hasDetails
-                                ? "Review extracted details"
-                              : file
-                                ? `${file.ext} - ${file.size} - Uploaded`
-                              : hint}
+                            {reviewSubtitle}
                           </div>
                         </div>
-                        <button
-                          type="button"
-                          disabled={disabled || scanning}
-                          aria-label={
-                            scanning
-                              ? "Uploading document"
-                              : file
-                              ? "Replace document"
-                              : alert
-                                ? "Re-upload document"
-                                : "Upload document"
-                          }
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (disabled || scanning) return;
-                            if (file) {
-                              setDocs({ ...docs, [key]: null });
-                              setDocAlerts({ ...docAlerts, [key]: null });
-                              setFetchedDocs((current) =>
-                                current.filter((docKey) => docKey !== key),
-                              );
-                              setFetchedDetails((current) => {
-                                const next = { ...current };
-                                delete next[key as FetchedDocKey];
-                                return next;
-                              });
-                              setSavedDocs((current) => {
-                                const next = { ...current };
-                                delete next[key as FetchedDocKey];
-                                return next;
-                              });
-                              setExpandedDocs((current) => ({
-                                ...current,
-                                [key as FetchedDocKey]: false,
-                              }));
-	                              return;
-                            }
-                            openScenario(key);
-                          }}
-                          className="relative z-10 shrink-0 inline-flex items-center gap-2"
-                          style={{
-                            color: disabled ? MUTED_2 : alert ? TEXT_2 : PRIMARY,
-                            fontWeight: 600,
-                            fontSize: 14,
-                            lineHeight: "20px",
-                            cursor: disabled ? "not-allowed" : "pointer",
-                          }}
-                        >
-                          {file ? (
-                            <RefreshCw className="size-5" />
-                          ) : (
-                            <img
-                              src={uploadMinimalisticIcon}
-	                              alt=""
-	                              className="size-6"
-                              style={{
-                                filter: alert
-                                  ? "grayscale(1) brightness(0.45)"
-                                  : undefined,
-                              }}
-	                              draggable={false}
-	                            />
-                          )}
-                          <span className="hidden sm:inline">
-                            {scanning
-                              ? "Uploading"
-                              : file
-                                ? "Replace"
+                        <div className="relative z-10 flex shrink-0 items-center gap-1">
+                          <button
+                            type="button"
+                            disabled={disabled || scanning}
+                            aria-label={
+                              scanning
+                                ? "Uploading document"
+                                : file
+                                ? "Replace document"
                                 : alert
-                                  ? "Re-Upload"
-                                  : "Upload"}
-	                          </span>
-	                        </button>
+                                  ? "Re-upload document"
+                                  : "Upload document"
+                            }
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (disabled || scanning) return;
+                              if (file) {
+                                setDocs({ ...docs, [key]: null });
+                                setDocAlerts({ ...docAlerts, [key]: null });
+                                setFetchedDocs((current) =>
+                                  current.filter((docKey) => docKey !== key),
+                                );
+                                setFetchedDetails((current) => {
+                                  const next = { ...current };
+                                  delete next[key as FetchedDocKey];
+                                  return next;
+                                });
+                                setSavedDocs((current) => {
+                                  const next = { ...current };
+                                  delete next[key as FetchedDocKey];
+                                  return next;
+                                });
+                                setExpandedDocs((current) => ({
+                                  ...current,
+                                  [key as FetchedDocKey]: false,
+                                }));
+                                return;
+                              }
+                              openScenario(key);
+                            }}
+                            className="inline-flex shrink-0 items-center gap-2"
+                            style={{
+                              color: disabled ? MUTED_2 : alert ? TEXT_2 : PRIMARY,
+                              fontWeight: 600,
+                              fontSize: 14,
+                              lineHeight: "20px",
+                              cursor: disabled ? "not-allowed" : "pointer",
+                            }}
+                          >
+                            {file ? (
+                              <RefreshCw className="size-5" />
+                            ) : (
+                              <img
+                                src={uploadMinimalisticIcon}
+                                alt=""
+                                className="size-6"
+                                style={{
+                                  filter: alert
+                                    ? "grayscale(1) brightness(0.45)"
+                                    : undefined,
+                                }}
+                                draggable={false}
+                              />
+                            )}
+                            <span className="hidden sm:inline">
+                              {scanning
+                                ? "Uploading"
+                                : file
+                                  ? "Replace"
+                                  : alert
+                                    ? "Re-Upload"
+                                    : "Upload"}
+                            </span>
+                          </button>
+                          {hasDetails && (
+                            <button
+                              type="button"
+                              aria-label={
+                                isExpanded ? "Collapse details" : "Expand details"
+                              }
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setExpandedDocs((current) => ({
+                                  ...current,
+                                  [key as FetchedDocKey]: !isExpanded,
+                                }));
+                              }}
+                              className="inline-flex size-8 shrink-0 items-center justify-center rounded-full transition hover:bg-white/70"
+                              style={{ color: TEXT_2 }}
+                            >
+                              <ChevronDown
+                                className={`size-4 transition-transform ${
+                                  isExpanded ? "rotate-180" : ""
+                                }`}
+                              />
+                            </button>
+                          )}
+                        </div>
 	                        {(key === "gst" || key === "cin" || key === "pan") &&
 	                          fetchedDocs.includes(key) && (
 	                            <DocumentDetailsAccordion
 	                              docKey={key}
 	                              alert={alert}
 	                              rows={fetchedDetails[key] ?? AUTOFETCHED_DETAILS[key]}
-	                              expanded={expandedDocs[key] ?? false}
+	                              expanded={isExpanded}
 	                              saved={savedDocs[key] ?? false}
-	                              onToggle={() =>
-	                                setExpandedDocs((current) => ({
-	                                  ...current,
-	                                  [key]: !(current[key] ?? false),
-	                                }))
-	                              }
 	                              onRowsChange={(rows) =>
 	                                {
 	                                  setFetchedDetails((current) => ({
@@ -3338,18 +3364,18 @@ export function ScreenCompanyAddress({ go, state, setState, progress }: any) {
             <div className="space-y-4">
               <Prefilled
                 index={0}
-                label="Registered Address Line 1"
+                label="Address Line 1"
                 value={state.registeredAddressLine1}
                 source="Fetched from GST certificate"
               />
-              {/* <div>
-                <FieldLabel optional>Registered Address Line 2</FieldLabel>
+              <div>
+                <FieldLabel optional>Address Line 2</FieldLabel>
                 <TextInput
                   readOnly
                   value={state.registeredAddressLine2 || ""}
                   placeholder="Not available"
                 />
-              </div> */}
+              </div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <Prefilled
                   index={1}
@@ -3364,10 +3390,10 @@ export function ScreenCompanyAddress({ go, state, setState, progress }: any) {
                 label="Country"
                 value={state.registeredCountry}
               />
-              <p className="text-xs sm:text-sm" style={{ color: MUTED }}>
+              {/* <p className="text-xs sm:text-sm" style={{ color: MUTED }}>
                 Registered address details are mapped from the documents already
                 captured during onboarding.
-              </p>
+              </p> */}
             </div>
           </section>
 
@@ -3385,13 +3411,13 @@ export function ScreenCompanyAddress({ go, state, setState, progress }: any) {
               />
               <span
                 className="text-sm"
-                style={{ color: TEXT, fontWeight: 600 }}
+                style={{ color: TEXT, fontWeight: 500 }}
               >
                 Billing address is same as Registered Address
               </span>
             </label>
 
-            {state.billingSame && (
+            {/* {state.billingSame && (
               <div
                 className="mt-4 rounded-[12px] border p-4 text-sm leading-6"
                 style={{
@@ -3403,7 +3429,7 @@ export function ScreenCompanyAddress({ go, state, setState, progress }: any) {
                 Billing address will use the registered address above. No GST
                 Certificate upload is required.
               </div>
-            )}
+            )} */}
 
             <AnimatePresence>
               {!state.billingSame && (
@@ -3799,8 +3825,9 @@ function Prefilled({ label, value, source, index = 0, editable = false }: any) {
         style={{
           border: `1px solid ${BORDER_INPUT}`,
           background: "#fff",
-          color: TEXT_2,
+          color: MUTED,
           fontSize: 14,
+          fontWeight: 500,
           minHeight: 44,
         }}
         initial={{ background: SUCCESS_BG, borderColor: SUCCESS_BORDER }}
@@ -3873,8 +3900,9 @@ function PrefilledWithCheck({
         style={{
           border: `1px solid ${BORDER_INPUT}`,
           background: "#fff",
-          color: TEXT_2,
+          color: MUTED,
           fontSize: 14,
+          fontWeight: 500,
           minHeight: 44,
         }}
         initial={{ background: SUCCESS_BG, borderColor: SUCCESS_BORDER }}
@@ -4067,7 +4095,7 @@ export function ScreenSignatory({ go, state, setState, progress }: any) {
         sameAsOwner: false,
         sigName:
           !current.sigName || current.sigName === current.fullName
-            ? "Animesh Mandal"
+            ? "Akshay Jain"
             : current.sigName,
         sigEmail: hasDelegatedEmail
           ? current.sigEmail
@@ -4116,7 +4144,7 @@ export function ScreenSignatory({ go, state, setState, progress }: any) {
               />
               <span
                 className="text-sm"
-                style={{ color: TEXT, fontWeight: 600 }}
+                style={{ color: TEXT, fontWeight: 500 }}
               >
                 Same as Personal Details
               </span>
@@ -4457,7 +4485,7 @@ export function ScreenReviewSubmit({
               />
               <span
                 className="text-sm"
-                style={{ color: TEXT, fontWeight: 600 }}
+                style={{ color: TEXT, fontWeight: 500 }}
               >
                 {delegatedEmailHandoff
                   ? "I confirm that the information provided is accurate and is ready to be shared with the authorised signatory for review and signoff."
@@ -4548,7 +4576,7 @@ function SummaryCard({ title, rows, onEdit }: any) {
             {v ? (
               <>
                 <div
-                  className="sm:w-44 shrink-0"
+                  className="sm:w-56 shrink-0"
                   style={{ color: MUTED, fontWeight: 600 }}
                 >
                   {k}
@@ -4854,7 +4882,7 @@ function TermsProcurementFormContent({
         rightLabel="Telephone"
         rightValue="8807962325"
       />
-      <TermsRow label="First Name and Last Name" value="ANIMESH MANDAL" tall />
+      <TermsRow label="First Name and Last Name" value="Akshay Jain" tall />
       <TermsRow
         label="Billing Address"
         value="123, MG ROAD, INDIRANAGAR"
@@ -5322,7 +5350,6 @@ function DocumentDetailsAccordion({
   rows,
   expanded,
   saved,
-  onToggle,
   onRowsChange,
   onSave,
 }: {
@@ -5331,18 +5358,17 @@ function DocumentDetailsAccordion({
   rows: FetchedDetail[];
   expanded: boolean;
   saved: boolean;
-  onToggle: () => void;
   onRowsChange: (rows: FetchedDetail[]) => void;
   onSave: () => void;
 }) {
   const isWarning = alert?.tone === "warning";
   const borderColor = isWarning ? "#fbbf24" : SUCCESS_BORDER;
-  const panelBg = isWarning ? "#fffbeb" : "#f7fff9";
-  const accent = isWarning ? "#d97706" : SUCCESS;
   const docTitle = DOC_DEFS.find((doc) => doc.key === docKey)?.title ?? "Document";
-  const warningTitle = alert?.message.toLowerCase().includes("read your document")
-    ? `We couldn't read the ${docTitle} clearly`
-    : `We need a quick review for the ${docTitle}`;
+  const hasRequiredValues = rows.every((row, index) => {
+    const required =
+      index === 0 || row.label.trim().toLowerCase().includes("name");
+    return !required || Boolean(row.value.trim());
+  });
 
   const updateRow = (index: number, value: string) => {
     onRowsChange(rows.map((row, rowIndex) => (rowIndex === index ? { ...row, value } : row)));
@@ -5353,52 +5379,17 @@ function DocumentDetailsAccordion({
       {expanded && (
         <motion.div
           onClick={(event) => event.stopPropagation()}
-          className="relative z-10 mt-4 basis-full overflow-hidden rounded-[14px] border"
-          style={{ borderColor, background: "#fff" }}
+          className="relative z-10 mt-3 basis-full overflow-hidden rounded-[14px] border bg-white"
+          style={{ borderColor }}
           initial={{ height: 0, opacity: 0 }}
           animate={{ height: "auto", opacity: 1 }}
           exit={{ height: 0, opacity: 0 }}
           transition={{ duration: 0.24, ease: "easeOut" }}
         >
-          <div
-            className="flex flex-col gap-3 border-b px-4 py-4 sm:flex-row sm:items-center sm:justify-between"
-            style={{ borderColor, background: panelBg }}
-          >
-            <div className="flex items-start gap-3">
-              {isWarning ? (
-                <CircleAlert className="mt-0.5 size-5 shrink-0" style={{ color: accent }} />
-              ) : (
-                <CheckCircle2 className="mt-0.5 size-5 shrink-0" style={{ color: accent }} />
-              )}
-              <div>
-                <p className="text-sm" style={{ color: TEXT, fontWeight: 700 }}>
-                  {isWarning
-                    ? warningTitle
-                    : `${docTitle} details fetched successfully`}
-                </p>
-                <p className="mt-1 text-xs sm:text-sm" style={{ color: isWarning ? "#92400e" : MUTED, lineHeight: "20px" }}>
-                  {alert?.message ??
-                    "Review the extracted details below. You can edit them if something looks incorrect."}
-                </p>
-              </div>
-            </div>
-            <div className="flex flex-wrap items-center gap-3 text-xs font-bold sm:justify-end">
-              <button
-                type="button"
-                aria-label="Collapse details"
-                onClick={onToggle}
-                className="inline-flex items-center"
-                style={{ color: TEXT_2 }}
-              >
-                <ChevronDown className="size-4 rotate-180" />
-              </button>
-            </div>
-          </div>
-
-          <div className="grid gap-4 p-4 sm:grid-cols-2">
+          <div className="grid gap-x-8 gap-y-4 px-4 pb-4 pt-2 sm:grid-cols-2">
             {rows.map((row, index) => (
               <label key={`${docKey}-${row.label}`} className="block">
-                <span className="text-xs" style={{ color: TEXT_2, fontWeight: 700 }}>
+                <span className="text-xs" style={{ color: TEXT_2, fontWeight: 600 }}>
                   {row.label}
                   {index === 0 || row.label.toLowerCase().includes("name") ? (
                     <span style={{ color: REQUIRED }}> *</span>
@@ -5411,6 +5402,7 @@ function DocumentDetailsAccordion({
                   style={{
                     borderColor: isWarning ? "#f8cc7a" : BORDER_INPUT,
                     color: TEXT,
+                    fontWeight: 500,
                     boxShadow: "0 1px 2px rgba(16,24,40,0.04)",
                   }}
                 />
@@ -5420,21 +5412,30 @@ function DocumentDetailsAccordion({
 
           <div className="flex flex-col gap-3 border-t px-4 py-4 sm:flex-row sm:items-center sm:justify-between" style={{ borderColor: "#eef0f2" }}>
             <label className="inline-flex items-start gap-2 text-xs sm:text-sm" style={{ color: TEXT_2 }}>
-              <span className="mt-0.5 inline-flex size-4 shrink-0 items-center justify-center rounded-[4px]" style={{ background: PRIMARY, color: "#fff" }}>
-                <Check className="size-3" />
-              </span>
+              <input
+                type="checkbox"
+                checked={saved}
+                disabled={!hasRequiredValues}
+                onChange={() => {
+                  if (!saved) onSave();
+                }}
+                className="mt-0.5 size-4 shrink-0 accent-[#005656]"
+              />
               I confirm these details match the uploaded {docTitle}.
             </label>
-            <button
-              type="button"
-              onClick={onSave}
-              className="inline-flex items-center justify-center rounded-[10px] px-4 py-2.5 text-sm font-bold text-white"
-              style={{ background: saved ? SUCCESS : PRIMARY }}
-            >
-              {saved
-                ? `${docTitle.replace(" certificate", "")} details saved`
-                : `Save ${docTitle.replace(" certificate", "")} details`}
-            </button>
+            <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
+              <button
+                type="button"
+                onClick={onSave}
+                disabled={!hasRequiredValues}
+                className="inline-flex items-center justify-center rounded-[10px] px-4 py-2.5 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-60"
+                style={{ background: saved ? SUCCESS : PRIMARY }}
+              >
+                {saved
+                  ? `Details saved`
+                  : `Save`}
+              </button>
+            </div>
           </div>
         </motion.div>
       )}
@@ -5617,8 +5618,6 @@ function Confetti() {
               delay,
               duration,
               ease: "easeIn",
-              repeat: Infinity,
-              repeatDelay: 2,
             }}
             style={{
               position: "absolute",
@@ -5977,7 +5976,7 @@ export function ScreenSuccessEmailPreview({
                     Service activated
                   </div>
                   <h2
-                    className="mt-4 text-[28px] font-semibold leading-tight sm:text-[34px]"
+                    className="mt-4 text-[22px] font-semibold leading-tight sm:text-[26px]"
                     style={{ fontFamily: "var(--font-display)" }}
                   >
                     Your Gift Card Procurement Service is now active
@@ -6115,6 +6114,7 @@ export function ScreenAuthorisedSignoffPending({
   onOpenSingzyFromEmail,
   onEditSignatory,
   onResend,
+  onOpenRejectedEmail,
 }: any) {
   const firstName = state.fullName?.split(" ")[0] || "there";
 
@@ -6180,11 +6180,11 @@ export function ScreenAuthorisedSignoffPending({
               </button>
               <button
                 type="button"
-                onClick={onResend}
+                onClick={onOpenRejectedEmail}
                 className="inline-flex items-center justify-center gap-2 rounded-[12px] px-5 py-3 text-sm font-semibold text-white"
                 style={{ background: PRIMARY }}
               >
-                Resend to authorised person <ArrowRight className="size-4" />
+                View rejection email <ArrowRight className="size-4" />
               </button>
             </div>
           </div>
@@ -6228,7 +6228,7 @@ export function ScreenAuthorisedSignoffPending({
                     Action required
                   </div>
                   <h1
-                    className="mt-4 text-[28px] font-semibold leading-tight sm:text-[34px]"
+                    className="mt-4 text-[22px] font-semibold leading-tight sm:text-[26px]"
                     style={{ fontFamily: "var(--font-display)" }}
                   >
                     Review and sign the Gift Card Procurement onboarding request
@@ -6327,13 +6327,13 @@ export function ScreenAuthorisedSignoffPending({
                   >
                     Edit Signatory Details
                   </button>
-                  <button
+                  {/* <button
                     type="button"
                     onClick={onResend}
                     className="inline-flex items-center justify-center rounded-[14px] border border-[#d5d7da] bg-white px-5 py-3.5 text-sm font-semibold text-[#344054]"
                   >
                     Resend Email
-                  </button>
+                  </button> */}
                 </div>
 
                 <div className="mt-10 border-t border-[#eaecf0] pt-5 text-sm leading-6 text-[#667085]">
@@ -6457,7 +6457,7 @@ export function ScreenSignedDocumentsEmailPreview({
                     Documents signed
                   </div>
                   <h1
-                    className="mt-4 text-[28px] font-semibold leading-tight sm:text-[34px]"
+                    className="mt-4 text-[22px] font-semibold leading-tight sm:text-[26px]"
                     style={{ fontFamily: "var(--font-display)" }}
                   >
                     Your documents have been signed
@@ -6532,6 +6532,147 @@ export function ScreenSignedDocumentsEmailPreview({
                 <div className="mt-10 border-t border-[#eaecf0] pt-5 text-sm leading-6 text-[#667085]">
                   If you have any questions or need help, please contact your
                   account support team.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
+export function ScreenSignatoryRejectedEmailPreview({
+  state,
+  onGoToOnboarding,
+}: {
+  state: any;
+  onGoToOnboarding: () => void;
+}) {
+  const userName = state.fullName?.trim() || "{{userName}}";
+  const authorisedPersonName =
+    state.sigName?.trim() || "{{authorisedPersonName}}";
+
+  return (
+    <div className="mx-auto w-full max-w-6xl px-2 py-6 sm:px-4 sm:py-8 lg:py-10">
+      <motion.div
+        initial={{ opacity: 0, y: 18 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+        className="mx-auto w-full max-w-5xl"
+      >
+        <div className="rounded-[28px] border border-[#ead8c2] bg-white/75 p-3 shadow-[0_28px_80px_-32px_rgba(181,71,8,0.24)] backdrop-blur sm:p-5">
+          <div className="rounded-[24px] border border-[#ead8c2] bg-[#fff8ea] p-4 sm:p-6">
+            <div className="overflow-hidden rounded-[22px] border border-[#ead8c2] bg-white shadow-[0_20px_40px_-24px_rgba(16,24,40,0.18)]">
+              <div className="border-b border-[#f0e0ca] bg-[#fffcf7] px-5 py-4 sm:px-8">
+                <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <img
+                    src={pineLabsLogoImg}
+                    alt="Pine Labs"
+                    className="h-8 w-fit object-contain"
+                  />
+                  <div className="text-left sm:text-right">
+                    <div className="text-sm font-semibold text-[#005656]">
+                      Qwikserve
+                    </div>
+                    <div className="text-xs text-[#667085]">
+                      Gift Card Procurement
+                    </div>
+                  </div>
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="rounded-full bg-[#fff2df] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-[#b54708]">
+                    Subject
+                  </span>
+                  <span className="text-sm font-semibold text-[#8a3b12] sm:text-base">
+                    eSign Request Rejected — Action Required
+                  </span>
+                </div>
+                <div className="mt-4 grid gap-2 text-sm text-[#4a5565] sm:grid-cols-[90px_1fr]">
+                  <span className="font-semibold text-[#344054]">From</span>
+                  <span>Qwikserve Onboarding</span>
+                  <span className="font-semibold text-[#344054]">To</span>
+                  <span>{state.email || "{{userEmail}}"}</span>
+                </div>
+              </div>
+
+              <div className="px-5 py-6 sm:px-8 sm:py-8">
+                <div className="rounded-[22px] bg-[linear-gradient(135deg,#8a3b12_0%,#b54708_100%)] px-5 py-6 text-white sm:px-7">
+                  <div className="inline-flex items-center gap-2 rounded-full bg-white/12 px-3 py-1 text-xs font-semibold">
+                    <CircleAlert className="size-4 text-[#fedf89]" />
+                    Action required
+                  </div>
+                  <h1
+                    className="mt-4 text-[22px] font-semibold leading-tight sm:text-[26px]"
+                    style={{ fontFamily: "var(--font-display)" }}
+                  >
+                    eSign request was rejected
+                  </h1>
+                  <p className="mt-3 max-w-2xl text-sm leading-6 text-white/85 sm:text-base">
+                    The required documents have not been signed yet, and
+                    onboarding cannot continue until the signing step is
+                    completed.
+                  </p>
+                </div>
+
+                <div className="mt-8 space-y-5 text-[15px] leading-7 text-[#364153]">
+                  <p>Hi {userName},</p>
+                  <p>
+                    The eSign request sent to {authorisedPersonName} was
+                    rejected.
+                  </p>
+                  <p>
+                    This means the required documents have not been signed yet,
+                    and your onboarding cannot continue until the signing step
+                    is completed.
+                  </p>
+                  <p>
+                    Please return to onboarding to review the details and resend
+                    the eSign request, or update the Authorised Person
+                    information if needed.
+                  </p>
+                </div>
+
+                <div className="mt-6 rounded-[20px] border border-[#f4d6ad] bg-[#fff8ea] p-5 sm:p-6">
+                  <div className="flex items-center gap-2 text-sm font-semibold text-[#8a3b12]">
+                    <CircleAlert className="size-4" />
+                    Rejection summary
+                  </div>
+                  <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                    <div className="rounded-[16px] border border-[#f0dfc8] bg-white p-4">
+                      <div className="text-xs font-bold uppercase tracking-[0.12em] text-[#667085]">
+                        Authorised Person
+                      </div>
+                      <div className="mt-2 text-base font-semibold text-[#101828]">
+                        {authorisedPersonName}
+                      </div>
+                    </div>
+                    <div className="rounded-[16px] border border-[#f0dfc8] bg-white p-4">
+                      <div className="text-xs font-bold uppercase tracking-[0.12em] text-[#667085]">
+                        Status
+                      </div>
+                      <div className="mt-2 inline-flex items-center gap-2 rounded-full bg-[#fef3f2] px-3 py-1.5 text-sm font-semibold text-[#b42318]">
+                        <CircleAlert className="size-4" />
+                        Rejected
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                  <button
+                    type="button"
+                    onClick={onGoToOnboarding}
+                    className="inline-flex items-center justify-center gap-2 rounded-[14px] px-5 py-3.5 text-sm font-semibold text-white shadow-[0_18px_36px_rgba(181,71,8,0.18)]"
+                    style={{ background: PRIMARY }}
+                  >
+                    Go to Onboarding
+                    <ArrowRight className="size-4" />
+                  </button>
+                </div>
+
+                <div className="mt-10 border-t border-[#eaecf0] pt-5 text-sm leading-6 text-[#667085]">
+                  Need help? Contact your account support team.
                 </div>
               </div>
             </div>

@@ -38,6 +38,7 @@ import {
   ScreenOpeningSingzy,
   ScreenReviewSubmit,
   ScreenSignatoryHandoffComplete,
+  ScreenSignatoryRejectedEmailPreview,
   ScreenSignedDocumentsEmailPreview,
   ScreenSignatory,
   ScreenSuccess,
@@ -122,6 +123,7 @@ const SCREEN_BY_PATH: Record<string, number> = {
   "/onboarding/success": 12,
   "/onboarding/success/preview": 12,
   "/onboarding/signed-documents/preview": 12,
+  "/onboarding/esign-rejected/preview": 12,
 };
 
 const SIDEBAR_STEP_FOR_SCREEN: Record<number, number> = {
@@ -575,6 +577,7 @@ function OnboardingFlow() {
   const isEmailTemplateScreen =
     location.pathname === "/onboarding/success/preview" ||
     location.pathname === "/onboarding/signed-documents/preview" ||
+    location.pathname === "/onboarding/esign-rejected/preview" ||
     state.awaitingAuthorisedSignoff;
   const steps = hideReviewSubs
     ? STEPS.map((step) =>
@@ -932,6 +935,27 @@ function OnboardingFlow() {
     );
   }
   if (screen === 12 && state.awaitingAuthorisedSignoff) {
+    if (
+      state.signatoryRejected &&
+      location.pathname === "/onboarding/esign-rejected/preview"
+    ) {
+      content = (
+        <ScreenSignatoryRejectedEmailPreview
+          state={state}
+          onGoToOnboarding={() => {
+            setState({
+              ...state,
+              awaitingAuthorisedSignoff: false,
+              actingAsAuthorisedSignatory: false,
+              delegatedSignoffCompleted: false,
+              signatoryReadyToReturn: false,
+              signatoryRejected: false,
+            });
+            go(5, { skipSigningTransition: true });
+          }}
+        />
+      );
+    } else {
     content = (
       <ScreenAuthorisedSignoffPending
         state={state}
@@ -972,8 +996,12 @@ function OnboardingFlow() {
             signatoryRejected: false,
           });
         }}
+        onOpenRejectedEmail={() =>
+          navigate("/onboarding/esign-rejected/preview")
+        }
       />
     );
+    }
   }
 
   return (
