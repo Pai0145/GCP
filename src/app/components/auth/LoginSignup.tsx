@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import {
   Eye,
   EyeOff,
-  Check,
   Wallet,
   Zap,
   Gift,
@@ -70,11 +69,6 @@ export function LoginSignup({
     onModeChange?.(nextMode);
   };
 
-  const hasMinLength = password.length >= 8;
-  const hasLetters = /[a-zA-Z]/.test(password);
-  const hasNumbers = /\d/.test(password);
-  const isPasswordValid = hasMinLength && hasLetters && hasNumbers;
-
   const spawnRipple = (e: React.PointerEvent<HTMLButtonElement>) => {
     const rect = (e.currentTarget as HTMLButtonElement).getBoundingClientRect();
     const x = e.clientX - rect.left;
@@ -92,7 +86,7 @@ export function LoginSignup({
     if (
       email &&
       !showWorkEmailError &&
-      (mode === "login" || (mode === "signup" && isPasswordValid))
+      (mode === "signup" || password)
     ) {
       setSubmitting(true);
       setTimeout(() => {
@@ -328,7 +322,7 @@ export function LoginSignup({
             className="mb-6"
           >
             <h2 className="text-[36px] leading-[48px] font-bold text-[#181d27] mb-2">
-              {mode === "signup" ? "Create Account" : "Welcome Back"}
+              {mode === "signup" ? "Send OTP" : "Welcome Back"}
             </h2>
             <p className="text-[16px] text-[#4a5565]">
               {mode === "signup"
@@ -407,56 +401,36 @@ export function LoginSignup({
               </AnimatePresence>
             </motion.div>
 
-            {/* Password input */}
-            <motion.div
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.74, duration: 0.4, ease: easeOut }}
-            >
-              <label className="flex gap-1 text-[14px] font-semibold text-[#414651] mb-2">
-                {mode === "signup" ? "Create your password" : "Password"}
-              </label>
-              <div className="relative">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="auth-input w-full px-4 py-2.5 bg-[#fafafa] border border-[#d5d7da] rounded-lg text-[16px] text-[#181d27] focus:outline-none focus:ring-2 focus:ring-[#005656] focus:border-transparent"
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="eye-btn absolute right-4 top-1/2 -translate-y-1/2 text-[#252B37]"
-                >
-                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                </button>
-              </div>
-            </motion.div>
-
-            {/* Password requirements (only for signup) */}
-            <AnimatePresence>
-              {mode === "signup" && (
+            {/* Password input (login only) */}
+            <AnimatePresence initial={false}>
+              {mode === "login" && (
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
                   exit={{ opacity: 0, height: 0 }}
                   transition={{ duration: 0.25, ease: easeOut }}
-                  className="bg-[#f9fafb] rounded-[10px] p-3 space-y-2 overflow-hidden"
+                  className="overflow-hidden"
                 >
-                  <PasswordRequirement
-                    met={hasMinLength}
-                    text="At least 8 characters"
-                  />
-                  <PasswordRequirement
-                    met={hasLetters}
-                    text="Contains letters"
-                  />
-                  <PasswordRequirement
-                    met={hasNumbers}
-                    text="Contains numbers"
-                  />
+                  <label className="flex gap-1 text-[14px] font-semibold text-[#414651] mb-2">
+                    Password
+                  </label>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="••••••••"
+                      className="auth-input w-full px-4 py-2.5 bg-[#fafafa] border border-[#d5d7da] rounded-lg text-[16px] text-[#181d27] focus:outline-none focus:ring-2 focus:ring-[#005656] focus:border-transparent"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="eye-btn absolute right-4 top-1/2 -translate-y-1/2 text-[#252B37]"
+                    >
+                      {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                    </button>
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -466,14 +440,14 @@ export function LoginSignup({
               type="submit"
               disabled={
                 showWorkEmailError ||
-                (mode === "signup" && !isPasswordValid) ||
+                (mode === "login" && !password) ||
                 submitting
               }
               onPointerDown={(e) => {
                 if (
                   !(
                     showWorkEmailError ||
-                    (mode === "signup" && !isPasswordValid) ||
+                    (mode === "login" && !password) ||
                     submitting
                   )
                 )
@@ -485,7 +459,7 @@ export function LoginSignup({
               }}
               whileHover={
                 showWorkEmailError ||
-                (mode === "signup" && !isPasswordValid) ||
+                (mode === "login" && !password) ||
                 submitting
                   ? undefined
                   : {
@@ -497,7 +471,7 @@ export function LoginSignup({
               }
               whileTap={
                 showWorkEmailError ||
-                (mode === "signup" && !isPasswordValid) ||
+                (mode === "login" && !password) ||
                 submitting
                   ? undefined
                   : {
@@ -567,11 +541,11 @@ export function LoginSignup({
                   <>
                     <Loader2 className="size-4 animate-spin" />
                     {mode === "signup"
-                      ? "Creating account..."
+                      ? "Sending OTP..."
                       : "Logging in..."}
                   </>
                 ) : mode === "signup" ? (
-                  "Create Account"
+                  "Send OTP"
                 ) : (
                   "Log In"
                 )}
@@ -620,23 +594,4 @@ export function LoginSignup({
 
   if (embedded) return content;
   return <AuthShell layout="split">{content}</AuthShell>;
-}
-
-function PasswordRequirement({ met, text }: { met: boolean; text: string }) {
-  return (
-    <div className="flex gap-2.5 items-center">
-      <div
-        className={`w-[22px] h-[22px] rounded-full flex items-center justify-center transition-colors ${
-          met ? "bg-[#a9efc5]" : "bg-[#e5e7eb]"
-        }`}
-      >
-        {met && (
-          <Check size={13} className="text-[#079455]" strokeWidth={2.5} />
-        )}
-      </div>
-      <p className={`text-[14px] ${met ? "text-[#079455]" : "text-[#6b7280]"}`}>
-        {text}
-      </p>
-    </div>
-  );
 }
