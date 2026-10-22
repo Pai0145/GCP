@@ -19,7 +19,7 @@ Keep the interface minimal, spacious, and easy to scan.
 Canvas:
 Create a desktop prototype at 1440px width.
 Use a persistent left sidebar for journey steps.
-Use a top navigation bar with Pine Labs logo, page title “Corporate Gift Card Procurement”, and a “Save & exit” action.
+Use a top navigation bar with Pine Labs logo, page title “Corporate Expense Card”, and a “Save & exit” action.
 Footer should include Terms of use, Privacy policy, and Support links.
 
 Main goal:

@@ -176,7 +176,7 @@ export function AuthShell({
                   lineHeight: "18px",
                 }}
               >
-                Gift Card Procurement
+                Corporate Expense Card
               </div>
             </div>
           </div>

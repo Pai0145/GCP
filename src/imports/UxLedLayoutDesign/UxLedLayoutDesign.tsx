@@ -42,7 +42,7 @@ function Container5() {
   return (
     <div className="h-[19px] relative shrink-0 w-full" data-name="Container">
       <p className="absolute font-['Lato:SemiBold',sans-serif] leading-[19.5px] left-0 not-italic text-[#101828] text-[14px] top-0 tracking-[-0.0762px] whitespace-nowrap">
-        Gift Card Procurement
+        Corporate Expense Card
       </p>
     </div>
   );

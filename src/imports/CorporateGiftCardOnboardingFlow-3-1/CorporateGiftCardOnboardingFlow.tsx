@@ -45,7 +45,7 @@ function Container5() {
       data-name="Container"
     >
       <p className="absolute font-['Lato:SemiBold',sans-serif] leading-[18px] left-0 not-italic text-[#101828] text-[12px] top-[-0.5px] whitespace-nowrap">
-        Gift Card Procurement
+        Corporate Expense Card
       </p>
     </div>
   );

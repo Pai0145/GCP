@@ -4647,7 +4647,7 @@ function SignatureStamp() {
 
 function TermsDocument({
   page,
-  title = "Terms and Conditions for Gift Card Procurement",
+  title = "Terms and Conditions for Corporate Expense Card",
   left,
   right,
   children,
@@ -5810,12 +5810,12 @@ export function ScreenSuccess({
               <p className="mt-3 text-sm leading-6" style={{ color: TEXT_2 }}>
                 {isManualVerification ? (
                   <>
-                    We'll set up your Gift Card Procurement account after manual review and email the credentials to{" "}
+                    We'll set up your Corporate Expense Card account after manual review and email the credentials to{" "}
                     <span style={{ color: TEXT, fontWeight: 700 }}>{state.email}</span>.
                   </>
                 ) : (
                   <>
-                    Your Gift Card Procurement credentials will be emailed to{" "}
+                    Your Corporate Expense Card credentials will be emailed to{" "}
                     <span style={{ color: TEXT, fontWeight: 700 }}>{state.email}</span>{" "}
                     after final provisioning is complete.
                   </>
@@ -5844,8 +5844,8 @@ export function ScreenSuccess({
                 <div className="text-sm font-bold">What happens next?</div>
                 <p className="mt-2 text-sm leading-6 text-white/85">
                   {isManualVerification
-                    ? "Our onboarding team will validate your uploaded documents and company details manually. Once approved, we'll provision your Gift Card Procurement workspace and email the sign-in instructions."
-                    : "We’re verifying the last setup steps for your Gift Card Procurement workspace. Once that is complete, we’ll email your username, temporary password, and sign-in instructions."}
+                    ? "Our onboarding team will validate your uploaded documents and company details manually. Once approved, we'll provision your Corporate Expense Card workspace and email the sign-in instructions."
+                    : "We’re verifying the last setup steps for your Corporate Expense Card workspace. Once that is complete, we’ll email your username, temporary password, and sign-in instructions."}
                 </p>
               </div>
             </div>
@@ -5873,7 +5873,7 @@ export function ScreenSuccess({
                 <p className="mt-1 text-xs leading-5 sm:text-sm">
                   {isManualVerification
                     ? "If you don’t receive an update within 48 hours, please reach out to Pine Labs onboarding contact : +91 9876543210 or email : support@pinelabs.com."
-                    : "If you don’t receive your Gift Card Procurement credentials within 1 hour, please reach out to Pine Labs onboarding contact : +91 9876543210 or email : support@pinelabs.com."}
+                    : "If you don’t receive your Corporate Expense Card credentials within 1 hour, please reach out to Pine Labs onboarding contact : +91 9876543210 or email : support@pinelabs.com."}
                 </p>
               </div>
             </div>
@@ -5958,7 +5958,7 @@ export function ScreenSuccessEmailPreview({
                     Subject
                   </span>
                   <span className="text-sm font-semibold text-[#103b39] sm:text-base">
-                    Your Gift Card Procurement Service Is Activated
+                    Your Corporate Expense Card Service Is Activated
                   </span>
                 </div>
                 <div className="mt-4 grid gap-2 text-sm text-[#4a5565] sm:grid-cols-[90px_1fr]">
@@ -5979,7 +5979,7 @@ export function ScreenSuccessEmailPreview({
                     className="mt-4 text-[22px] font-semibold leading-tight sm:text-[26px]"
                     style={{ fontFamily: "var(--font-display)" }}
                   >
-                    Your Gift Card Procurement Service is now active
+                    Your Corporate Expense Card Service is now active
                   </h2>
                   <p className="mt-3 max-w-2xl text-sm leading-6 text-white/85 sm:text-base">
                     Enterprise access has been provisioned and your workspace is
@@ -5990,7 +5990,7 @@ export function ScreenSuccessEmailPreview({
                 <div className="mt-8 space-y-5 text-[15px] leading-7 text-[#364153]">
                   <p>Hi {userName},</p>
                   <p>
-                    Your Gift Card Procurement service has been successfully
+                    Your Corporate Expense Card service has been successfully
                     activated.
                   </p>
                   <p>
@@ -6033,7 +6033,7 @@ export function ScreenSuccessEmailPreview({
 
                 <div className="mt-8 space-y-5 text-[15px] leading-7 text-[#364153]">
                   <p>
-                    Click the button below to open your Gift Card Procurement
+                    Click the button below to open your Corporate Expense Card
                     dashboard and begin managing your procurement requests.
                   </p>
                 </div>
@@ -6051,7 +6051,7 @@ export function ScreenSuccessEmailPreview({
                     className="inline-flex items-center justify-center gap-2 rounded-[14px] px-5 py-3.5 text-sm font-semibold text-white shadow-[0_18px_36px_rgba(0,86,86,0.18)]"
                     style={{ background: PRIMARY }}
                   >
-                    Open Gift Card Procurement
+                    Open Corporate Expense Card
                     <ArrowRight className="size-4" />
                   </button>
                   {/* <button
@@ -6231,7 +6231,7 @@ export function ScreenAuthorisedSignoffPending({
                     className="mt-4 text-[22px] font-semibold leading-tight sm:text-[26px]"
                     style={{ fontFamily: "var(--font-display)" }}
                   >
-                    Review and sign the Gift Card Procurement onboarding request
+                    Review and sign the Corporate Expense Card onboarding request
                   </h1>
                   <p className="mt-3 max-w-2xl text-sm leading-6 text-white/85 sm:text-base">
                     {firstName}, the authorised signatory email has been prepared
@@ -6248,7 +6248,7 @@ export function ScreenAuthorisedSignoffPending({
                   </p>
                   <p>
                     Please review the shared details below and complete the
-                    signoff flow to activate the Gift Card Procurement service.
+                    signoff flow to activate the Corporate Expense Card service.
                   </p>
                 </div>
 
@@ -6430,7 +6430,7 @@ export function ScreenSignedDocumentsEmailPreview({
                       Qwikserve
                     </div>
                     <div className="text-xs text-[#667085]">
-                      Gift Card Procurement
+                      Corporate Expense Card
                     </div>
                   </div>
                 </div>
@@ -6576,7 +6576,7 @@ export function ScreenSignatoryRejectedEmailPreview({
                       Qwikserve
                     </div>
                     <div className="text-xs text-[#667085]">
-                      Gift Card Procurement
+                      Corporate Expense Card
                     </div>
                   </div>
                 </div>
