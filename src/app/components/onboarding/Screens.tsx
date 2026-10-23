@@ -1445,18 +1445,27 @@ type DocKey =
   | "llpAgreement"
   | "partnershipAgreement"
   | "signatoryId";
-type CompanyType = "company" | "llp" | "partnership";
+type CompanyType =
+  | "company"
+  | "llp"
+  | "partnership"
+  | "proprietor"
+  | "societyTrust";
 const EXTRA_DOC_KEYS: DocKey[] = ["moa", "aoa", "llpAgreement", "partnershipAgreement"];
 const REQUIRED_EXTRA_DOCS: Record<CompanyType, DocKey[]> = {
   company: ["moa", "aoa"],
   llp: ["llpAgreement"],
   partnership: ["partnershipAgreement"],
+  proprietor: [],
+  societyTrust: [],
 };
 const SIGNATORY_ID_TYPES = ["Masked Aadhaar card", "PAN card", "Voter ID", "Passport"];
 const COMPANY_TYPE_OPTIONS: { value: CompanyType; label: string }[] = [
   { value: "company", label: "Public/ Private" },
   { value: "llp", label: "LLP" },
   { value: "partnership", label: "Partnership" },
+  { value: "proprietor", label: "Proprietor" },
+  { value: "societyTrust", label: "Society & trust" },
 ];
 type UploadedDoc = { name: string; ext: string; size: string } | null;
 type UploadScenario =
