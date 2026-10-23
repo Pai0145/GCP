@@ -1375,6 +1375,16 @@ export function ScreenAccountOwner({ go, state, setState, progress }: any) {
                     : "Please enter a valid TAN number."}
                 </p>
               </div>
+              <div>
+                <FieldLabel>EMS provider</FieldLabel>
+                <TextInput
+                  value={state.emsProvider || ""}
+                  placeholder="Enter EMS provider"
+                  onChange={(e: any) =>
+                    setState({ ...state, emsProvider: e.target.value })
+                  }
+                />
+              </div>
               <AnimatePresence initial={false}>
                 {state.businessCategory === "Others" && (
                   <motion.div
@@ -1402,7 +1412,7 @@ export function ScreenAccountOwner({ go, state, setState, progress }: any) {
             </div>
 
             <div className="mt-4">
-              <FieldLabel>Expected Annual Gift Card Spend</FieldLabel>
+              <FieldLabel>Expected Annual Vol. on Prepaid Card</FieldLabel>
               <SpendChipGroup
                 value={state.spend}
                 onChange={(v: string) => setState({ ...state, spend: v })}
@@ -1425,7 +1435,29 @@ export function ScreenAccountOwner({ go, state, setState, progress }: any) {
 }
 
 // ============== BEFORE YOU BEGIN — Document upload + autofill ==============
-type DocKey = "gst" | "cin" | "pan" | "address";
+type DocKey =
+  | "gst"
+  | "cin"
+  | "pan"
+  | "address"
+  | "moa"
+  | "aoa"
+  | "llpAgreement"
+  | "partnershipAgreement"
+  | "signatoryId";
+type CompanyType = "company" | "llp" | "partnership";
+const EXTRA_DOC_KEYS: DocKey[] = ["moa", "aoa", "llpAgreement", "partnershipAgreement"];
+const REQUIRED_EXTRA_DOCS: Record<CompanyType, DocKey[]> = {
+  company: ["moa", "aoa"],
+  llp: ["llpAgreement"],
+  partnership: ["partnershipAgreement"],
+};
+const SIGNATORY_ID_TYPES = ["Masked Aadhaar card", "PAN card", "Voter ID", "Passport"];
+const COMPANY_TYPE_OPTIONS: { value: CompanyType; label: string }[] = [
+  { value: "company", label: "Public/ Private" },
+  { value: "llp", label: "LLP" },
+  { value: "partnership", label: "Partnership" },
+];
 type UploadedDoc = { name: string; ext: string; size: string } | null;
 type UploadScenario =
   | "success"
@@ -1478,9 +1510,44 @@ const DOC_DEFS: {
     hint: "PDF or image, up to 5 MB",
     sample: { name: "Electricity Bill.pdf", ext: "PNG", size: "502 KB" },
   },
+  {
+    key: "moa",
+    title: "MOA (Memorandum of Association)",
+    hint: "PDF or image, up to 5 MB",
+    sample: { name: "MOA.pdf", ext: "PDF", size: "820 KB" },
+  },
+  {
+    key: "aoa",
+    title: "AOA (Articles of Association)",
+    hint: "PDF or image, up to 5 MB",
+    sample: { name: "AOA.pdf", ext: "PDF", size: "910 KB" },
+  },
+  {
+    key: "llpAgreement",
+    title: "LLP agreement",
+    hint: "PDF or image, up to 5 MB",
+    sample: { name: "LLP Agreement.pdf", ext: "PDF", size: "740 KB" },
+  },
+  {
+    key: "partnershipAgreement",
+    title: "Partnership agreement",
+    hint: "PDF or image, up to 5 MB",
+    sample: { name: "Partnership Agreement.pdf", ext: "PDF", size: "690 KB" },
+  },
+  {
+    key: "signatoryId",
+    title: "Authorized signatory ID",
+    hint: "PDF or image, up to 5 MB",
+    sample: { name: "Signatory ID.pdf", ext: "PDF", size: "310 KB" },
+  },
 ];
 
 const DOC_ICONS: Record<DocKey, string> = {
+  moa: plateIcon,
+  aoa: plateIcon,
+  llpAgreement: plateIcon,
+  partnershipAgreement: plateIcon,
+  signatoryId: plateIcon,
   gst: diplomaVerifiedIcon,
   cin: plateIcon,
   pan: plateIcon,
@@ -1930,18 +1997,33 @@ export function ScreenBeforeYouBegin({ go, state, setState, progress }: any) {
     cin: null,
     pan: null,
     address: null,
+    moa: null,
+    aoa: null,
+    llpAgreement: null,
+    partnershipAgreement: null,
+    signatoryId: null,
   });
   const [docAlerts, setDocAlerts] = useState<Record<DocKey, DocAlert>>({
     gst: null,
     cin: null,
     pan: null,
     address: null,
+    moa: null,
+    aoa: null,
+    llpAgreement: null,
+    partnershipAgreement: null,
+    signatoryId: null,
   });
   const [scanningDocs, setScanningDocs] = useState<Record<DocKey, boolean>>({
     gst: false,
     cin: false,
     pan: false,
     address: false,
+    moa: false,
+    aoa: false,
+    llpAgreement: false,
+    partnershipAgreement: false,
+    signatoryId: false,
   });
   const [scenarioDoc, setScenarioDoc] = useState<DocKey | null>(null);
   const [fetchedDocs, setFetchedDocs] = useState<FetchedDocKey[]>([]);
@@ -1955,8 +2037,33 @@ export function ScreenBeforeYouBegin({ go, state, setState, progress }: any) {
   const [showContinueScenario, setShowContinueScenario] = useState(false);
   const [beginErrorMessage, setBeginErrorMessage] = useState<string | null>(null);
 
+  const companyType = (state.companyType || "") as CompanyType | "";
+  const extraDocKeys: DocKey[] = companyType ? REQUIRED_EXTRA_DOCS[companyType] : [];
   const allUploaded =
-    !!docs.cin && !!docs.pan && (gstPresent ? !!docs.gst : !!docs.address);
+    !!companyType &&
+    !!docs.cin &&
+    !!docs.pan &&
+    (gstPresent ? !!docs.gst : !!docs.address) &&
+    extraDocKeys.every((key) => !!docs[key]) &&
+    !!state.signatoryIdType &&
+    !!docs.signatoryId &&
+    !!String(state.signatoryIdNumber || "").trim();
+
+  const selectCompanyType = (value: CompanyType) => {
+    if (value === companyType) return;
+    const stale = EXTRA_DOC_KEYS.filter((key) => !REQUIRED_EXTRA_DOCS[value].includes(key));
+    setState((current: any) => ({ ...current, companyType: value }));
+    setDocs((current) => {
+      const next = { ...current };
+      stale.forEach((key) => (next[key] = null));
+      return next;
+    });
+    setDocAlerts((current) => {
+      const next = { ...current };
+      stale.forEach((key) => (next[key] = null));
+      return next;
+    });
+  };
 
   const proceedToNextStep = (options?: { manualVerification?: boolean }) => {
     setBeginErrorMessage(null);
@@ -2031,7 +2138,7 @@ export function ScreenBeforeYouBegin({ go, state, setState, progress }: any) {
   const openScenario = (key: DocKey) => {
     const doc = DOC_DEFS.find((item) => item.key === key);
     if (!doc) return;
-    if (isHappyFlow) {
+    if (isHappyFlow || key === "signatoryId" || EXTRA_DOC_KEYS.includes(key)) {
       startSuccessfulUpload(key, doc.sample);
       return;
     }
@@ -2225,6 +2332,61 @@ export function ScreenBeforeYouBegin({ go, state, setState, progress }: any) {
               </Card>
             )}
             <section>
+              <h2
+                className="mb-4 text-base sm:text-lg"
+                style={{ color: TEXT, fontWeight: 700, lineHeight: "24px" }}
+              >
+                Type of company <span style={{ color: "#dc2626" }}>*</span>
+              </h2>
+              <div
+                role="radiogroup"
+                aria-label="Type of company"
+                className="grid gap-3 sm:grid-cols-3"
+              >
+                {COMPANY_TYPE_OPTIONS.map(({ value, label }) => {
+                  const selected = companyType === value;
+                  return (
+                    <motion.button
+                      key={value}
+                      type="button"
+                      role="radio"
+                      aria-checked={selected}
+                      onClick={() => selectCompanyType(value)}
+                      whileTap={{ scale: 0.99 }}
+                      className="flex items-start gap-3 rounded-2xl px-4 py-4 text-left transition"
+                      style={{
+                        border: `1px solid ${selected ? PRIMARY : BORDER_INPUT}`,
+                        background: selected ? BG_SOFT : "#fff",
+                        boxShadow: selected ? `0 0 0 3px rgba(0,0,0,0.04)` : "none",
+                      }}
+                    >
+                      <span
+                        aria-hidden="true"
+                        className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full"
+                        style={{ border: `2px solid ${selected ? PRIMARY : BORDER_INPUT}` }}
+                      >
+                        {selected && (
+                          <span
+                            className="size-2.5 rounded-full"
+                            style={{ background: PRIMARY }}
+                          />
+                        )}
+                      </span>
+                      <span className="min-w-0">
+                        <span
+                          className="block text-sm"
+                          style={{ color: TEXT, fontWeight: 600, lineHeight: "20px" }}
+                        >
+                          {label}
+                        </span>
+                      </span>
+                    </motion.button>
+                  );
+                })}
+              </div>
+            </section>
+            {companyType && (
+            <section>
               <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="[&>div]:mb-0">
                   <SectionHeading>Required documents</SectionHeading>
@@ -2257,7 +2419,13 @@ export function ScreenBeforeYouBegin({ go, state, setState, progress }: any) {
                 </div>
               </div>
               <div className="space-y-3">
-                {DOC_DEFS.filter((doc) => doc.key !== "address").map(
+                {DOC_DEFS.filter(
+                  (doc) =>
+                    doc.key !== "address" &&
+                    doc.key !== "signatoryId" &&
+                    (!EXTRA_DOC_KEYS.includes(doc.key) ||
+                      extraDocKeys.includes(doc.key)),
+                ).map(
                   ({ key, title, hint }) => {
                     const file = docs[key];
                     const alert = docAlerts[key];
@@ -2552,7 +2720,8 @@ export function ScreenBeforeYouBegin({ go, state, setState, progress }: any) {
                 We'll use these only for verification. Nothing is shared.
               </p> */}
             </section>
-            {!gstPresent && (
+            )}
+            {companyType && !gstPresent && (
               <section>
                 <h2
                   className="mb-4 text-base sm:text-lg"
@@ -2726,6 +2895,123 @@ export function ScreenBeforeYouBegin({ go, state, setState, progress }: any) {
                       </motion.div>
                     );
                   },
+                )}
+              </section>
+            )}
+            {companyType && (
+              <section>
+                <h2
+                  className="mb-4 text-base sm:text-lg"
+                  style={{ color: TEXT, fontWeight: 700, lineHeight: "24px" }}
+                >
+                  Authorized Signatory
+                </h2>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <FieldLabel required>ID type</FieldLabel>
+                    <Select
+                      value={state.signatoryIdType}
+                      onChange={(value: string) => {
+                        setState((current: any) => ({
+                          ...current,
+                          signatoryIdType: value,
+                          signatoryIdNumber: "",
+                        }));
+                        setDocs((current) => ({ ...current, signatoryId: null }));
+                      }}
+                      options={SIGNATORY_ID_TYPES}
+                      placeholder="Select ID type"
+                    />
+                  </div>
+                  <div>
+                    <FieldLabel required>
+                      {state.signatoryIdType
+                        ? `${state.signatoryIdType} number`
+                        : "ID number"}
+                    </FieldLabel>
+                    <TextInput
+                      value={state.signatoryIdNumber}
+                      disabled={!state.signatoryIdType}
+                      placeholder={
+                        state.signatoryIdType
+                          ? `Enter ${state.signatoryIdType} number`
+                          : "Select an ID type first"
+                      }
+                      onChange={(e: any) =>
+                        setState((current: any) => ({
+                          ...current,
+                          signatoryIdNumber: e.target.value,
+                        }))
+                      }
+                    />
+                  </div>
+                </div>
+                {state.signatoryIdType && (
+                  <div className="mt-4">
+                    {(() => {
+                      const file = docs.signatoryId;
+                      const scanning = scanningDocs.signatoryId;
+                      return (
+                        <motion.div
+                          onClick={() => !file && !scanning && openScenario("signatoryId")}
+                          className="relative min-h-[72px] overflow-hidden rounded-2xl px-4 py-4 flex flex-wrap items-center gap-4 transition"
+                          style={{
+                            border: `1px solid ${scanning || file ? SUCCESS_BORDER : BORDER_INPUT}`,
+                            background: file ? SUCCESS_BG : "#fff",
+                            cursor: scanning ? "wait" : file ? "default" : "pointer",
+                          }}
+                          whileHover={!file && !scanning ? { borderColor: PRIMARY } : {}}
+                        >
+                          <div
+                            className="size-9 rounded-[10px] flex items-center justify-center shrink-0"
+                            style={{ background: file ? "#fff" : BG_SOFT }}
+                          >
+                            <img src={DOC_ICONS.signatoryId} alt="" className="size-6" draggable={false} />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div
+                              className="flex items-center gap-2 text-sm"
+                              style={{ color: TEXT, fontWeight: 600, lineHeight: "20px" }}
+                            >
+                              <span className="truncate">Upload {state.signatoryIdType}</span>
+                              {file && <CheckCircle2 className="size-4 shrink-0" style={{ color: SUCCESS }} />}
+                            </div>
+                            <div className="text-xs mt-0.5" style={{ color: MUTED, lineHeight: "16px" }}>
+                              {scanning
+                                ? "Uploading..."
+                                : file
+                                  ? `${file.ext} - ${file.size} - Uploaded`
+                                  : "PDF or image, up to 5 MB"}
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            disabled={scanning}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (scanning) return;
+                              if (file) {
+                                setDocs((current) => ({ ...current, signatoryId: null }));
+                                return;
+                              }
+                              openScenario("signatoryId");
+                            }}
+                            className="shrink-0 inline-flex items-center gap-2"
+                            style={{ color: PRIMARY, fontWeight: 600, fontSize: 14, lineHeight: "20px" }}
+                          >
+                            {file ? (
+                              <RefreshCw className="size-5" />
+                            ) : (
+                              <img src={uploadMinimalisticIcon} alt="" className="size-6" draggable={false} />
+                            )}
+                            <span className="hidden sm:inline">
+                              {scanning ? "Uploading" : file ? "Replace" : "Upload"}
+                            </span>
+                          </button>
+                        </motion.div>
+                      );
+                    })()}
+                  </div>
                 )}
               </section>
             )}
@@ -3212,7 +3498,7 @@ export function ScreenBusinessIdentity({ go, state, setState, progress }: any) {
                 </p>
               </div>
               {/* <div>
-                <FieldLabel>Expected Annual Gift Card Spend</FieldLabel>
+                <FieldLabel>Expected Annual Vol. on Prepaid Card</FieldLabel>
                 <SpendChipGroup
                   value={state?.spend}
                   onChange={(v: string) => setState({ ...state, spend: v })}
@@ -4067,7 +4353,9 @@ export function ScreenSignatory({ go, state, setState, progress }: any) {
     state.sigName &&
     state.sigEmail &&
     state.sigMobile &&
-    state.designation;
+    state.designation &&
+    state.isPep &&
+    state.isRelatedToPep;
 
   const handleScenario = (scenario: SignatoryScenario) => {
     setShowScenario(false);
@@ -4123,33 +4411,6 @@ export function ScreenSignatory({ go, state, setState, progress }: any) {
       >
         <div className="space-y-6 sm:space-y-7">
           <section>
-            <label
-              className="flex items-center gap-2.5 cursor-pointer mb-5 sm:mb-6 p-3 rounded-lg"
-              style={{ background: BG_SOFT }}
-            >
-              <input
-                type="checkbox"
-                checked={state.sameAsOwner}
-                onChange={(e) => {
-                  const checked = e.target.checked;
-                  setState({
-                    ...state,
-                    sameAsOwner: checked,
-                    sigName: checked ? state.fullName : "",
-                    sigEmail: checked ? state.email : "",
-                    sigMobile: checked ? state.mobile : "",
-                  });
-                }}
-                className="size-4 accent-[#005656]"
-              />
-              <span
-                className="text-sm"
-                style={{ color: TEXT, fontWeight: 500 }}
-              >
-                Same as Personal Details
-              </span>
-            </label>
-
             <div className="space-y-4 sm:space-y-5">
               <div>
                 <FieldLabel required>Full name</FieldLabel>
@@ -4237,6 +4498,63 @@ export function ScreenSignatory({ go, state, setState, progress }: any) {
                   </motion.div>
                 )}
               </AnimatePresence>
+
+              <div
+                className="pt-4 sm:pt-5 border-t space-y-3"
+                style={{ borderColor: BORDER }}
+              >
+                <div
+                  className="text-sm sm:text-base"
+                  style={{ color: TEXT, fontWeight: 600 }}
+                >
+                  PEP Declaration Authorised Signatory
+                </div>
+                <p
+                  className="text-xs sm:text-sm leading-relaxed"
+                  style={{ color: TEXT_2 }}
+                >
+                  PEP (Politically exposed Person) – Politically Exposed Persons
+                  (PEPs) are individuals who are or have been entrusted with
+                  prominent public functions by a foreign country.
+                </p>
+                <p
+                  className="text-xs sm:text-sm leading-relaxed"
+                  style={{ color: TEXT_2 }}
+                >
+                  PEP Declaration – If selected yes, Senior Management to
+                  approve/reject based on evidence provided over email/offline
+                  methods.
+                </p>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 sm:items-end">
+                  <div>
+                    <FieldLabel required>
+                      Are You a Politically Exposed Person?
+                    </FieldLabel>
+                    <Select
+                      value={state.isPep || ""}
+                      onChange={(v: string) =>
+                        setState({ ...state, isPep: v })
+                      }
+                      placeholder="Select"
+                      options={["Yes", "No"]}
+                    />
+                  </div>
+                  <div>
+                    <FieldLabel required>
+                      Are you related to any Politically Exposed Person?
+                    </FieldLabel>
+                    <Select
+                      value={state.isRelatedToPep || ""}
+                      onChange={(v: string) =>
+                        setState({ ...state, isRelatedToPep: v })
+                      }
+                      placeholder="Select"
+                      options={["Yes", "No"]}
+                    />
+                  </div>
+                </div>
+              </div>
 
             </div>
           </section>
@@ -4451,7 +4769,7 @@ export function ScreenReviewSubmit({
                     : state.businessCategory,
                 ],
                 ["TAN Number", state.tanNumber || "--"],
-                ["Expected Annual Gift Card Spend", state.spend || "--"],
+                ["Expected Annual Vol. on Prepaid Card", state.spend || "--"],
                 ["Organisation Address", ""],
                 ["Registered Address", registeredAddress],
                 ["Billing Address", billingAddress],
@@ -4466,6 +4784,8 @@ export function ScreenReviewSubmit({
                 ["Email", state.sigEmail],
                 ["Mobile Number", state.sigMobile || "--"],
                 ["Designation", state.designation || "--"],
+                ["Politically Exposed Person (PEP)", state.isPep || "--"],
+                ["Related to PEP", state.isRelatedToPep || "--"],
               ]}
             />
           </section>
@@ -5772,7 +6092,7 @@ export function ScreenSuccess({
               : "Your business details has been submitted successfully."}
           </p>
 
-          <div className="mt-8 grid gap-4 sm:grid-cols-2">
+          <div className="mt-8 grid gap-4">
             <motion.div
               initial={{ opacity: 0, y: 14 }}
               animate={{ opacity: 1, y: 0 }}
@@ -5793,63 +6113,7 @@ export function ScreenSuccess({
                 Keep this reference handy if you need help from the onboarding team.
               </p>
             </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 14 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.24, duration: 0.45 }}
-              className="rounded-[16px] border p-5"
-              style={{ background: "#ffffff", borderColor: BORDER }}
-            >
-              <div className="text-xs font-bold uppercase tracking-[0.1em]" style={{ color: MUTED }}>
-                {isManualVerification ? "Manual review timeline" : "Credential delivery"}
-              </div>
-              <div className="mt-3 text-xl font-bold" style={{ color: TEXT }}>
-                {isManualVerification ? "Within 24 to 48 hours" : "Within 1 hour"}
-              </div>
-              <p className="mt-3 text-sm leading-6" style={{ color: TEXT_2 }}>
-                {isManualVerification ? (
-                  <>
-                    We'll set up your Corporate Expense Card account after manual review and email the credentials to{" "}
-                    <span style={{ color: TEXT, fontWeight: 700 }}>{state.email}</span>.
-                  </>
-                ) : (
-                  <>
-                    Your Corporate Expense Card credentials will be emailed to{" "}
-                    <span style={{ color: TEXT, fontWeight: 700 }}>{state.email}</span>{" "}
-                    after final provisioning is complete.
-                  </>
-                )}
-              </p>
-            </motion.div>
           </div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 14 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{
-              delay: 0.3,
-              duration: 0.45,
-              ease: [0.22, 1, 0.36, 1],
-            }}
-            className="mt-6 rounded-[16px] p-5"
-            style={{
-              background: "linear-gradient(135deg, #005656 0%, #007f78 100%)",
-              color: "#fff",
-            }}
-          >
-            <div className="flex items-start gap-3">
-              <Mail className="mt-0.5 size-5 shrink-0" style={{ color: LIME }} />
-              <div>
-                <div className="text-sm font-bold">What happens next?</div>
-                <p className="mt-2 text-sm leading-6 text-white/85">
-                  {isManualVerification
-                    ? "Our onboarding team will validate your uploaded documents and company details manually. Once approved, we'll provision your Corporate Expense Card workspace and email the sign-in instructions."
-                    : "We’re verifying the last setup steps for your Corporate Expense Card workspace. Once that is complete, we’ll email your username, temporary password, and sign-in instructions."}
-                </p>
-              </div>
-            </div>
-          </motion.div>
 
           <motion.div
             initial={{ opacity: 0, y: 14 }}
@@ -5903,28 +6167,6 @@ export function ScreenSuccess({
           </div>
         </motion.aside>
       </div>
-
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.95, duration: 0.45 }}
-        className="fixed bottom-5 right-5 z-40 flex items-center gap-3 sm:bottom-8 sm:right-8"
-      >
-        <span
-          className="hidden rounded-full px-3 py-1 text-[11px] font-semibold sm:inline-flex"
-          style={{ background: "#eef2ff", color: "#344054" }}
-        >
-          Demo CTA
-        </span>
-        <button
-          type="button"
-          onClick={onOpenDemoPreview}
-          className="inline-flex items-center gap-2 rounded-[12px] px-4 py-3 text-sm font-semibold text-white shadow-[0_18px_36px_rgba(0,86,86,0.24)]"
-          style={{ background: PRIMARY }}
-        >
-          Open Qwikserve Demo <ArrowRight className="size-4" />
-        </button>
-      </motion.div>
     </div>
   );
 }
