@@ -1439,6 +1439,7 @@ type DocKey =
   | "gst"
   | "cin"
   | "pan"
+  | "signatoryPan"
   | "address"
   | "moa"
   | "aoa"
@@ -1466,7 +1467,7 @@ const REQUIRED_EXTRA_DOCS: Record<CompanyType, DocKey[]> = {
   proprietor: ["partnershipDeed"],
   societyTrust: [],
 };
-const SIGNATORY_ID_TYPES = ["Masked Aadhaar card", "PAN card", "Voter ID", "Passport"];
+const SIGNATORY_ID_TYPES = ["Masked Aadhaar card", "Voter ID", "Passport"];
 const COMPANY_TYPE_OPTIONS: { value: CompanyType; label: string }[] = [
   { value: "company", label: "Public/ Private" },
   { value: "llp", label: "LLP" },
@@ -1519,6 +1520,12 @@ const DOC_DEFS: {
     title: "Company PAN",
     hint: "PDF or image, up to 5 MB",
     sample: { name: "PAN Card.pdf", ext: "PDF", size: "186 KB" },
+  },
+  {
+    key: "signatoryPan",
+    title: "Authorised Signatory PAN Card",
+    hint: "PDF or image, up to 5 MB",
+    sample: { name: "Authorised Signatory PAN Card.pdf", ext: "PDF", size: "194 KB" },
   },
   {
     key: "address",
@@ -1575,6 +1582,7 @@ const DOC_ICONS: Record<DocKey, string> = {
   partnershipAgreement: plateIcon,
   partnershipDeed: plateIcon,
   signatoryId: plateIcon,
+  signatoryPan: plateIcon,
   gst: diplomaVerifiedIcon,
   cin: plateIcon,
   pan: plateIcon,
@@ -2023,6 +2031,7 @@ export function ScreenBeforeYouBegin({ go, state, setState, progress }: any) {
     gst: null,
     cin: null,
     pan: null,
+    signatoryPan: null,
     address: null,
     moa: null,
     aoa: null,
@@ -2035,6 +2044,7 @@ export function ScreenBeforeYouBegin({ go, state, setState, progress }: any) {
     gst: null,
     cin: null,
     pan: null,
+    signatoryPan: null,
     address: null,
     moa: null,
     aoa: null,
@@ -2047,6 +2057,7 @@ export function ScreenBeforeYouBegin({ go, state, setState, progress }: any) {
     gst: false,
     cin: false,
     pan: false,
+    signatoryPan: false,
     address: false,
     moa: false,
     aoa: false,
@@ -2073,6 +2084,7 @@ export function ScreenBeforeYouBegin({ go, state, setState, progress }: any) {
     !!companyType &&
     !!docs.cin &&
     !!docs.pan &&
+    !!docs.signatoryPan &&
     (gstPresent ? !!docs.gst : !!docs.address) &&
     extraDocKeys.every((key) => !!docs[key]) &&
     !!state.signatoryIdType &&
@@ -2168,7 +2180,12 @@ export function ScreenBeforeYouBegin({ go, state, setState, progress }: any) {
   const openScenario = (key: DocKey) => {
     const doc = DOC_DEFS.find((item) => item.key === key);
     if (!doc) return;
-    if (isHappyFlow || key === "signatoryId" || EXTRA_DOC_KEYS.includes(key)) {
+    if (
+      isHappyFlow ||
+      key === "signatoryId" ||
+      key === "signatoryPan" ||
+      EXTRA_DOC_KEYS.includes(key)
+    ) {
       startSuccessfulUpload(key, doc.sample);
       return;
     }
