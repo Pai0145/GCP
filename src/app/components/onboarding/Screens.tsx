@@ -1444,6 +1444,7 @@ type DocKey =
   | "aoa"
   | "llpAgreement"
   | "partnershipAgreement"
+  | "partnershipDeed"
   | "signatoryId";
 type CompanyType =
   | "company"
@@ -1451,12 +1452,18 @@ type CompanyType =
   | "partnership"
   | "proprietor"
   | "societyTrust";
-const EXTRA_DOC_KEYS: DocKey[] = ["moa", "aoa", "llpAgreement", "partnershipAgreement"];
+const EXTRA_DOC_KEYS: DocKey[] = [
+  "moa",
+  "aoa",
+  "llpAgreement",
+  "partnershipAgreement",
+  "partnershipDeed",
+];
 const REQUIRED_EXTRA_DOCS: Record<CompanyType, DocKey[]> = {
   company: ["moa", "aoa"],
   llp: ["llpAgreement"],
   partnership: ["partnershipAgreement"],
-  proprietor: [],
+  proprietor: ["partnershipDeed"],
   societyTrust: [],
 };
 const SIGNATORY_ID_TYPES = ["Masked Aadhaar card", "PAN card", "Voter ID", "Passport"];
@@ -1544,6 +1551,16 @@ const DOC_DEFS: {
     sample: { name: "Partnership Agreement.pdf", ext: "PDF", size: "690 KB" },
   },
   {
+    key: "partnershipDeed",
+    title: "Partnership Deed (with registration certificate)",
+    hint: "PDF or image, up to 5 MB",
+    sample: {
+      name: "Partnership Deed.pdf",
+      ext: "PDF",
+      size: "715 KB",
+    },
+  },
+  {
     key: "signatoryId",
     title: "Authorized signatory ID",
     hint: "PDF or image, up to 5 MB",
@@ -1556,6 +1573,7 @@ const DOC_ICONS: Record<DocKey, string> = {
   aoa: plateIcon,
   llpAgreement: plateIcon,
   partnershipAgreement: plateIcon,
+  partnershipDeed: plateIcon,
   signatoryId: plateIcon,
   gst: diplomaVerifiedIcon,
   cin: plateIcon,
@@ -2010,6 +2028,7 @@ export function ScreenBeforeYouBegin({ go, state, setState, progress }: any) {
     aoa: null,
     llpAgreement: null,
     partnershipAgreement: null,
+    partnershipDeed: null,
     signatoryId: null,
   });
   const [docAlerts, setDocAlerts] = useState<Record<DocKey, DocAlert>>({
@@ -2021,6 +2040,7 @@ export function ScreenBeforeYouBegin({ go, state, setState, progress }: any) {
     aoa: null,
     llpAgreement: null,
     partnershipAgreement: null,
+    partnershipDeed: null,
     signatoryId: null,
   });
   const [scanningDocs, setScanningDocs] = useState<Record<DocKey, boolean>>({
@@ -2032,6 +2052,7 @@ export function ScreenBeforeYouBegin({ go, state, setState, progress }: any) {
     aoa: false,
     llpAgreement: false,
     partnershipAgreement: false,
+    partnershipDeed: false,
     signatoryId: false,
   });
   const [scenarioDoc, setScenarioDoc] = useState<DocKey | null>(null);
